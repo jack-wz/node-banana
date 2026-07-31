@@ -116,7 +116,7 @@ describe("MultiSelectToolbar", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByTitle("Stack horizontally (H)")).toBeInTheDocument();
+      expect(screen.getByTitle("Stack horizontally (Alt+H)")).toBeInTheDocument();
     });
 
     it("should not render when nodes are selected but less than 2", () => {
@@ -158,7 +158,7 @@ describe("MultiSelectToolbar", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByTitle("Stack horizontally (H)")).toBeInTheDocument();
+      expect(screen.getByTitle("Stack horizontally (Alt+H)")).toBeInTheDocument();
     });
 
     it("should render stack vertically button", () => {
@@ -168,7 +168,7 @@ describe("MultiSelectToolbar", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByTitle("Stack vertically (V)")).toBeInTheDocument();
+      expect(screen.getByTitle("Stack vertically (Alt+V)")).toBeInTheDocument();
     });
 
     it("should render arrange as grid button", () => {
@@ -178,7 +178,7 @@ describe("MultiSelectToolbar", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByTitle("Arrange as grid (G)")).toBeInTheDocument();
+      expect(screen.getByTitle("Arrange as grid (Alt+G)")).toBeInTheDocument();
     });
 
     it("should render create group button when nodes are not in a group", () => {
@@ -219,7 +219,7 @@ describe("MultiSelectToolbar", () => {
         </TestWrapper>
       );
 
-      const stackHorizontalButton = screen.getByTitle("Stack horizontally (H)");
+      const stackHorizontalButton = screen.getByTitle("Stack horizontally (Alt+H)");
       fireEvent.click(stackHorizontalButton);
 
       // Should be called for each node
@@ -242,7 +242,7 @@ describe("MultiSelectToolbar", () => {
         </TestWrapper>
       );
 
-      fireEvent.click(screen.getByTitle("Stack horizontally (H)"));
+      fireEvent.click(screen.getByTitle("Stack horizontally (Alt+H)"));
 
       // First call should position node-2 (at x=100, so it comes first)
       expect(mockOnNodesChange).toHaveBeenCalledWith([
@@ -272,7 +272,7 @@ describe("MultiSelectToolbar", () => {
         </TestWrapper>
       );
 
-      const stackVerticalButton = screen.getByTitle("Stack vertically (V)");
+      const stackVerticalButton = screen.getByTitle("Stack vertically (Alt+V)");
       fireEvent.click(stackVerticalButton);
 
       expect(mockOnNodesChange).toHaveBeenCalled();
@@ -294,7 +294,7 @@ describe("MultiSelectToolbar", () => {
         </TestWrapper>
       );
 
-      fireEvent.click(screen.getByTitle("Stack vertically (V)"));
+      fireEvent.click(screen.getByTitle("Stack vertically (Alt+V)"));
 
       // First call should position node-2 (at y=100, so it comes first)
       expect(mockOnNodesChange).toHaveBeenCalledWith([
@@ -326,7 +326,7 @@ describe("MultiSelectToolbar", () => {
         </TestWrapper>
       );
 
-      const gridButton = screen.getByTitle("Arrange as grid (G)");
+      const gridButton = screen.getByTitle("Arrange as grid (Alt+G)");
       fireEvent.click(gridButton);
 
       expect(mockOnNodesChange).toHaveBeenCalled();
@@ -350,7 +350,7 @@ describe("MultiSelectToolbar", () => {
         </TestWrapper>
       );
 
-      fireEvent.click(screen.getByTitle("Arrange as grid (G)"));
+      fireEvent.click(screen.getByTitle("Arrange as grid (Alt+G)"));
 
       // With 4 nodes, should create a 2x2 grid
       expect(mockOnNodesChange).toHaveBeenCalled();

@@ -8,8 +8,11 @@ import { CostIndicator } from "./CostIndicator";
 import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog";
 import { WorkflowBrowserModal } from "./WorkflowBrowserModal";
 import { TasksPanel } from "./TasksPanel";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useT } from "@/i18n";
 
 function CommentsNavigationIcon() {
+  const t = useT();
   // Subscribe to nodes so we re-render when comments change
   const nodes = useWorkflowStore((state) => state.nodes);
   const getNodesWithComments = useWorkflowStore((state) => state.getNodesWithComments);
@@ -46,7 +49,7 @@ function CommentsNavigationIcon() {
     <button
       onClick={handleClick}
       className="relative p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded transition-colors"
-      title={`${unviewedCount} unviewed comment${unviewedCount !== 1 ? 's' : ''} (${totalCount} total)`}
+      title={t("header.commentsTitle", { unviewed: unviewedCount, total: totalCount })}
     >
       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
         <path fillRule="evenodd" d="M4.848 2.771A49.144 49.144 0 0112 2.25c2.43 0 4.817.178 7.152.52 1.978.292 3.348 2.024 3.348 3.97v6.02c0 1.946-1.37 3.678-3.348 3.97a48.901 48.901 0 01-3.476.383.39.39 0 00-.297.17l-2.755 4.133a.75.75 0 01-1.248 0l-2.755-4.133a.39.39 0 00-.297-.17 48.9 48.9 0 01-3.476-.384c-1.978-.29-3.348-2.024-3.348-3.97V6.741c0-1.946 1.37-3.68 3.348-3.97z" clipRule="evenodd" />
@@ -61,6 +64,7 @@ function CommentsNavigationIcon() {
 }
 
 export function Header() {
+  const t = useT();
   const {
     workflowName,
     workflowId,
@@ -126,9 +130,9 @@ export function Header() {
     setShowProjectModal(false);
     // Small delay to let state update
     setTimeout(() => {
-      saveToFile().catch((error) => {
+    saveToFile().catch((error) => {
         console.error("Failed to save project:", error);
-        alert("Failed to save project. Please try again.");
+        alert(t("header.saveFailed"));
       });
     }, 50);
   };
@@ -149,31 +153,29 @@ export function Header() {
 
       if (!response.ok || !result.success) {
         console.error("Failed to open directory:", result.error);
-        alert(`Failed to open project folder: ${result.error || "Unknown error"}`);
+        alert(t("header.openFolderError", { error: result.error || "Unknown error" }));
         return;
       }
     } catch (error) {
       console.error("Failed to open directory:", error);
-      alert("Failed to open project folder. Please try again.");
+      alert(t("header.openFolderFailed"));
     }
   };
 
 
   const handleRevertAIChanges = useCallback(() => {
-    const confirmed = window.confirm(
-      "Are you sure? This will restore your previous workflow."
-    );
+    const confirmed = window.confirm(t("header.revertConfirm"));
     if (confirmed) {
       revertToSnapshot();
     }
-  }, [revertToSnapshot]);
+  }, [revertToSnapshot, t]);
 
   const settingsButtons = (
     <div className="flex items-center gap-0.5 ml-1 pl-1 border-l border-neutral-700/50">
       <button
         onClick={handleOpenSettings}
         className="p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded transition-colors"
-        title="Project settings"
+        title={t("header.projectSettings")}
       >
         <svg
           className="w-4 h-4"
@@ -219,21 +221,21 @@ export function Header() {
           <button
             onClick={() => setShowQuickstart(true)}
             className="flex items-center hover:opacity-80 transition-opacity"
-            title="Open welcome screen"
+            title={t("header.openWelcome")}
           >
             <img src="/banana_icon.png" alt="Banana" className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-1.5 min-w-0">
             <span className={`text-sm truncate max-w-[180px] ${isProjectConfigured ? "text-neutral-200" : "text-neutral-500 italic"}`}>
-              {isProjectConfigured ? workflowName : "Untitled"}
+              {isProjectConfigured ? workflowName : t("header.untitled")}
             </span>
             {hasUnsavedChanges && !isSaving && (
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" title="Unsaved changes" />
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" title={t("header.unsavedChanges")} />
             )}
             <button
               onClick={() => setShowWorkflowBrowser(true)}
               className="p-0.5 text-neutral-500 hover:text-neutral-200 transition-colors shrink-0"
-              title="Browse workflows"
+              title={t("header.browseWorkflows")}
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
@@ -255,7 +257,7 @@ export function Header() {
                     onClick={() => canSave ? saveToFile() : handleOpenSettings()}
                     disabled={isSaving}
                     className="relative p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded transition-colors disabled:opacity-50"
-                    title={isSaving ? "Saving..." : canSave ? "Save project" : "Configure save location"}
+                    title={isSaving ? t("header.saving") : canSave ? t("header.saveProject") : t("header.configureSave")}
                     data-tutorial="save-button"
                   >
                     <svg
@@ -279,7 +281,7 @@ export function Header() {
                     <button
                       onClick={handleOpenDirectory}
                       className="p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded transition-colors"
-                      title="Open Project Folder"
+                      title={t("header.openFolder")}
                     >
                       <svg
                         className="w-4 h-4"
@@ -299,7 +301,7 @@ export function Header() {
                   <button
                     onClick={handleOpenFile}
                     className="p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded transition-colors"
-                    title="Open project"
+                    title={t("header.openProject")}
                   >
                     <svg
                       className="w-4 h-4"
@@ -326,7 +328,7 @@ export function Header() {
                   <button
                     onClick={handleNewProject}
                     className="relative p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded transition-colors"
-                    title="Save project"
+                    title={t("header.saveProject")}
                     data-tutorial="save-button"
                   >
                     <svg
@@ -347,7 +349,7 @@ export function Header() {
                   <button
                     onClick={handleOpenFile}
                     className="p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded transition-colors"
-                    title="Open project"
+                    title={t("header.openProject")}
                   >
                     <svg
                       className="w-4 h-4"
@@ -377,9 +379,9 @@ export function Header() {
             <button
               onClick={handleRevertAIChanges}
               className="px-2.5 py-1.5 text-xs text-neutral-300 hover:text-neutral-100 bg-neutral-700/50 hover:bg-neutral-700 border border-neutral-600 rounded transition-colors"
-              title="Restore workflow from before AI changes"
+              title={t("header.revertAITitle")}
             >
-              Revert AI Changes
+              {t("header.revertAI")}
             </button>
           )}
           <TasksPanel />
@@ -387,14 +389,14 @@ export function Header() {
           <span className="text-neutral-400">
             {isProjectConfigured ? (
               isSaving ? (
-                "Saving..."
+                t("header.saving")
               ) : lastSavedAt ? (
-                `Saved ${formatTime(lastSavedAt)}`
+                t("header.savedAt", { time: formatTime(lastSavedAt) })
               ) : (
-                "Not saved"
+                t("header.notSaved")
               )
             ) : (
-              "Not saved"
+              t("header.notSaved")
             )}
           </span>
           <span className="text-neutral-500">·</span>
@@ -410,7 +412,7 @@ export function Header() {
           <button
             onClick={() => setShortcutsDialogOpen(true)}
             className="text-neutral-400 hover:text-neutral-200 transition-colors"
-            title="Keyboard shortcuts (?)"
+            title={t("header.shortcuts")}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75A2.25 2.25 0 014.5 4.5h15a2.25 2.25 0 012.25 2.25v10.5A2.25 2.25 0 0119.5 19.5h-15a2.25 2.25 0 01-2.25-2.25V6.75z" />
@@ -418,12 +420,14 @@ export function Header() {
             </svg>
           </button>
           <span className="text-neutral-500">·</span>
+          <LanguageSwitcher />
+          <span className="text-neutral-500">·</span>
           <a
             href="https://discord.com/invite/89Nr6EKkTf"
             target="_blank"
             rel="noopener noreferrer"
             className="text-neutral-400 hover:text-neutral-200 transition-colors"
-            title="Support"
+            title={t("header.support")}
           >
             <svg
               className="w-4 h-4"

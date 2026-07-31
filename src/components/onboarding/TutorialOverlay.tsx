@@ -7,12 +7,14 @@ import { useWorkflowStore } from "@/store/workflowStore";
 import { ElementHighlight } from "./ElementHighlight";
 import { TutorialMessage } from "./TutorialMessage";
 import { getTutorialSampleContent } from "@/utils/tutorialDefaults";
+import { useT } from "@/i18n";
 
 /**
  * Main tutorial coordination component.
  * Manages tutorial progression, action detection, and UI rendering.
  */
 export function TutorialOverlay() {
+  const t = useT();
   const [mounted, setMounted] = useState(false);
   const [showHighlight, setShowHighlight] = useState(false);
   const nodesPopulated = useRef(false);
@@ -471,10 +473,10 @@ export function TutorialOverlay() {
       {!currentStep.completed && (
         <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 93 }}>
           <TutorialMessage
-            message={currentStep.message}
+            message={t(currentStep.message)}
             position={currentStep.position}
             waitForClick={currentStep.waitForClick}
-            links={currentStep.links}
+            links={currentStep.links?.map((link) => ({ ...link, text: t(link.text) }))}
           />
         </div>
       )}
@@ -485,7 +487,7 @@ export function TutorialOverlay() {
         className="fixed top-20 right-4 px-3 py-2 text-sm text-neutral-400 hover:text-neutral-200 transition-colors pointer-events-auto"
         style={{ zIndex: 94 }}
       >
-        Skip tutorial
+        {t("ftux.skipTutorial")}
       </button>
     </>,
     document.body

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { PredictedCostResult, CostBreakdownItem, formatCost } from "@/utils/costCalculator";
 import { ProviderType } from "@/types/providers";
+import { useT } from "@/i18n";
 
 interface CostDialogProps {
   predictedCost: PredictedCostResult;
@@ -92,6 +93,7 @@ function ExternalLinkIcon() {
 }
 
 export function CostDialog({ predictedCost, incurredCost, onClose }: CostDialogProps) {
+  const t = useT();
   const resetIncurredCost = useWorkflowStore((state) => state.resetIncurredCost);
 
   useEffect(() => {
@@ -138,7 +140,7 @@ export function CostDialog({ predictedCost, incurredCost, onClose }: CostDialogP
       <div className="bg-neutral-800 rounded-lg p-6 w-[400px] border border-neutral-700 shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-neutral-100">
-            Workflow Costs
+            {t("cost.title")}
           </h2>
           <button
             onClick={onClose}
@@ -156,7 +158,7 @@ export function CostDialog({ predictedCost, incurredCost, onClose }: CostDialogP
             <div className="bg-neutral-900 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <ProviderIcon provider="gemini" />
-                <span className="text-sm text-neutral-300">Gemini Cost</span>
+                <span className="text-sm text-neutral-300">{t("cost.geminiCost")}</span>
                 <span className="ml-auto text-lg font-semibold text-green-400">
                   {formatCost(geminiTotal)}
                 </span>
@@ -181,9 +183,11 @@ export function CostDialog({ predictedCost, incurredCost, onClose }: CostDialogP
           {hasExternal && (
             <div className="bg-neutral-900 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm text-neutral-300">External Providers</span>
+                <span className="text-sm text-neutral-300">{t("cost.externalProviders")}</span>
                 <span className="text-xs text-neutral-500">
-                  {externalNodeCount} node{externalNodeCount !== 1 ? "s" : ""}
+                  {externalNodeCount === 1
+                    ? t("cost.nodeCountOne", { count: externalNodeCount })
+                    : t("cost.nodeCountMany", { count: externalNodeCount })}
                 </span>
               </div>
 
@@ -209,7 +213,7 @@ export function CostDialog({ predictedCost, incurredCost, onClose }: CostDialogP
                                 rel="noopener noreferrer"
                                 className="text-blue-400 hover:text-blue-300 flex items-center gap-1"
                               >
-                                View model
+                                {t("cost.viewModel")}
                                 <ExternalLinkIcon />
                               </a>
                             )}
@@ -222,7 +226,7 @@ export function CostDialog({ predictedCost, incurredCost, onClose }: CostDialogP
               </div>
 
               <p className="text-xs text-neutral-600 mt-3">
-                Pricing varies by model, hardware, and usage. Check provider for details.
+                {t("cost.pricingVaries")}
               </p>
             </div>
           )}
@@ -231,7 +235,7 @@ export function CostDialog({ predictedCost, incurredCost, onClose }: CostDialogP
           {predictedCost.nodeCount === 0 && (
             <div className="bg-neutral-900 rounded-lg p-4">
               <p className="text-xs text-neutral-500">
-                No generation nodes in workflow
+                {t("cost.noNodes")}
               </p>
             </div>
           )}
@@ -239,13 +243,13 @@ export function CostDialog({ predictedCost, incurredCost, onClose }: CostDialogP
           {/* Incurred Cost Section - Gemini only */}
           <div className="bg-neutral-900 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-neutral-400">Incurred Cost</span>
+              <span className="text-sm text-neutral-400">{t("cost.incurred")}</span>
               <span className="text-lg font-semibold text-green-400">
                 {formatCost(incurredCost)}
               </span>
             </div>
             <p className="text-xs text-neutral-500">
-              Actual API spend from Gemini generations
+              {t("cost.incurredHint")}
             </p>
 
             {incurredCost > 0 && (
@@ -253,7 +257,7 @@ export function CostDialog({ predictedCost, incurredCost, onClose }: CostDialogP
                 onClick={handleReset}
                 className="mt-3 text-xs text-neutral-400 hover:text-red-400 transition-colors"
               >
-                Reset to $0.00
+                {t("cost.reset")}
               </button>
             )}
           </div>

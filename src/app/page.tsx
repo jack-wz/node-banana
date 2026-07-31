@@ -15,6 +15,7 @@ import { FTUXModal } from "@/components/onboarding/FTUXModal";
 import { getFTUXCompleted, setFTUXCompleted } from "@/store/utils/localStorage";
 import { useFTUXStore } from "@/store/ftuxStore";
 import { captureSnapshotNow } from "@/utils/versionHistory";
+import { useI18nStore } from "@/i18n";
 
 export default function Home() {
   const initializeAutoSave = useWorkflowStore(
@@ -37,6 +38,11 @@ export default function Home() {
     initializeAutoSave();
     return () => cleanupAutoSave();
   }, [initializeAutoSave, cleanupAutoSave]);
+
+  // Hydrate persisted locale (SSR-safe: runs only on client)
+  useEffect(() => {
+    useI18nStore.getState().initLocale();
+  }, []);
 
   // Version history: debounced auto-snapshot on meaningful manual edits
   useEffect(() => {

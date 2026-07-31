@@ -21,6 +21,7 @@ import { browseRegistry } from "@/utils/browseRegistry";
 import { downloadMedia } from "@/utils/downloadMedia";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 // Video generation capabilities
 const VIDEO_CAPABILITIES: ModelCapability[] = ["text-to-video", "image-to-video", "audio-to-video"];
@@ -48,6 +49,7 @@ function buildVeoInputSchema(modelId: string): ModelInputDef[] | undefined {
 type GenerateVideoNodeType = Node<GenerateVideoNodeData, "generateVideo">;
 
 export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVideoNodeType>) {
+  const t = useT();
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   // Use stable selector for API keys to prevent unnecessary re-fetches
@@ -790,7 +792,7 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
               <button
                 onClick={() => downloadMedia(nodeData.outputVideo!, "video").catch(() => {})}
                 className="w-5 h-5 bg-neutral-900/80 hover:bg-neutral-700 rounded flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
-                title="Download video"
+                title={t("node.downloadVideo")}
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -799,7 +801,7 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
               <button
                 onClick={handleClearVideo}
                 className="w-5 h-5 bg-neutral-900/80 hover:bg-red-600/80 rounded flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
-                title="Clear video"
+                title={t("node.clearVideo")}
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -814,7 +816,7 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
                   onClick={handleCarouselPrevious}
                   disabled={isLoadingCarouselVideo}
                   className="w-5 h-5 rounded hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white/70 hover:text-white transition-colors"
-                  title="Previous video"
+                  title={t("node.prevVideo")}
                 >
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -827,7 +829,7 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
                   onClick={handleCarouselNext}
                   disabled={isLoadingCarouselVideo}
                   className="w-5 h-5 rounded hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white/70 hover:text-white transition-colors"
-                  title="Next video"
+                  title={t("node.nextVideo")}
                 >
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />

@@ -4,6 +4,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { ImageHistoryItem } from "@/types";
+import { t as translateT } from "@/i18n";
+import { useT } from "@/i18n";
 
 // Helper function for relative time display
 function formatRelativeTime(timestamp: number): string {
@@ -12,9 +14,9 @@ function formatRelativeTime(timestamp: number): string {
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
 
-  if (hours > 0) return `${hours}h ago`;
-  if (minutes > 0) return `${minutes}m ago`;
-  return "Just now";
+  if (hours > 0) return translateT("history.hoursAgo", { count: hours });
+  if (minutes > 0) return translateT("history.minutesAgo", { count: minutes });
+  return translateT("history.justNow");
 }
 
 // Calculate fan position for each item (vertical stack with slight curve to the right, like macOS Downloads)
@@ -86,6 +88,7 @@ function HistorySidebar({
   onDragStart: (e: React.DragEvent, item: ImageHistoryItem) => void;
   triggerRect: DOMRect | null;
 }) {
+  const t = useT();
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Close on click outside
@@ -138,20 +141,20 @@ function HistorySidebar({
       {/* Header */}
       <div className="px-4 py-3 border-b border-neutral-700 flex items-center justify-between shrink-0">
         <span className="text-sm text-neutral-200 font-medium">
-          All History ({history.length})
+          {t("history.title", { count: history.length })}
         </span>
         <div className="flex items-center gap-2">
           <button
             onClick={onClear}
             className="text-[10px] text-neutral-500 hover:text-red-400 transition-colors"
-            title="Clear all history"
+            title={t("history.clearAll")}
           >
-            Clear All
+            {t("history.clearAll")}
           </button>
           <button
             onClick={onClose}
             className="w-5 h-5 rounded hover:bg-neutral-700 flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
-            title="Close"
+            title={t("common.close")}
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -182,7 +185,7 @@ function HistorySidebar({
             {/* Info */}
             <div className="flex-1 min-w-0 flex flex-col justify-center">
               <p className="text-[11px] text-neutral-300 truncate">
-                {item.prompt?.substring(0, 60) || "No prompt"}
+                {item.prompt?.substring(0, 60) || t("history.noPrompt")}
               </p>
               <p className="text-[10px] text-neutral-500 mt-0.5">
                 {formatRelativeTime(item.timestamp)} · {item.model === "nano-banana-pro" ? "Pro" : "Standard"}
@@ -194,7 +197,7 @@ function HistorySidebar({
 
       {/* Footer */}
       <div className="px-4 py-2 border-t border-neutral-700 bg-neutral-900/50 shrink-0">
-        <span className="text-[10px] text-neutral-500">Drag images to canvas to create nodes</span>
+        <span className="text-[10px] text-neutral-500">{t("history.dragHint")}</span>
       </div>
     </div>,
     document.body
@@ -202,6 +205,7 @@ function HistorySidebar({
 }
 
 export function GlobalImageHistory() {
+  const t = useT();
   const [isOpen, setIsOpen] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -300,7 +304,9 @@ export function GlobalImageHistory() {
           text-neutral-400 hover:text-white
           shadow-lg transition-colors
         `}
-        title={`${history.length} image${history.length > 1 ? "s" : ""} in history`}
+        title={history.length === 1
+          ? t("history.countTitleOne", { count: history.length })
+          : t("history.countTitleMany", { count: history.length })}
       >
         {/* Clock/history icon */}
         <svg

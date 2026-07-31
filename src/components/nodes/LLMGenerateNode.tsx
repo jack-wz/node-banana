@@ -10,6 +10,7 @@ import { InlineParameterPanel } from "./InlineParameterPanel";
 import { SettingsTabBar } from "./SettingsTabBar";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 // LLM providers and models
 const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
@@ -39,6 +40,7 @@ const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> 
 type LLMGenerateNodeType = Node<LLMGenerateNodeData, "llmGenerate">;
 
 export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNodeType>) {
+  const t = useT();
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
 
@@ -351,7 +353,7 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
               <button
                 onClick={handleCopyOutput}
                 className={`nodrag nopan w-5 h-5 ${copied ? "bg-green-600/80" : "bg-neutral-900/80 hover:bg-neutral-700/80"} rounded flex items-center justify-center text-neutral-400 hover:text-white transition-colors`}
-                title={copied ? "Copied!" : "Copy to clipboard"}
+                title={copied ? t("node.copied") : t("node.copyClipboard")}
               >
                 {copied ? (
                   <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -367,7 +369,7 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
                 onClick={handleRegenerate}
                 disabled={isRunning}
                 className="nodrag nopan w-5 h-5 bg-neutral-900/80 hover:bg-blue-600/80 disabled:opacity-50 disabled:cursor-not-allowed rounded flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
-                title="Regenerate"
+                title={t("node.regenerate")}
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -376,7 +378,7 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
               <button
                 onClick={handleClearOutput}
                 className="nodrag nopan w-5 h-5 bg-neutral-900/80 hover:bg-red-600/80 rounded flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
-                title="Clear output"
+                title={t("node.clearOutput")}
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

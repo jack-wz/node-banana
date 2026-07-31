@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NodeType } from "@/types";
 import { ALL_NODES_CATEGORIES } from "./FloatingActionBar";
+import { useT, nodeCategoryKey } from "@/i18n";
 import { HandleTypeIcon, nodeTypeToIconType } from "./nodes/HandleTypeIcon";
 
 export interface NodePickerMenuProps {
@@ -41,6 +42,7 @@ function fuzzyMatch(query: string, text: string): boolean {
 }
 
 export function NodePickerMenu({ x, y, onSelect, onClose }: NodePickerMenuProps) {
+  const t = useT();
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -50,17 +52,21 @@ export function NodePickerMenu({ x, y, onSelect, onClose }: NodePickerMenuProps)
     const items: FlatItem[] = [];
     for (const category of ALL_NODES_CATEGORIES) {
       for (const node of category.nodes) {
+        const label = t(`nodeType.${node.type}`);
+        const categoryLabel = t(nodeCategoryKey(category.label));
         if (
           !query.trim() ||
+          fuzzyMatch(query, label) ||
           fuzzyMatch(query, node.label) ||
+          fuzzyMatch(query, categoryLabel) ||
           fuzzyMatch(query, category.label)
         ) {
-          items.push({ type: node.type, label: node.label, category: category.label });
+          items.push({ type: node.type, label, category: categoryLabel });
         }
       }
     }
     return items;
-  }, [query]);
+  }, [query, t]);
 
   // Reset selection when the filter changes
   useEffect(() => {
@@ -121,7 +127,7 @@ export function NodePickerMenu({ x, y, onSelect, onClose }: NodePickerMenuProps)
       className="fixed z-[200] rounded-xl border border-neutral-700/60 bg-[#1b1b1f] shadow-2xl overflow-hidden"
       style={{ left, top, width: menuWidth }}
       role="listbox"
-      aria-label="Add node"
+      aria-label={t("nodePicker.ariaLabel")}
     >
       <div className="p-2 border-b border-neutral-700/60">
         <input
@@ -130,13 +136,13 @@ export function NodePickerMenu({ x, y, onSelect, onClose }: NodePickerMenuProps)
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Search nodes…"
+          placeholder={t("nodePicker.placeholder")}
           className="w-full bg-neutral-800/70 text-sm text-neutral-100 placeholder:text-neutral-500 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-neutral-500"
         />
       </div>
       <div ref={listRef} className="max-h-[280px] overflow-y-auto py-1">
         {filtered.length === 0 && (
-          <div className="px-3 py-4 text-xs text-neutral-500 text-center">No matching nodes</div>
+          <div className="px-3 py-4 text-xs text-neutral-500 text-center">{t("nodePicker.noMatches")}</div>
         )}
         {filtered.map((item, index) => {
           const showCategory = index === 0 || filtered[index - 1].category !== item.category;
@@ -167,9 +173,9 @@ export function NodePickerMenu({ x, y, onSelect, onClose }: NodePickerMenuProps)
         })}
       </div>
       <div className="px-3 py-1.5 border-t border-neutral-700/60 flex items-center gap-3 text-[10px] text-neutral-500">
-        <span>↑↓ navigate</span>
-        <span>↵ create</span>
-        <span>esc close</span>
+        <span>{t("nodePicker.hintNavigate")}</span>
+        <span>{t("nodePicker.hintCreate")}</span>
+        <span>{t("nodePicker.hintClose")}</span>
       </div>
     </div>
   );

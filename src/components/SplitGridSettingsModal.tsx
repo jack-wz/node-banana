@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { SplitGridNodeData, AspectRatio, Resolution, ModelType } from "@/types";
+import { useT } from "@/i18n";
 
 interface SplitGridSettingsModalProps {
   nodeId: string;
@@ -41,6 +42,7 @@ export function SplitGridSettingsModal({
   nodeData,
   onClose,
 }: SplitGridSettingsModalProps) {
+  const t = useT();
   const { updateNodeData, addNode, onConnect, addEdgeWithType, getNodeById } = useWorkflowStore();
 
   const [selectedLayoutIndex, setSelectedLayoutIndex] = useState(
@@ -191,14 +193,14 @@ export function SplitGridSettingsModal({
         onKeyDown={handleKeyDown}
       >
         <h2 className="text-lg font-semibold text-neutral-100 mb-4">
-          Split Grid Settings
+          {t("splitGrid.title")}
         </h2>
 
         <div className="space-y-4">
           {/* Layout selector with visual preview */}
           <div>
             <label className="block text-sm text-neutral-400 mb-2">
-              Grid Layout
+              {t("splitGrid.layout")}
             </label>
             <div className="flex gap-2">
               {LAYOUT_OPTIONS.map((layout, index) => {
@@ -237,36 +239,36 @@ export function SplitGridSettingsModal({
               })}
             </div>
             <p className="text-xs text-neutral-500 mt-2">
-              Grid will be split into {rows}x{cols} = {targetCount} images
+              {t("splitGrid.splitInfo", { rows, cols, count: targetCount })}
             </p>
           </div>
 
           {/* Default prompt */}
           <div>
             <label className="block text-sm text-neutral-400 mb-1">
-              Default Prompt
+              {t("splitGrid.defaultPrompt")}
             </label>
             <textarea
               value={defaultPrompt}
               onChange={(e) => setDefaultPrompt(e.target.value)}
-              placeholder="Enter prompt that will be applied to all generated images..."
+              placeholder={t("splitGrid.promptPlaceholder")}
               rows={3}
               className="w-full px-3 py-2 bg-neutral-900 border border-neutral-600 rounded text-neutral-100 text-sm focus:outline-none focus:border-neutral-500 resize-none"
             />
             <p className="text-xs text-neutral-500 mt-1">
-              Each prompt node can be edited individually after creation
+              {t("splitGrid.promptHint")}
             </p>
           </div>
 
           {/* Generate settings */}
           <div>
             <label className="block text-sm text-neutral-400 mb-2">
-              Generate Node Settings
+              {t("splitGrid.generateSettings")}
             </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-neutral-500 mb-1">
-                  Model
+                  {t("settingsPanel.model")}
                 </label>
                 <select
                   value={model}
@@ -294,7 +296,7 @@ export function SplitGridSettingsModal({
 
               <div>
                 <label className="block text-xs text-neutral-500 mb-1">
-                  Aspect Ratio
+                  {t("settingsPanel.aspectRatio")}
                 </label>
                 <select
                   value={aspectRatio}
@@ -359,13 +361,13 @@ export function SplitGridSettingsModal({
             onClick={onClose}
             className="px-4 py-2 text-sm text-neutral-400 hover:text-neutral-100 transition-colors"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             onClick={handleCreate}
             className="px-4 py-2 text-sm bg-white text-neutral-900 rounded hover:bg-neutral-200 transition-colors"
           >
-            Create {targetCount} Generate Sets
+            {t("splitGrid.createSets", { count: targetCount })}
           </button>
         </div>
       </div>

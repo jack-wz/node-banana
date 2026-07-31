@@ -9,6 +9,7 @@ import { useVideoBlobUrl } from "@/hooks/useVideoBlobUrl";
 import { downloadMedia } from "@/utils/downloadMedia";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 type VideoInputNodeType = Node<VideoInputNodeData, "videoInput">;
 
@@ -17,6 +18,7 @@ const ACCEPTED_FORMATS = "video/mp4,video/webm,video/quicktime";
 const ACCEPTED_MIME_TYPES = ACCEPTED_FORMATS.split(",");
 
 export function VideoInputNode({ id, data, selected }: NodeProps<VideoInputNodeType>) {
+  const t = useT();
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -139,7 +141,7 @@ export function VideoInputNode({ id, data, selected }: NodeProps<VideoInputNodeT
           />
           {nodeData.isOptional && (
             <span className="absolute bottom-2 left-2 text-[9px] font-medium text-neutral-300 bg-black/50 px-1.5 py-0.5 rounded">
-              Optional
+              {t("node.optional")}
             </span>
           )}
           <button
@@ -175,7 +177,7 @@ export function VideoInputNode({ id, data, selected }: NodeProps<VideoInputNodeT
           <svg className="w-8 h-8 text-neutral-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
           </svg>
-          <span className="text-xs text-neutral-500 mt-2">{nodeData.isOptional ? "Optional" : "Drop video or click"}</span>
+          <span className="text-xs text-neutral-500 mt-2">{nodeData.isOptional ? t("node.optional") : t("node.dropVideoClick")}</span>
         </div>
       )}
 

@@ -6,6 +6,7 @@ import { FTUXStepProps } from "@/types/ftux";
 import { ProviderType } from "@/types";
 import { EnvStatusResponse } from "@/app/api/env-status/route";
 import { useWorkflowStore } from "@/store/workflowStore";
+import { useT } from "@/i18n";
 
 // Provider icons
 const GeminiIcon = () => (
@@ -74,6 +75,7 @@ const providers: ProviderInfo[] = [
 ];
 
 export function FTUXApiKeysStep({}: FTUXStepProps) {
+  const t = useT();
   const updateProviderApiKey = useWorkflowStore((state) => state.updateProviderApiKey);
   const providerSettings = useWorkflowStore((state) => state.providerSettings);
   const [envStatus, setEnvStatus] = useState<EnvStatusResponse | null>(null);
@@ -131,7 +133,7 @@ export function FTUXApiKeysStep({}: FTUXStepProps) {
         API Keys
       </h3>
       <p className="text-sm text-neutral-400 mb-4">
-        Add keys here to use AI providers (stored in browser), or save them to your .env file for better security and persistence.
+        {t("ftux.apiKeysHint")}
       </p>
 
       <div className="space-y-2">
@@ -162,25 +164,25 @@ export function FTUXApiKeysStep({}: FTUXStepProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-neutral-400 hover:text-neutral-200 transition-colors"
-                      aria-label={`Get ${provider.name} API key`}
+                      aria-label={t("ftux.getApiKey", { name: provider.name })}
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </a>
                     <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-neutral-900 text-neutral-200 text-xs rounded border border-neutral-700 whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10">
-                      Get API key{(provider.id === "openai" || provider.id === "anthropic") && " • Used for LLM nodes only"}
+                      {t("ftux.getApiKeyShort")}{(provider.id === "openai" || provider.id === "anthropic") && t("ftux.llmOnly")}
                     </div>
                   </div>
                   {provider.isRecommended && (
-                    <span className="text-xs text-green-400 shrink-0">Recommended</span>
+                    <span className="text-xs text-green-400 shrink-0">{t("ftux.recommended")}</span>
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {hasKey ? (
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs text-green-400">
-                        Configured via .env
+                        {t("setup.configuredEnv")}
                       </span>
                       <svg
                         className="w-4 h-4 text-green-400"
@@ -201,7 +203,7 @@ export function FTUXApiKeysStep({}: FTUXStepProps) {
                       type={showKey[provider.id] ? "text" : "password"}
                       value={localKeys[provider.id]}
                       onChange={(e) => handleKeyChange(provider.id, e.target.value)}
-                      placeholder="Enter key..."
+                      placeholder={t("ftux.enterKey")}
                       className="w-32 px-2 py-1 bg-neutral-800 border border-neutral-600 rounded text-neutral-100 text-xs focus:outline-none focus:border-neutral-500"
                     />
                   )}
@@ -216,7 +218,7 @@ export function FTUXApiKeysStep({}: FTUXStepProps) {
                       }
                       className="text-xs text-neutral-400 hover:text-neutral-200"
                     >
-                      {showKey[provider.id] ? "Hide" : "Show"}
+                      {showKey[provider.id] ? t("setup.hide") : t("setup.show")}
                     </button>
                   )}
                 </div>

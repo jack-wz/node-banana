@@ -6,6 +6,7 @@ import { getAllPresets, PRESET_TEMPLATES } from "@/lib/quickstart/templates";
 import { QuickstartBackButton } from "./QuickstartBackButton";
 import { TemplateCard } from "./TemplateCard";
 import { CommunityWorkflowMeta, TemplateCategory, TemplateMetadata } from "@/types/quickstart";
+import { useT } from "@/i18n";
 
 interface TemplateExplorerViewProps {
   onBack: () => void;
@@ -14,17 +15,18 @@ interface TemplateExplorerViewProps {
 
 type CategoryFilter = "all" | TemplateCategory;
 
-const CATEGORY_OPTIONS: { id: CategoryFilter; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "simple", label: "Simple" },
-  { id: "advanced", label: "Advanced" },
-  { id: "community", label: "Community" },
+const CATEGORY_OPTIONS: { id: CategoryFilter; labelKey: string }[] = [
+  { id: "all", labelKey: "tpl.catAll" },
+  { id: "simple", labelKey: "tpl.catSimple" },
+  { id: "advanced", labelKey: "tpl.catAdvanced" },
+  { id: "community", labelKey: "tpl.catCommunity" },
 ];
 
 export function TemplateExplorerView({
   onBack,
   onWorkflowSelected,
 }: TemplateExplorerViewProps) {
+  const t = useT();
   const [communityWorkflows, setCommunityWorkflows] = useState<CommunityWorkflowMeta[]>([]);
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [loadingWorkflowId, setLoadingWorkflowId] = useState<string | null>(null);
@@ -230,7 +232,7 @@ export function TemplateExplorerView({
         const result = await response.json();
 
         if (!result.success) {
-          throw new Error(result.error || "Failed to load template");
+          throw new Error(result.error || t("tpl.errLoadTemplate"));
         }
 
         if (result.workflow) {
@@ -238,7 +240,7 @@ export function TemplateExplorerView({
         }
       } catch (err) {
         console.error("Error loading preset:", err);
-        setError(err instanceof Error ? err.message : "Failed to load template");
+        setError(err instanceof Error ? err.message : t("tpl.errLoadTemplate"));
       } finally {
         setLoadingWorkflowId(null);
       }
@@ -257,20 +259,20 @@ export function TemplateExplorerView({
         const result = await response.json();
 
         if (!result.success || !result.downloadUrl) {
-          throw new Error(result.error || "Failed to get download URL");
+          throw new Error(result.error || t("tpl.errDownloadUrl"));
         }
 
         // Step 2: Download workflow directly from R2
         const workflowResponse = await fetch(result.downloadUrl);
         if (!workflowResponse.ok) {
-          throw new Error("Failed to download workflow");
+          throw new Error(t("tpl.errDownload"));
         }
 
         const workflow = await workflowResponse.json();
         onWorkflowSelected(workflow);
       } catch (err) {
         console.error("Error loading community workflow:", err);
-        setError(err instanceof Error ? err.message : "Failed to load workflow");
+        setError(err instanceof Error ? err.message : t("tpl.errLoadWorkflow"));
       } finally {
         setLoadingWorkflowId(null);
       }
@@ -286,7 +288,7 @@ export function TemplateExplorerView({
       <div className="flex-shrink-0 px-6 py-4 border-b border-neutral-700 flex items-center gap-4">
         <QuickstartBackButton onClick={onBack} disabled={isLoading} />
         <h2 className="text-lg font-semibold text-neutral-100">
-          Template Explorer
+          {t("tpl.title")}
         </h2>
       </div>
 
@@ -313,7 +315,7 @@ export function TemplateExplorerView({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search templates..."
+              placeholder={t("tpl.searchPlaceholder")}
               className="w-full pl-8 pr-3 py-2 text-sm bg-neutral-700/50 border border-neutral-600 rounded-lg text-neutral-200 placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -321,7 +323,7 @@ export function TemplateExplorerView({
           {/* Category Filters */}
           <div className="space-y-2">
             <h3 className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
-              Category
+              {t("tpl.category")}
             </h3>
             <div className="flex flex-col gap-1">
               {CATEGORY_OPTIONS.map((option) => (
@@ -337,7 +339,7 @@ export function TemplateExplorerView({
                     }
                   `}
                 >
-                  {option.label}
+                  {t(option.labelKey)}
                 </button>
               ))}
             </div>
@@ -346,7 +348,7 @@ export function TemplateExplorerView({
           {/* Provider Tags */}
           <div className="space-y-2">
             <h3 className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
-              Provider
+              {t("tpl.provider")}
             </h3>
             <div className="flex flex-col gap-1">
               {availableTags.map((tag) => (
@@ -374,7 +376,7 @@ export function TemplateExplorerView({
               onClick={clearFilters}
               className="w-full px-3 py-1.5 text-xs font-medium text-neutral-400 hover:text-neutral-300 bg-neutral-700/30 hover:bg-neutral-700/50 rounded-md transition-colors"
             >
-              Clear filters
+              {t("tpl.clearFilters")}
             </button>
           )}
         </div>
@@ -398,16 +400,16 @@ export function TemplateExplorerView({
                 />
               </svg>
               <h3 className="text-sm font-medium text-neutral-300 mb-1">
-                No templates match your filters
+                {t("tpl.noMatch")}
               </h3>
               <p className="text-xs text-neutral-500 mb-4">
-                Try adjusting your search or filters
+                {t("tpl.noMatchHint")}
               </p>
               <button
                 onClick={clearFilters}
                 className="px-4 py-2 text-sm font-medium text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg transition-colors"
               >
-                Clear all filters
+                {t("tpl.clearAllFilters")}
               </button>
             </div>
           )}
@@ -416,7 +418,7 @@ export function TemplateExplorerView({
           {filteredPresets.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
-                Quick Start
+                {t("tpl.quickStart")}
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 {filteredPresets.map((preset) => (
@@ -444,7 +446,7 @@ export function TemplateExplorerView({
           {(filteredCommunity.length > 0 || (isLoadingList && (categoryFilter === "all" || categoryFilter === "community"))) && (
             <div className="space-y-3">
               <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
-                Community Workflows
+                {t("tpl.community")}
               </h3>
 
               {isLoadingList ? (
@@ -495,16 +497,16 @@ export function TemplateExplorerView({
 
               {/* Discord CTA */}
               <p className="text-xs text-neutral-500 mt-3">
-                Want to share your workflow?{" "}
+                {t("tpl.sharePrompt")}{" "}
                 <a
                   href="https://discord.com/invite/89Nr6EKkTf"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-purple-400 hover:text-purple-300 underline"
                 >
-                  Join our Discord
+                  {t("tpl.joinDiscord")}
                 </a>{" "}
-                to submit it to the community templates.
+                {t("tpl.shareSuffix")}
               </p>
             </div>
           )}
@@ -531,7 +533,7 @@ export function TemplateExplorerView({
                   onClick={() => setError(null)}
                   className="text-xs text-red-400/70 hover:text-red-400 mt-1"
                 >
-                  Dismiss
+                  {t("toast.dismiss")}
                 </button>
               </div>
             </div>

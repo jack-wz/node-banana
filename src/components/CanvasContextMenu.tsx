@@ -10,6 +10,7 @@
 import { useEffect, useRef } from "react";
 import { NodeType } from "@/types";
 import { ALL_NODES_CATEGORIES } from "./FloatingActionBar";
+import { useT, nodeCategoryKey } from "@/i18n";
 import { HandleTypeIcon, nodeTypeToIconType } from "./nodes/HandleTypeIcon";
 
 export interface CanvasContextMenuState {
@@ -69,6 +70,7 @@ export function CanvasContextMenu({
   onDelete,
   onClose,
 }: CanvasContextMenuProps) {
+  const t = useT();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -103,17 +105,17 @@ export function CanvasContextMenu({
       {menu.mode === "pane" ? (
         <div className="max-h-[340px] overflow-y-auto">
           <div className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
-            Add node
+            {t("contextMenu.addNode")}
           </div>
           {ALL_NODES_CATEGORIES.map((category) => (
             <div key={category.label}>
               <div className="px-3 pt-2 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-600">
-                {category.label}
+                {t(nodeCategoryKey(category.label))}
               </div>
               {category.nodes.map((node) => (
                 <MenuItem
                   key={node.type}
-                  label={node.label}
+                  label={t(`nodeType.${node.type}`)}
                   icon={<HandleTypeIcon type={nodeTypeToIconType(node.type)} size={12} />}
                   onClick={() => {
                     onAddNode(node.type, menu.x, menu.y);
@@ -128,7 +130,7 @@ export function CanvasContextMenu({
         nodeId && (
           <>
             <MenuItem
-              label="Duplicate"
+              label={t("contextMenu.duplicate")}
               shortcut="⌘D"
               onClick={() => {
                 onDuplicate(nodeId);
@@ -136,14 +138,14 @@ export function CanvasContextMenu({
               }}
             />
             <MenuItem
-              label="Rename"
+              label={t("contextMenu.rename")}
               onClick={() => {
                 onRename(nodeId);
                 onClose();
               }}
             />
             <MenuItem
-              label={nodeLocked ? "Unlock" : "Lock"}
+              label={nodeLocked ? t("contextMenu.unlock") : t("contextMenu.lock")}
               onClick={() => {
                 onToggleLock(nodeId);
                 onClose();
@@ -151,7 +153,7 @@ export function CanvasContextMenu({
             />
             <div className="my-1 border-t border-neutral-700/60" />
             <MenuItem
-              label="Delete"
+              label={t("contextMenu.delete")}
               shortcut="⌫"
               danger
               onClick={() => {

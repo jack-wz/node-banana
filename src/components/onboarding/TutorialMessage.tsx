@@ -1,6 +1,7 @@
 "use client";
 
 import { useTypewriter } from "@/hooks/useTypewriter";
+import { useT } from "@/i18n";
 
 interface TutorialLink {
   text: string;
@@ -19,6 +20,7 @@ interface TutorialMessageProps {
  * Positioned based on the position prop (left, right, center, or top-center).
  */
 export function TutorialMessage({ message, position = "center", waitForClick = false, links }: TutorialMessageProps) {
+  const t = useT();
   const { displayedText } = useTypewriter(message, 25);
 
   const positionClasses = {
@@ -48,7 +50,7 @@ export function TutorialMessage({ message, position = "center", waitForClick = f
       )}
       {waitForClick && (
         <p className="mt-3 text-xs text-neutral-400 text-center italic">
-          Click anywhere to continue
+          {t("tutorial.clickAnywhere")}
         </p>
       )}
     </div>

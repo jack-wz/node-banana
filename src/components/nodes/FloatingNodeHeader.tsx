@@ -8,6 +8,7 @@ import { useWorkflowStore } from "@/store/workflowStore";
 import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
 import { ProviderBadge } from "./ProviderBadge";
 import { HandleTypeIcon, nodeTypeToIconType } from "./HandleTypeIcon";
+import { useT } from "@/i18n";
 
 export interface CommentNavigationProps {
   currentIndex: number;
@@ -75,6 +76,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
   onCommentChange,
   commentNavigation,
 }: FloatingNodeHeaderProps) {
+  const t = useT();
   const canRun = RUNNABLE_TYPES.has(type);
   const canExpand = EXPANDABLE_TYPES.has(type);
   const [isHeaderHovered, setIsHeaderHovered] = useState(false);
@@ -360,14 +362,14 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
               onChange={(e) => setEditTitleValue(e.target.value)}
               onBlur={handleTitleSubmit}
               onKeyDown={handleTitleKeyDown}
-              placeholder="Custom title..."
+              placeholder={t("node.customTitle")}
               className="nodrag nopan w-full bg-transparent border-none outline-none text-xs font-semibold tracking-wide text-neutral-300 placeholder:text-neutral-500 uppercase"
             />
           ) : (
             <span
               className="nodrag text-xs font-semibold uppercase tracking-wide text-neutral-400 cursor-text truncate"
               onClick={() => setIsEditingTitle(true)}
-              title="Click to edit title"
+              title={t("node.clickToEditTitle")}
             >
               {customTitle ? `${customTitle} - ${title}` : title}
             </span>
@@ -390,7 +392,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
 
           {/* Lock Badge for nodes in locked groups */}
           {isInLockedGroup && (
-            <div className="shrink-0 flex items-center" title="This node is in a locked group and will be skipped during execution">
+            <div className="shrink-0 flex items-center" title={t("node.lockedGroup")}>
               <svg className="w-3.5 h-3.5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
@@ -412,7 +414,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                   ? "text-blue-400 hover:text-blue-200"
                   : "text-neutral-500 hover:text-neutral-200 border border-neutral-600"
               }`}
-              title={comment ? "Edit comment" : "Add comment"}
+              title={comment ? t("node.editComment") : t("node.addComment")}
             >
               {comment ? (
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
@@ -444,7 +446,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                         commentNavigation.onPrevious();
                       }}
                       className="nodrag nopan w-6 h-6 flex items-center justify-center text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors"
-                      title="Previous comment"
+                      title={t("node.prevComment")}
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -459,7 +461,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                         commentNavigation.onNext();
                       }}
                       className="nodrag nopan w-6 h-6 flex items-center justify-center text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors"
-                      title="Next comment"
+                      title={t("node.nextComment")}
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -481,7 +483,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                   value={editCommentValue}
                   onChange={(e) => setEditCommentValue(e.target.value)}
                   onKeyDown={handleCommentKeyDown}
-                  placeholder="Add a comment..."
+                  placeholder={t("node.addCommentPlaceholder")}
                   autoFocus
                   className="nodrag nopan nowheel w-full h-20 p-2 text-xs text-neutral-100 bg-neutral-900/50 border border-neutral-700 rounded resize-none focus:outline-none focus:ring-1 focus:ring-neutral-600"
                 />
@@ -512,7 +514,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
               <button
                 onClick={() => onExpandNode(id, type)}
                 className="nodrag nopan p-0.5 rounded transition-all duration-200 ease-in-out text-neutral-500 group-hover:text-neutral-200 border border-neutral-600 flex items-center overflow-hidden group-hover:pr-2"
-                title="Expand editor"
+                title={t("node.expandEditor")}
               >
                 <svg
                   className="w-3.5 h-3.5 flex-shrink-0"
@@ -542,7 +544,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                 onClick={() => onRunNode(id)}
                 disabled={isExecuting}
                 className="nodrag nopan p-0.5 rounded transition-all duration-200 ease-in-out text-neutral-500 group-hover:text-neutral-200 border border-neutral-600 flex items-center overflow-hidden group-hover:pr-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Run this node"
+                title={t("node.runThis")}
               >
                 <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
@@ -556,7 +558,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
           </div>
 
           {/* Node type badge — always visible (Weavy header style) */}
-          <div className="shrink-0 flex items-center pl-0.5" title={`Node type: ${type}`}>
+          <div className="shrink-0 flex items-center pl-0.5" title={t("node.typeTitle", { type })}>
             <HandleTypeIcon type={nodeTypeToIconType(type)} size={12} />
           </div>
         </div>

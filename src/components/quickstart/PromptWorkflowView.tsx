@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { WorkflowFile } from "@/store/workflowStore";
 import { QuickstartBackButton } from "./QuickstartBackButton";
+import { useT } from "@/i18n";
 
 interface PromptWorkflowViewProps {
   onBack: () => void;
@@ -13,13 +14,14 @@ export function PromptWorkflowView({
   onBack,
   onWorkflowGenerated,
 }: PromptWorkflowViewProps) {
+  const t = useT();
   const [description, setDescription] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleGenerate = useCallback(async () => {
     if (!description || description.trim().length < 3) {
-      setError("Please describe your workflow (at least 3 characters)");
+      setError(t("promptFlow.errTooShort"));
       return;
     }
 
@@ -39,7 +41,7 @@ export function PromptWorkflowView({
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.error || "Failed to generate workflow");
+        throw new Error(result.error || t("promptFlow.errGenerate"));
       }
 
       if (result.workflow) {
@@ -48,7 +50,7 @@ export function PromptWorkflowView({
     } catch (err) {
       console.error("Prompt workflow error:", err);
       setError(
-        err instanceof Error ? err.message : "Failed to generate workflow"
+        err instanceof Error ? err.message : t("promptFlow.errGenerate")
       );
     } finally {
       setIsGenerating(false);
@@ -72,7 +74,7 @@ export function PromptWorkflowView({
         {/* Description Input */}
         <div className="space-y-2">
           <label className="text-xs font-medium text-neutral-400">
-            Describe your workflow
+            {t("promptFlow.heading")}
           </label>
           <textarea
             value={description}
@@ -80,7 +82,7 @@ export function PromptWorkflowView({
               setDescription(e.target.value);
               setError(null);
             }}
-            placeholder="e.g., Create product photography with consistent lighting and style from reference images..."
+            placeholder={t("promptFlow.placeholder")}
             disabled={isGenerating}
             rows={5}
             className={`
@@ -92,11 +94,10 @@ export function PromptWorkflowView({
             `}
           />
           <p className="text-xs text-neutral-400">
-            Describe what you want your workflow to accomplish. Be specific
-            about inputs, outputs, and any transformations.
+            {t("promptFlow.hint")}
           </p>
           <p className="text-xs text-neutral-400">
-            Note: This feature currently only works with Gemini models.
+            {t("promptFlow.geminiNote")}
           </p>
         </div>
 
@@ -122,7 +123,7 @@ export function PromptWorkflowView({
                 onClick={() => setError(null)}
                 className="text-xs text-red-400/70 hover:text-red-400 mt-1"
               >
-                Dismiss
+                {t("toast.dismiss")}
               </button>
             </div>
           </div>
@@ -164,7 +165,7 @@ export function PromptWorkflowView({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
-              <span>Generating...</span>
+              <span>{t("promptFlow.generating")}</span>
             </>
           ) : (
             <>
@@ -181,7 +182,7 @@ export function PromptWorkflowView({
                   d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"
                 />
               </svg>
-              <span>Generate Workflow</span>
+              <span>{t("promptFlow.generate")}</span>
             </>
           )}
         </button>

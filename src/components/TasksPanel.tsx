@@ -10,15 +10,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { HandleTypeIcon, nodeTypeToIconType } from "./nodes/HandleTypeIcon";
-
-const STATUS_LABEL: Record<string, string> = {
-  loading: "Running",
-  complete: "Done",
-  error: "Failed",
-  skipped: "Skipped",
-};
+import { useT } from "@/i18n";
 
 export function TasksPanel() {
+  const t = useT();
+  const STATUS_LABEL: Record<string, string> = {
+    loading: t("tasks.running"),
+    complete: t("tasks.complete"),
+    error: t("tasks.error"),
+    skipped: t("tasks.skipped"),
+  };
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   // `?? []` keeps the panel safe in tests that mock the store with partial state
@@ -67,9 +68,9 @@ export function TasksPanel() {
         className={`relative px-2 py-1 text-xs font-medium rounded transition-colors ${
           open ? "bg-neutral-700 text-neutral-100" : "text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700/60"
         }`}
-        title="Tasks"
+        title={t("tasks.title")}
       >
-        Tasks
+        {t("tasks.title")}
         {(runningCount > 0 || isRunning) && (
           <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 flex items-center justify-center text-[9px] font-semibold text-neutral-900 bg-neutral-100 rounded-full">
             {runningCount || "…"}
@@ -80,12 +81,12 @@ export function TasksPanel() {
       {open && (
         <div className="absolute top-full right-0 mt-2 w-64 bg-[#1b1b1f] border border-neutral-700/60 rounded-xl shadow-xl overflow-hidden">
           <div className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-neutral-500 border-b border-neutral-800">
-            Tasks
+            {t("tasks.title")}
           </div>
           <div className="max-h-[300px] overflow-y-auto py-1">
             {tasks.length === 0 ? (
               <div className="px-3 py-6 text-xs text-neutral-500 text-center">
-                No tasks yet — run a node to see it here.
+                {t("tasks.empty")}
               </div>
             ) : (
               tasks.map((task) => (

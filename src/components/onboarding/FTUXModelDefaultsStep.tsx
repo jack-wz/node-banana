@@ -6,6 +6,7 @@ import { NodeDefaultsConfig } from "@/types";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { ProviderModel } from "@/lib/providers/types";
 import { loadNodeDefaults, saveNodeDefaults } from "@/store/utils/localStorage";
+import { useT } from "@/i18n";
 
 // Provider icons
 const GeminiIcon = () => (
@@ -52,6 +53,7 @@ const getProviderIcon = (provider: string) => {
 };
 
 export function FTUXModelDefaultsStep({}: FTUXStepProps) {
+  const t = useT();
   const [localDefaults, setLocalDefaults] = useState<NodeDefaultsConfig>({});
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [showVideoDialog, setShowVideoDialog] = useState(false);
@@ -65,17 +67,17 @@ export function FTUXModelDefaultsStep({}: FTUXStepProps) {
   return (
     <div className="py-6 px-6">
       <h3 className="text-lg font-semibold text-neutral-100 mb-2">
-        Choose Your Models
+        {t("ftux.chooseModels")}
       </h3>
       <p className="text-sm text-neutral-400 mb-4">
-        Pick your default AI models for images and videos. You can change these later.
+        {t("ftux.chooseModelsHint")}
       </p>
 
       <div className="space-y-3">
         {/* Default Image Model */}
         <div className="p-3 bg-neutral-900 rounded-lg border border-neutral-700">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-neutral-100">Default Image Model</span>
+            <span className="text-sm font-medium text-neutral-100">{t("setup.defaultImageModel")}</span>
             <div className="flex items-center gap-2">
               {localDefaults.generateImage?.selectedModel ? (
                 <>
@@ -90,8 +92,8 @@ export function FTUXModelDefaultsStep({}: FTUXStepProps) {
                     onClick={() => setShowImageDialog(true)}
                     className="px-2 py-1 text-xs bg-neutral-700 hover:bg-neutral-600 text-neutral-200 rounded transition-colors"
                   >
-                    Change
-                  </button>
+{t("setup.change")}
+          </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -101,18 +103,18 @@ export function FTUXModelDefaultsStep({}: FTUXStepProps) {
                     }}
                     className="text-xs text-neutral-400 hover:text-neutral-200"
                   >
-                    Clear
+                    {t("setup.clear")}
                   </button>
                 </>
               ) : (
                 <>
-                  <span className="text-xs text-neutral-400">None set</span>
+                  <span className="text-xs text-neutral-400">{t("ftux.noneSet")}</span>
                   <button
                     type="button"
                     onClick={() => setShowImageDialog(true)}
                     className="px-2 py-1 text-xs bg-neutral-700 hover:bg-neutral-600 text-neutral-200 rounded transition-colors"
                   >
-                    Select
+                    {t("ftux.select")}
                   </button>
                 </>
               )}
@@ -123,7 +125,7 @@ export function FTUXModelDefaultsStep({}: FTUXStepProps) {
         {/* Default Video Model */}
         <div className="p-3 bg-neutral-900 rounded-lg border border-neutral-700">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-neutral-100">Default Video Model</span>
+            <span className="text-sm font-medium text-neutral-100">{t("setup.defaultVideoModel")}</span>
             <div className="flex items-center gap-2">
               {localDefaults.generateVideo?.selectedModel ? (
                 <>
@@ -138,8 +140,8 @@ export function FTUXModelDefaultsStep({}: FTUXStepProps) {
                     onClick={() => setShowVideoDialog(true)}
                     className="px-2 py-1 text-xs bg-neutral-700 hover:bg-neutral-600 text-neutral-200 rounded transition-colors"
                   >
-                    Change
-                  </button>
+{t("setup.change")}
+          </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -149,18 +151,18 @@ export function FTUXModelDefaultsStep({}: FTUXStepProps) {
                     }}
                     className="text-xs text-neutral-400 hover:text-neutral-200"
                   >
-                    Clear
+                    {t("setup.clear")}
                   </button>
                 </>
               ) : (
                 <>
-                  <span className="text-xs text-neutral-400">None set</span>
+                  <span className="text-xs text-neutral-400">{t("ftux.noneSet")}</span>
                   <button
                     type="button"
                     onClick={() => setShowVideoDialog(true)}
                     className="px-2 py-1 text-xs bg-neutral-700 hover:bg-neutral-600 text-neutral-200 rounded transition-colors"
                   >
-                    Select
+                    {t("ftux.select")}
                   </button>
                 </>
               )}

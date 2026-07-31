@@ -18,6 +18,7 @@ import type {
   WorkflowNode,
 } from "@/types";
 import { HandleTypeIcon, nodeTypeToIconType } from "./nodes/HandleTypeIcon";
+import { useT } from "@/i18n";
 import { calculateGenerationCost, formatCost } from "@/utils/costCalculator";
 
 const SUPPORTED_TYPES = new Set(["nanoBanana", "llmGenerate"]);
@@ -36,6 +37,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 function GenerateImageSettings({ node }: { node: WorkflowNode }) {
+  const t = useT();
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const data = node.data as NanoBananaNodeData;
   const currentModelId = data.selectedModel?.modelId || data.model;
@@ -46,14 +48,14 @@ function GenerateImageSettings({ node }: { node: WorkflowNode }) {
   return (
     <div className="space-y-4">
       <div>
-        <SectionLabel>Model</SectionLabel>
+        <SectionLabel>{t("settingsPanel.model")}</SectionLabel>
         <div className="text-sm text-neutral-200 truncate">
           {data.selectedModel?.displayName || data.model}
         </div>
       </div>
 
       <div>
-        <SectionLabel>Aspect Ratio</SectionLabel>
+        <SectionLabel>{t("settingsPanel.aspectRatio")}</SectionLabel>
         <div className="grid grid-cols-5 gap-1">
           {aspectRatios.map((ratio) => (
             <button
@@ -73,7 +75,7 @@ function GenerateImageSettings({ node }: { node: WorkflowNode }) {
 
       {isPro && (
         <div>
-          <SectionLabel>Resolution</SectionLabel>
+          <SectionLabel>{t("settingsPanel.resolution")}</SectionLabel>
           <div className="grid grid-cols-4 gap-1">
             {resolutions.map((res) => (
               <button
@@ -93,7 +95,7 @@ function GenerateImageSettings({ node }: { node: WorkflowNode }) {
       )}
 
       <div>
-        <SectionLabel>Runs</SectionLabel>
+        <SectionLabel>{t("settingsPanel.runs")}</SectionLabel>
         <div className="grid grid-cols-4 gap-1">
           {[1, 2, 3, 4].map((count) => (
             <button
@@ -110,7 +112,9 @@ function GenerateImageSettings({ node }: { node: WorkflowNode }) {
           ))}
         </div>
         <div className="mt-1 text-[10px] text-neutral-500">
-          Generate {(data.runs ?? 1) > 1 ? `${data.runs} images` : "1 image"} per run
+          {(data.runs ?? 1) > 1
+            ? t("settingsPanel.perRunMany", { count: data.runs ?? 1 })
+            : t("settingsPanel.perRunOne")}
         </div>
       </div>
 
@@ -122,7 +126,7 @@ function GenerateImageSettings({ node }: { node: WorkflowNode }) {
             onChange={(e) => updateNodeData(node.id, { useGoogleSearch: e.target.checked })}
             className="accent-neutral-200"
           />
-          Google Search grounding
+          {t("settingsPanel.searchGrounding")}
         </label>
         {currentModelId === "nano-banana-2" && (
           <label className="flex items-center gap-2 text-sm text-neutral-300 cursor-pointer">
@@ -132,7 +136,7 @@ function GenerateImageSettings({ node }: { node: WorkflowNode }) {
               onChange={(e) => updateNodeData(node.id, { useImageSearch: e.target.checked })}
               className="accent-neutral-200"
             />
-            Image Search
+            {t("settingsPanel.imageSearch")}
           </label>
         )}
       </div>
@@ -141,20 +145,21 @@ function GenerateImageSettings({ node }: { node: WorkflowNode }) {
 }
 
 function LLMSettings({ node }: { node: WorkflowNode }) {
+  const t = useT();
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const data = node.data as LLMGenerateNodeData;
 
   return (
     <div className="space-y-4">
       <div>
-        <SectionLabel>Provider / Model</SectionLabel>
+        <SectionLabel>{t("settingsPanel.providerModel")}</SectionLabel>
         <div className="text-sm text-neutral-200 truncate">
           {data.provider} · {data.model}
         </div>
       </div>
 
       <div>
-        <SectionLabel>Temperature — {data.temperature.toFixed(2)}</SectionLabel>
+        <SectionLabel>{t("settingsPanel.temperature")} — {data.temperature.toFixed(2)}</SectionLabel>
         <input
           type="range"
           min={0}
@@ -167,7 +172,7 @@ function LLMSettings({ node }: { node: WorkflowNode }) {
       </div>
 
       <div>
-        <SectionLabel>Max Tokens</SectionLabel>
+        <SectionLabel>{t("settingsPanel.maxTokens")}</SectionLabel>
         <input
           type="number"
           min={1}
@@ -184,6 +189,7 @@ function LLMSettings({ node }: { node: WorkflowNode }) {
 }
 
 export function NodeSettingsPanel() {
+  const t = useT();
   const nodes = useWorkflowStore(useShallow((state) => state.nodes));
   const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
   const isRunning = useWorkflowStore((state) => state.isRunning);
@@ -223,9 +229,9 @@ export function NodeSettingsPanel() {
             <div className="min-w-0">
               <div className="text-sm font-medium text-neutral-100 truncate">
                 {(selectedNode.data as { customTitle?: string }).customTitle ||
-                  (selectedNode.type === "nanoBanana" ? "Generate Image" : "LLM Generate")}
+                  (selectedNode.type === "nanoBanana" ? t("settingsPanel.generateImage") : t("settingsPanel.llmGenerate"))}
               </div>
-              <div className="text-[10px] text-neutral-500">Node settings</div>
+              <div className="text-[10px] text-neutral-500">{t("settingsPanel.nodeSettings")}</div>
             </div>
           </div>
           <div className="flex-1 overflow-y-auto p-3">
@@ -241,7 +247,9 @@ export function NodeSettingsPanel() {
               {runSummary && (
                 <div className="flex items-center justify-between text-[11px] text-neutral-400">
                   <span>
-                    {runSummary.runs} run{runSummary.runs === 1 ? "" : "s"} × {formatCost(runSummary.perRun)}
+                    {runSummary.runs === 1
+                      ? t("settingsPanel.runUnit1", { unit: formatCost(runSummary.perRun) })
+                      : t("settingsPanel.runUnitN", { runs: runSummary.runs, unit: formatCost(runSummary.perRun) })}
                   </span>
                   <span className="text-neutral-200 font-medium tabular-nums">
                     {formatCost(runSummary.total)}
@@ -253,7 +261,7 @@ export function NodeSettingsPanel() {
                 disabled={isRunning}
                 className="w-full py-1.5 text-sm font-medium bg-neutral-100 text-neutral-900 rounded-lg hover:bg-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {isRunning ? "Running…" : "Run selected"}
+                {isRunning ? t("settingsPanel.running") : t("settingsPanel.runSelected")}
               </button>
             </div>
         </>

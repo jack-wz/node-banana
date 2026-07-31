@@ -7,8 +7,10 @@ import { FTUXWelcomeStep } from "./FTUXWelcomeStep";
 import { FTUXApiKeysStep } from "./FTUXApiKeysStep";
 import { FTUXModelDefaultsStep } from "./FTUXModelDefaultsStep";
 import { FTUXReadyStep } from "./FTUXReadyStep";
+import { useT } from "@/i18n";
 
 export function FTUXModal({ onComplete, onStartTutorial }: FTUXModalProps) {
+  const t = useT();
   const [currentStep, setCurrentStep] = useState<FTUXStep>(1);
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
 
@@ -41,21 +43,21 @@ export function FTUXModal({ onComplete, onStartTutorial }: FTUXModalProps) {
   const getStepTitle = () => {
     switch (currentStep) {
       case 1:
-        return "Welcome";
+        return t("ftux.stepWelcome");
       case 2:
-        return "API Keys";
+        return t("ftux.stepApiKeys");
       case 3:
-        return "Model Defaults";
+        return t("ftux.stepModelDefaults");
       case 4:
-        return "Ready";
+        return t("ftux.stepReady");
       default:
         return "";
     }
   };
 
   const getButtonText = () => {
-    if (currentStep === 4) return "Get Started";
-    return "Next";
+    if (currentStep === 4) return t("ftux.getStarted");
+    return t("ftux.next");
   };
 
   return (
@@ -71,14 +73,14 @@ export function FTUXModal({ onComplete, onStartTutorial }: FTUXModalProps) {
               <div className="flex items-center gap-2">
                 <img src="/banana_icon.png" alt="" className="w-6 h-6" />
                 <h2 className="text-xl font-medium text-neutral-100">
-                  Welcome to Node Banana
+                  {t("ftux.welcomeTitle")}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setShowSkipConfirm(true)}
                 className="text-neutral-400 hover:text-neutral-100 transition-colors"
-                aria-label="Close"
+                aria-label={t("common.close")}
               >
                 <svg
                   className="w-5 h-5"
@@ -134,7 +136,7 @@ export function FTUXModal({ onComplete, onStartTutorial }: FTUXModalProps) {
                 currentStep === 1 ? "opacity-0 pointer-events-none" : ""
               }`}
             >
-              Back
+              {t("common.back")}
             </button>
             <button
               type="button"
@@ -151,10 +153,10 @@ export function FTUXModal({ onComplete, onStartTutorial }: FTUXModalProps) {
           <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10">
             <div className="bg-neutral-800 rounded-xl p-6 border border-neutral-700 shadow-2xl max-w-sm mx-4">
               <h3 className="text-lg font-semibold text-neutral-100 mb-2">
-                Skip setup?
+                {t("ftux.skipTitle")}
               </h3>
               <p className="text-sm text-neutral-400 mb-4">
-                You can configure API keys and model defaults later in settings.
+                {t("ftux.skipHint")}
               </p>
               <div className="flex gap-2 justify-end">
                 <button
@@ -162,14 +164,14 @@ export function FTUXModal({ onComplete, onStartTutorial }: FTUXModalProps) {
                   onClick={() => setShowSkipConfirm(false)}
                   className="px-4 py-2 text-sm text-neutral-400 hover:text-neutral-100 transition-colors"
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </button>
                 <button
                   type="button"
                   onClick={handleSkip}
                   className="px-4 py-2 text-sm bg-white text-neutral-900 rounded-lg hover:bg-neutral-200 transition-colors"
                 >
-                  Skip
+                  {t("ftux.skip")}
                 </button>
               </div>
             </div>

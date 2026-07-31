@@ -18,10 +18,12 @@ import { ALL_NODES_CATEGORIES } from "./FloatingActionBar";
 import { HandleTypeIcon, nodeTypeToIconType } from "./nodes/HandleTypeIcon";
 import { loadPresets, applyPreset, deletePreset, WorkflowPreset } from "@/utils/presets";
 import { loadHistory, restoreSnapshot, deleteSnapshot, VersionSnapshot } from "@/utils/versionHistory";
+import { useT, nodeCategoryKey } from "@/i18n";
 
 type Tab = "nodes" | "presets" | "history";
 
 export function LibraryPanel() {
+  const t = useT();
   const libraryOpen = usePanelStore((state) => state.libraryOpen);
   const libraryFilter = usePanelStore((state) => state.libraryFilter);
   const setLibraryFilter = usePanelStore((state) => state.setLibraryFilter);
@@ -93,7 +95,7 @@ export function LibraryPanel() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search..."
+          placeholder={t("library.searchPlaceholder")}
           className="w-full bg-neutral-800/70 text-sm text-neutral-100 placeholder:text-neutral-500 rounded-lg px-3 py-1.5 outline-none focus:ring-1 focus:ring-neutral-500"
         />
       </div>
@@ -106,7 +108,7 @@ export function LibraryPanel() {
             className="flex items-center gap-1.5 px-2 py-1 text-[11px] bg-neutral-700/60 text-neutral-200 rounded hover:bg-neutral-700 transition-colors"
           >
             <HandleTypeIcon type={libraryFilter} size={10} />
-            {libraryFilter}
+            {t(`iconRail.${libraryFilter === "3d" ? "3d" : libraryFilter}Nodes`)}
             <span className="text-neutral-400">×</span>
           </button>
         </div>
@@ -114,17 +116,17 @@ export function LibraryPanel() {
 
       {/* Tabs */}
       <div className="flex items-center gap-1 px-3 pt-3 pb-2 border-b border-neutral-800">
-        {(["nodes", "presets", "history"] as Tab[]).map((t) => (
+        {(["nodes", "presets", "history"] as Tab[]).map((tabId) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={tabId}
+            onClick={() => setTab(tabId)}
             className={`px-2.5 py-1 text-[11px] font-medium rounded transition-colors ${
-              tab === t
+              tab === tabId
                 ? "bg-neutral-700/70 text-neutral-100"
                 : "text-neutral-400 hover:text-neutral-200"
             }`}
           >
-            {t === "nodes" ? "Nodes" : t === "presets" ? "Presets" : "History"}
+            {tabId === "nodes" ? t("library.tabNodes") : tabId === "presets" ? t("library.tabPresets") : t("library.tabHistory")}
           </button>
         ))}
       </div>
@@ -132,12 +134,12 @@ export function LibraryPanel() {
       {tab === "nodes" ? (
         <div className="flex-1 overflow-y-auto py-2">
           {visibleCategories.length === 0 && (
-            <div className="px-4 py-8 text-xs text-neutral-500 text-center">No matching nodes</div>
+            <div className="px-4 py-8 text-xs text-neutral-500 text-center">{t("library.noMatches")}</div>
           )}
           {visibleCategories.map((category) => (
             <div key={category.label} className="mb-1">
               <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
-                {category.label}
+                {t(nodeCategoryKey(category.label))}
               </div>
               {/* Weavy tile grid: 3 columns of square tiles, centered white */}
               {/* glyph with label underneath (see screenshots/02-toolbox-panel) */}
@@ -148,12 +150,12 @@ export function LibraryPanel() {
                     draggable
                     onDragStart={(e) => handleDragStart(e, node.type)}
                     onClick={() => handleAddNode(node.type)}
-                    title={node.label}
+                    title={t(`nodeType.${node.type}`)}
                     className="flex flex-col items-center justify-center gap-1 aspect-square bg-[#212126] hover:bg-[#2a2a31] rounded-lg border border-neutral-700/40 hover:border-neutral-600 transition-colors cursor-grab active:cursor-grabbing"
                   >
                     <HandleTypeIcon type={nodeTypeToIconType(node.type)} color="#e5e5e5" size={18} />
                     <span className="text-[9px] leading-tight text-neutral-400 text-center px-1 line-clamp-2">
-                      {node.label}
+                      {t(`nodeType.${node.type}`)}
                     </span>
                   </button>
                 ))}
@@ -165,13 +167,9 @@ export function LibraryPanel() {
         <div className="flex-1 overflow-y-auto py-2">
           {presets.length === 0 ? (
             <div className="px-4 py-8 text-xs text-neutral-500 text-center leading-relaxed">
-              No presets yet.
+              {t("library.noPresets")}
               <br />
-              Select nodes, then use
-              <br />
-              "Save as preset" from the
-              <br />
-              multi-select toolbar.
+              {t("library.noPresetsHint")}
             </div>
           ) : (
             presets.map((preset) => (
@@ -184,11 +182,13 @@ export function LibraryPanel() {
                     applyPreset(preset);
                   }}
                   className="flex-1 min-w-0 text-left"
-                  title={`Insert ${preset.nodes.length} node(s)`}
+                  title={t("library.insertPreset", { count: preset.nodes.length })}
                 >
                   <div className="text-sm text-neutral-200 truncate">{preset.name}</div>
                   <div className="text-[10px] text-neutral-500">
-                    {preset.nodes.length} node{preset.nodes.length === 1 ? "" : "s"}
+                    {preset.nodes.length === 1
+                      ? t("library.presetNode", { count: preset.nodes.length })
+                      : t("library.presetNodes", { count: preset.nodes.length })}
                   </div>
                 </button>
                 <button
@@ -197,7 +197,7 @@ export function LibraryPanel() {
                     setPresets(loadPresets());
                   }}
                   className="opacity-0 group-hover:opacity-100 p-1 text-neutral-500 hover:text-red-400 transition-all"
-                  title="Delete preset"
+                  title={t("library.deletePreset")}
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -211,11 +211,9 @@ export function LibraryPanel() {
         <div className="flex-1 overflow-y-auto py-2">
           {history.length === 0 ? (
             <div className="px-4 py-8 text-xs text-neutral-500 text-center leading-relaxed">
-              No snapshots yet.
+              {t("library.noHistory")}
               <br />
-              Snapshots are captured
-              <br />
-              automatically as you edit.
+              {t("library.noHistoryHint")}
             </div>
           ) : (
             history.map((snapshot) => (
@@ -225,18 +223,18 @@ export function LibraryPanel() {
               >
                 <button
                   onClick={() => {
-                    if (window.confirm("Restore this snapshot? Current canvas will be replaced.")) {
+                    if (window.confirm(t("library.restoreConfirm"))) {
                       restoreSnapshot(snapshot.id);
                     }
                   }}
                   className="flex-1 min-w-0 text-left"
-                  title="Restore this snapshot"
+                  title={t("library.restoreSnapshot")}
                 >
                   <div className="text-sm text-neutral-200 truncate">
                     {new Date(snapshot.at).toLocaleString()}
                   </div>
                   <div className="text-[10px] text-neutral-500">
-                    {snapshot.nodeCount} nodes · {snapshot.edgeCount} edges
+                    {t("library.snapshotStats", { nodes: snapshot.nodeCount, edges: snapshot.edgeCount })}
                   </div>
                 </button>
                 <button
@@ -245,7 +243,7 @@ export function LibraryPanel() {
                     setHistory(loadHistory());
                   }}
                   className="opacity-0 group-hover:opacity-100 p-1 text-neutral-500 hover:text-red-400 transition-all"
-                  title="Delete snapshot"
+                  title={t("library.deleteSnapshot")}
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -255,7 +253,7 @@ export function LibraryPanel() {
             ))
           )}
           <div className="px-4 py-3 text-[10px] text-neutral-600 leading-relaxed border-t border-neutral-800 mt-2">
-            Snapshots keep structure and parameters; inline media is not included.
+            {t("library.historyNote")}
           </div>
         </div>
       )}

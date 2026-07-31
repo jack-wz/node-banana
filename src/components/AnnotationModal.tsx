@@ -14,6 +14,7 @@ import {
   ToolType,
 } from "@/types";
 import Konva from "konva";
+import { useT } from "@/i18n";
 
 const COLORS = [
   "#ef4444",
@@ -29,6 +30,7 @@ const COLORS = [
 const STROKE_WIDTHS = [2, 4, 8];
 
 export function AnnotationModal() {
+  const t = useT();
   const {
     isModalOpen,
     sourceNodeId,
@@ -400,12 +402,12 @@ export function AnnotationModal() {
   if (!isModalOpen) return null;
 
   const tools: { type: ToolType; label: string }[] = [
-    { type: "select", label: "Select" },
-    { type: "rectangle", label: "Rect" },
-    { type: "circle", label: "Circle" },
-    { type: "arrow", label: "Arrow" },
-    { type: "freehand", label: "Draw" },
-    { type: "text", label: "Text" },
+    { type: "select", label: t("annot.select") },
+    { type: "rectangle", label: t("annot.rect") },
+    { type: "circle", label: t("annot.circle") },
+    { type: "arrow", label: t("annot.arrow") },
+    { type: "freehand", label: t("annot.draw") },
+    { type: "text", label: t("annot.text") },
   ];
 
   return (
@@ -429,20 +431,20 @@ export function AnnotationModal() {
 
           <div className="w-px h-6 bg-neutral-700 mx-3" />
 
-          <button onClick={undo} className="px-3 py-1.5 text-xs text-neutral-400 hover:text-white">Undo</button>
-          <button onClick={redo} className="px-3 py-1.5 text-xs text-neutral-400 hover:text-white">Redo</button>
+          <button onClick={undo} className="px-3 py-1.5 text-xs text-neutral-400 hover:text-white">{t("common.undo")}</button>
+          <button onClick={redo} className="px-3 py-1.5 text-xs text-neutral-400 hover:text-white">{t("common.redo")}</button>
 
           <div className="w-px h-6 bg-neutral-700 mx-3" />
 
-          <button onClick={clearAnnotations} className="px-3 py-1.5 text-xs text-neutral-400 hover:text-red-400">Clear</button>
+          <button onClick={clearAnnotations} className="px-3 py-1.5 text-xs text-neutral-400 hover:text-red-400">{t("setup.clear")}</button>
         </div>
 
         <div className="flex items-center gap-3">
           <button onClick={closeModal} className="px-4 py-1.5 text-xs font-medium text-neutral-400 hover:text-white">
-            Cancel
+            {t("common.cancel")}
           </button>
           <button onClick={handleDone} className="px-4 py-1.5 text-xs font-medium bg-white text-neutral-900 rounded hover:bg-neutral-200">
-            Done
+            {t("annot.done")}
           </button>
         </div>
       </div>
@@ -478,7 +480,7 @@ export function AnnotationModal() {
       <div className="h-14 bg-neutral-900 flex items-center justify-center gap-6 px-4 border-t border-neutral-800">
         {/* Colors */}
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-neutral-500 uppercase tracking-wide mr-1">Color</span>
+          <span className="text-[10px] text-neutral-500 uppercase tracking-wide mr-1">{t("annot.color")}</span>
           {COLORS.map((color) => (
             <button
               key={color}
@@ -495,7 +497,7 @@ export function AnnotationModal() {
 
         {/* Stroke Width */}
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-neutral-500 uppercase tracking-wide mr-1">Size</span>
+          <span className="text-[10px] text-neutral-500 uppercase tracking-wide mr-1">{t("annot.size")}</span>
           {STROKE_WIDTHS.map((width) => (
             <button
               key={width}

@@ -10,8 +10,10 @@ import { memo, useCallback } from "react";
 import { NodeProps, NodeResizer } from "@xyflow/react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { WorkflowNode, StickyNoteNodeData } from "@/types";
+import { useT } from "@/i18n";
 
 export const StickyNoteNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>) => {
+  const t = useT();
   const nodeData = data as StickyNoteNodeData;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
 
@@ -53,7 +55,7 @@ export const StickyNoteNode = memo(({ id, data, selected }: NodeProps<WorkflowNo
       <textarea
         value={nodeData.text ?? ""}
         onChange={handleChange}
-        placeholder="Write a note…"
+        placeholder={t("node.stickyPlaceholder")}
         className="nodrag nopan nowheel w-full h-[calc(100%-32px)] px-3 pb-3 bg-transparent resize-none outline-none text-sm text-neutral-100 placeholder:text-neutral-500"
       />
     </div>

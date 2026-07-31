@@ -10,10 +10,12 @@ import { useAudioPlayback } from "@/hooks/useAudioPlayback";
 import { downloadMedia } from "@/utils/downloadMedia";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 type AudioInputNodeType = Node<AudioInputNodeData, "audioInput">;
 
 export function AudioInputNode({ id, data, selected }: NodeProps<AudioInputNodeType>) {
+  const t = useT();
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -149,7 +151,7 @@ export function AudioInputNode({ id, data, selected }: NodeProps<AudioInputNodeT
         <div className="relative group flex-1 flex flex-col min-h-0 gap-2">
           {nodeData.isOptional && (
             <span className="absolute top-1 left-1 z-10 text-[9px] font-medium text-neutral-300 bg-black/50 px-1.5 py-0.5 rounded">
-              Optional
+              {t("node.optional")}
             </span>
           )}
           {/* Filename and duration */}
@@ -253,7 +255,7 @@ export function AudioInputNode({ id, data, selected }: NodeProps<AudioInputNodeT
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z" />
           </svg>
           <span className="text-xs text-neutral-500 mt-2">
-            {nodeData.isOptional ? "Optional" : "Drop audio or click"}
+            {nodeData.isOptional ? t("node.optional") : t("node.dropAudioClick")}
           </span>
         </div>
       )}

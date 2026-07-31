@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { NodeType } from "@/types";
+import { useT } from "@/i18n";
 
 // Actions are special menu items that trigger behavior instead of creating a node
 export type MenuAction = "splitGridImmediate";
@@ -682,6 +683,7 @@ export function ConnectionDropMenu({
   onSelect,
   onClose,
 }: ConnectionDropMenuProps) {
+  const t = useT();
   const menuRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -771,7 +773,7 @@ export function ConnectionDropMenu({
     >
       <div className="px-2 py-1.5 border-b border-neutral-700">
         <span className="text-[10px] text-neutral-400 uppercase tracking-wide">
-          Add {handleType} node
+          {t("dropMenu.addTypeNode", { type: handleType ?? "" })}
         </span>
       </div>
       <div className="py-1">
@@ -788,16 +790,20 @@ export function ConnectionDropMenu({
             }`}
           >
             {option.icon}
-            {option.label}
+            {option.isAction
+              ? t("dropMenu.splitGridNow")
+              : option.type === "splitGrid"
+              ? t("dropMenu.splitGridNode")
+              : t(`nodeType.${option.type}`)}
           </button>
         ))}
       </div>
       <div className="px-2 py-1.5 border-t border-neutral-700 flex items-center justify-between">
         <span className="text-[9px] text-neutral-500">
-          <kbd className="px-1 py-0.5 bg-neutral-700 rounded text-[8px]">↑↓</kbd> navigate
+          <kbd className="px-1 py-0.5 bg-neutral-700 rounded text-[8px]">↑↓</kbd> {t("dropMenu.navigate")}
         </span>
         <span className="text-[9px] text-neutral-500">
-          <kbd className="px-1 py-0.5 bg-neutral-700 rounded text-[8px]">↵</kbd> select
+          <kbd className="px-1 py-0.5 bg-neutral-700 rounded text-[8px]">↵</kbd> {t("dropMenu.select")}
         </span>
       </div>
     </div>

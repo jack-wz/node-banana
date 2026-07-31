@@ -1,5 +1,7 @@
 "use client";
 
+import { useT } from "@/i18n";
+
 interface QuickstartBackButtonProps {
   onClick: () => void;
   disabled?: boolean;
@@ -9,6 +11,7 @@ export function QuickstartBackButton({
   onClick,
   disabled = false,
 }: QuickstartBackButtonProps) {
+  const t = useT();
   return (
     <button
       onClick={onClick}
@@ -32,7 +35,7 @@ export function QuickstartBackButton({
           d="M10 19l-7-7m0 0l7-7m-7 7h18"
         />
       </svg>
-      <span>Back</span>
+      <span>{t("common.back")}</span>
     </button>
   );
 }
