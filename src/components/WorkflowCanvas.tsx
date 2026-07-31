@@ -47,12 +47,15 @@ import {
   RouterNode,
   SwitchNode,
   ConditionalSwitchNode,
+  StickyNoteNode,
 } from "./nodes";
 
 // Lazy-load GLBViewerNode to avoid bundling three.js for users who don't use 3D nodes
 const GLBViewerNode = dynamic(() => import("./nodes/GLBViewerNode").then(mod => ({ default: mod.GLBViewerNode })), { ssr: false });
 import { EditableEdge, ReferenceEdge, SharedEdgeGradients } from "./edges";
 import { ConnectionDropMenu, MenuAction } from "./ConnectionDropMenu";
+import { NodePickerMenu } from "./NodePickerMenu";
+import { CanvasContextMenu, CanvasContextMenuState } from "./CanvasContextMenu";
 import { MultiSelectToolbar } from "./MultiSelectToolbar";
 import { EdgeToolbar } from "./EdgeToolbar";
 import { GlobalImageHistory } from "./GlobalImageHistory";
@@ -110,6 +113,7 @@ const nodeTypes: NodeTypes = {
   switch: SwitchNode,
   conditionalSwitch: ConditionalSwitchNode,
   glbViewer: GLBViewerNode,
+  stickyNote: StickyNoteNode,
 };
 
 const edgeTypes: EdgeTypes = {
@@ -305,6 +309,7 @@ export function WorkflowCanvas() {
   const onConnect = useWorkflowStore((state) => state.onConnect);
   const addNode = useWorkflowStore((state) => state.addNode);
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
+  const updateCanvasNavigationSettings = useWorkflowStore((state) => state.updateCanvasNavigationSettings);
   const loadWorkflow = useWorkflowStore((state) => state.loadWorkflow);
   const getNodeById = useWorkflowStore((state) => state.getNodeById);
   const addToGlobalHistory = useWorkflowStore((state) => state.addToGlobalHistory);
@@ -320,7 +325,7 @@ export function WorkflowCanvas() {
   const clearWorkflow = useWorkflowStore((state) => state.clearWorkflow);
   const setHoveredNodeId = useWorkflowStore((state) => state.setHoveredNodeId);
   const openAnnotationModal = useAnnotationStore((state) => state.openModal);
-  const { screenToFlowPosition, getViewport, zoomIn, zoomOut, setViewport, setCenter } = useReactFlow();
+  const { screenToFlowPosition, getViewport, zoomIn, zoomOut, zoomTo, fitView, setViewport, setCenter } = useReactFlow();
   const { show: showToast } = useToast();
   const [isDragOver, setIsDragOver] = useState(false);
   const [dropType, setDropType] = useState<"image" | "audio" | "workflow" | "node" | null>(null);
@@ -330,6 +335,12 @@ export function WorkflowCanvas() {
   const [isBuildingWorkflow, setIsBuildingWorkflow] = useState(false);
   const [showNewProjectSetup, setShowNewProjectSetup] = useState(false);
   const [expandingNode, setExpandingNode] = useState<{ id: string; type: string } | null>(null);
+
+  // Weavy-parity: Tab node picker + right-click context menus
+  const [nodePicker, setNodePicker] = useState<{ x: number; y: number } | null>(null);
+  const [contextMenu, setContextMenu] = useState<CanvasContextMenuState | null>(null);
+  const lastMouseRef = useRef({ x: 0, y: 0 });
+  const importInputRef = useRef<HTMLInputElement>(null);
 
   // Fallback model picker state
   const [fallbackDialogState, setFallbackDialogState] = useState<
@@ -478,6 +489,7 @@ export function WorkflowCanvas() {
     switch: 'Switch',
     conditionalSwitch: 'Conditional Switch',
     glbViewer: '3D Viewer',
+    stickyNote: 'Note',
   };
 
   // Helper to get node title (used for FloatingNodeHeader)
@@ -1429,6 +1441,9 @@ export function WorkflowCanvas() {
   const copySelectedNodes = useWorkflowStore((state) => state.copySelectedNodes);
   const pasteNodes = useWorkflowStore((state) => state.pasteNodes);
   const clearClipboard = useWorkflowStore((state) => state.clearClipboard);
+  const removeNode = useWorkflowStore((state) => state.removeNode);
+  const toggleNodeLock = useWorkflowStore((state) => state.toggleNodeLock);
+  const reconnectEdge = useWorkflowStore((state) => state.reconnectEdge);
   const clipboard = useWorkflowStore((state) => state.clipboard);
   const undo = useWorkflowStore((state) => state.undo);
   const redo = useWorkflowStore((state) => state.redo);
@@ -1525,6 +1540,71 @@ export function WorkflowCanvas() {
       return;
     }
 
+    // Tab — open node picker at last mouse position (Weavy parity)
+    if (event.key === "Tab" && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      if (!isModalOpen) {
+        event.preventDefault();
+        setContextMenu(null);
+        setNodePicker({
+          x: lastMouseRef.current.x || window.innerWidth / 2,
+          y: lastMouseRef.current.y || window.innerHeight / 2,
+        });
+      }
+      return;
+    }
+
+    // Cmd/Ctrl + P — new Prompt node at viewport center (Weavy parity)
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "p") {
+      event.preventDefault();
+      const viewport = getViewport();
+      const centerX = (-viewport.x + window.innerWidth / 2) / viewport.zoom;
+      const centerY = (-viewport.y + window.innerHeight / 2) / viewport.zoom;
+      // Prompt node default dimensions: 460x220 (Weavy standard width)
+      addNode("prompt", { x: centerX - 230, y: centerY - 110 });
+      return;
+    }
+
+    // Cmd/Ctrl + I — import workflow JSON (Weavy parity)
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "i") {
+      event.preventDefault();
+      importInputRef.current?.click();
+      return;
+    }
+
+    // Cmd/Ctrl + D — duplicate selected nodes (Weavy parity)
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "d") {
+      event.preventDefault();
+      copySelectedNodes();
+      pasteNodes();
+      return;
+    }
+
+    // Cmd/Ctrl + 0 — zoom to 100% (Weavy parity)
+    if ((event.ctrlKey || event.metaKey) && event.key === "0") {
+      event.preventDefault();
+      zoomTo(1, { duration: 200 });
+      return;
+    }
+
+    // Cmd/Ctrl + "+" / "-" — zoom in / out (Weavy parity)
+    if ((event.ctrlKey || event.metaKey) && (event.key === "=" || event.key === "+")) {
+      event.preventDefault();
+      zoomIn({ duration: 150 });
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key === "-") {
+      event.preventDefault();
+      zoomOut({ duration: 150 });
+      return;
+    }
+
+    // Shift + 1 — fit view (Weavy parity)
+    if (event.key === "!" && event.shiftKey && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault();
+      fitView({ duration: 200, padding: 0.1 });
+      return;
+    }
+
     // Handle workflow execution (Ctrl/Cmd + Enter)
     if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
       event.preventDefault();
@@ -1598,34 +1678,7 @@ export function WorkflowCanvas() {
           event.preventDefault();
           const { centerX, centerY } = getViewportCenter();
           // Offset by half the default node dimensions to center it
-          const defaultDimensions: Record<NodeType, { width: number; height: number }> = {
-            imageInput: { width: 300, height: 280 },
-            audioInput: { width: 300, height: 200 },
-            videoInput: { width: 300, height: 280 },
-            annotation: { width: 300, height: 280 },
-            prompt: { width: 320, height: 220 },
-            array: { width: 360, height: 360 },
-            promptConstructor: { width: 340, height: 280 },
-            nanoBanana: { width: 300, height: 300 },
-            generateVideo: { width: 300, height: 300 },
-            generate3d: { width: 300, height: 300 },
-            generateAudio: { width: 300, height: 280 },
-            llmGenerate: { width: 320, height: 360 },
-            splitGrid: { width: 300, height: 320 },
-            output: { width: 320, height: 320 },
-            outputGallery: { width: 320, height: 360 },
-            imageCompare: { width: 400, height: 360 },
-            videoStitch: { width: 400, height: 280 },
-            easeCurve: { width: 340, height: 480 },
-            videoTrim: { width: 360, height: 360 },
-            videoFrameGrab: { width: 320, height: 320 },
-            removeBackground: { width: 320, height: 320 },
-            router: { width: 200, height: 80 },
-            switch: { width: 220, height: 120 },
-            conditionalSwitch: { width: 260, height: 180 },
-            glbViewer: { width: 360, height: 380 },
-          };
-          const dims = defaultDimensions[nodeType];
+          const dims = defaultNodeDimensions[nodeType];
           addNode(nodeType, { x: centerX - dims.width / 2, y: centerY - dims.height / 2 });
           return;
         }
@@ -1674,8 +1727,8 @@ export function WorkflowCanvas() {
                     const centerX = (-viewport.x + window.innerWidth / 2) / viewport.zoom;
                     const centerY = (-viewport.y + window.innerHeight / 2) / viewport.zoom;
 
-                    // ImageInput node default dimensions: 300x280
-                    const nodeId = addNode("imageInput", { x: centerX - 150, y: centerY - 140 });
+                    // ImageInput node default dimensions: 460x280 (Weavy standard width)
+                    const nodeId = addNode("imageInput", { x: centerX - 230, y: centerY - 140 });
                     updateNodeData(nodeId, {
                       image: dataUrl,
                       filename: `pasted-${Date.now()}.png`,
@@ -1697,8 +1750,8 @@ export function WorkflowCanvas() {
                 const viewport = getViewport();
                 const centerX = (-viewport.x + window.innerWidth / 2) / viewport.zoom;
                 const centerY = (-viewport.y + window.innerHeight / 2) / viewport.zoom;
-                // Prompt node default dimensions: 320x220
-                const nodeId = addNode("prompt", { x: centerX - 160, y: centerY - 110 });
+                // Prompt node default dimensions: 460x220 (Weavy standard width)
+                const nodeId = addNode("prompt", { x: centerX - 230, y: centerY - 110 });
                 updateNodeData(nodeId, { prompt: text });
                 return; // Exit after handling text
               }
@@ -1710,12 +1763,30 @@ export function WorkflowCanvas() {
         return;
       }
 
+      // Weavy tool switching: V = navigate/select tool, H = pan tool
+      if (!event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) {
+        const toolKey = event.key.toLowerCase();
+        if (toolKey === "v") {
+          updateCanvasNavigationSettings({ ...canvasNavigationSettings, panMode: "space" });
+          return;
+        }
+        if (toolKey === "h") {
+          updateCanvasNavigationSettings({ ...canvasNavigationSettings, panMode: "always" });
+          return;
+        }
+      }
+
       const selectedNodes = nodes.filter((node) => node.selected);
       if (selectedNodes.length < 2) return;
 
       const STACK_GAP = 20;
 
-      if (event.key === "v" || event.key === "V") {
+      // Stacking shortcuts moved to Alt+V/H/G (V/H are Weavy tool-switch keys).
+      // Alt+letter produces macOS special chars in event.key, so match event.code.
+      const stackKey =
+        event.altKey && !event.ctrlKey && !event.metaKey ? event.code : null;
+
+      if (stackKey === "KeyV") {
         // Stack vertically - sort by current y position to maintain relative order
         const sortedNodes = [...selectedNodes].sort((a, b) => a.position.y - b.position.y);
 
@@ -1737,7 +1808,7 @@ export function WorkflowCanvas() {
 
           currentY += nodeHeight + STACK_GAP;
         });
-      } else if (event.key === "h" || event.key === "H") {
+      } else if (stackKey === "KeyH") {
         // Stack horizontally - sort by current x position to maintain relative order
         const sortedNodes = [...selectedNodes].sort((a, b) => a.position.x - b.position.x);
 
@@ -1759,7 +1830,7 @@ export function WorkflowCanvas() {
 
           currentX += nodeWidth + STACK_GAP;
         });
-      } else if (event.key === "g" || event.key === "G") {
+      } else if (stackKey === "KeyG") {
         // Arrange as grid
         const count = selectedNodes.length;
         const cols = Math.ceil(Math.sqrt(count));
@@ -1801,7 +1872,7 @@ export function WorkflowCanvas() {
           ]);
         });
       }
-  }, [nodes, onNodesChange, copySelectedNodes, pasteNodes, clearClipboard, clipboard, getViewport, addNode, updateNodeData, executeWorkflow, setShortcutsDialogOpen, undo, redo]);
+  }, [nodes, onNodesChange, copySelectedNodes, pasteNodes, clearClipboard, clipboard, getViewport, addNode, updateNodeData, updateCanvasNavigationSettings, canvasNavigationSettings, executeWorkflow, setShortcutsDialogOpen, undo, redo, isModalOpen, zoomTo, fitView, zoomIn, zoomOut]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -2044,10 +2115,13 @@ export function WorkflowCanvas() {
   return (
     <div
       ref={reactFlowWrapper}
-      className={`flex-1 bg-canvas-bg relative ${isDragOver ? "ring-2 ring-inset ring-blue-500" : ""}`}
+      className={`h-full bg-canvas-bg relative ${isDragOver ? "ring-2 ring-inset ring-blue-500" : ""}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      onMouseMove={(e) => {
+        lastMouseRef.current = { x: e.clientX, y: e.clientY };
+      }}
     >
       {/* Drop overlay indicator */}
       {isDragOver && (
@@ -2074,6 +2148,75 @@ export function WorkflowCanvas() {
             <p className="text-neutral-200 text-sm font-medium">Splitting image grid...</p>
           </div>
         </div>
+      )}
+
+      {/* Hidden file input for ⌘I workflow import */}
+      <input
+        ref={importInputRef}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = async (ev) => {
+            try {
+              const workflow = JSON.parse(ev.target?.result as string) as WorkflowFile;
+              if (workflow.version && workflow.nodes && workflow.edges) {
+                await loadWorkflow(workflow);
+              } else {
+                alert("Invalid workflow file format");
+              }
+            } catch {
+              alert("Failed to parse workflow file");
+            }
+          };
+          reader.readAsText(file);
+        }}
+      />
+
+      {/* Tab node picker (Weavy parity) */}
+      {nodePicker && (
+        <NodePickerMenu
+          x={nodePicker.x}
+          y={nodePicker.y}
+          onSelect={(type) => {
+            const position = screenToFlowPosition({ x: nodePicker.x, y: nodePicker.y });
+            addNode(type, position);
+            setNodePicker(null);
+          }}
+          onClose={() => setNodePicker(null)}
+        />
+      )}
+
+      {/* Right-click context menus (Weavy parity) */}
+      {contextMenu && (
+        <CanvasContextMenu
+          menu={contextMenu}
+          nodeLocked={
+            contextMenu.nodeId
+              ? getNodeById(contextMenu.nodeId)?.draggable === false
+              : false
+          }
+          onAddNode={(type, screenX, screenY) => {
+            addNode(type, screenToFlowPosition({ x: screenX, y: screenY }));
+          }}
+          onDuplicate={(nodeId) => {
+            onNodesChange(
+              nodes.map((n) => ({ type: "select" as const, id: n.id, selected: n.id === nodeId }))
+            );
+            copySelectedNodes();
+            pasteNodes();
+          }}
+          onRename={(nodeId) => {
+            window.dispatchEvent(new CustomEvent("nb:rename-node", { detail: { id: nodeId } }));
+          }}
+          onToggleLock={toggleNodeLock}
+          onDelete={removeNode}
+          onClose={() => setContextMenu(null)}
+        />
       )}
 
       {/* Welcome Modal */}
@@ -2115,11 +2258,22 @@ export function WorkflowCanvas() {
         onEdgesChange={onEdgesChange}
         onConnect={handleConnect}
         onConnectEnd={handleConnectEnd}
+        onReconnect={reconnectEdge}
         onMoveStart={() => { isPanningRef.current = true; setHoveredNodeId(null); document.documentElement.classList.add("canvas-interacting"); }}
         onMoveEnd={() => { isPanningRef.current = false; document.documentElement.classList.remove("canvas-interacting"); }}
         onNodeDragStart={() => { isDraggingNodeRef.current = true; document.documentElement.classList.add("canvas-interacting"); }}
         onNodeDragStop={(event, node) => { isDraggingNodeRef.current = false; document.documentElement.classList.remove("canvas-interacting"); handleNodeDragStop(event, node); }}
-        onSelectionChange={handleSelectionChange}
+      onSelectionChange={handleSelectionChange}
+        onPaneContextMenu={(event) => {
+          event.preventDefault();
+          setNodePicker(null);
+          setContextMenu({ x: event.clientX, y: event.clientY, mode: "pane" });
+        }}
+        onNodeContextMenu={(event, node) => {
+          event.preventDefault();
+          setNodePicker(null);
+          setContextMenu({ x: event.clientX, y: event.clientY, mode: "node", nodeId: node.id });
+        }}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         isValidConnection={isValidConnection}
@@ -2181,13 +2335,16 @@ export function WorkflowCanvas() {
         <GroupBackgroundsPortal />
         <GroupControlsOverlay />
         <Background
-          color="#404040"
-          gap={20}
-          size={1}
+          color="#65616b"
+          gap={10}
+          size={0.25}
           className={tutorialActive && lockedFeatures ? "opacity-30 pointer-events-none" : ""}
         />
-        <Controls className={`bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg [&>button]:bg-neutral-800 [&>button]:border-neutral-700 [&>button]:fill-neutral-300 [&>button:hover]:bg-neutral-700 [&>button:hover]:fill-neutral-100 ${tutorialActive && lockedFeatures ? "opacity-30 pointer-events-none" : ""}`} />
-        <MiniMap
+        {/* Weavy parity: no React Flow Controls / MiniMap chrome — zoom lives in the
+            bottom toolbar zoom menu (⌘+/⌘-/⌘0/⇧1), navigation is scroll/pan based.
+            See docs/weavy-research/01-weavy-product-analysis.md §4. */}
+        {false && <Controls className={`bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg [&>button]:bg-neutral-800 [&>button]:border-neutral-700 [&>button]:fill-neutral-300 [&>button:hover]:bg-neutral-700 [&>button:hover]:fill-neutral-100 ${tutorialActive && lockedFeatures ? "opacity-30 pointer-events-none" : ""}`} />}
+        {false && <MiniMap
           className={`bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg ${tutorialActive && lockedFeatures ? "opacity-30 pointer-events-none" : ""}`}
           maskColor="rgba(0, 0, 0, 0.6)"
           pannable
@@ -2248,7 +2405,7 @@ export function WorkflowCanvas() {
                 return "#94a3b8";
             }
           }}
-        />
+        />}
         <ViewportPortal>
           {allNodes.map((node) => {
             // Groups don't get floating headers

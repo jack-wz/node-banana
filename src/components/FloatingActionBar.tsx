@@ -8,8 +8,8 @@ import { useReactFlow } from "@xyflow/react";
 import { ModelSearchDialog } from "./modals/ModelSearchDialog";
 import { useFTUXStore, TutorialStep } from "@/store/ftuxStore";
 
-// All nodes menu categories
-const ALL_NODES_CATEGORIES: { label: string; nodes: { type: NodeType; label: string }[] }[] = [
+// All nodes menu categories — shared with NodePickerMenu / CanvasContextMenu / LibraryPanel
+export const ALL_NODES_CATEGORIES: { label: string; nodes: { type: NodeType; label: string }[] }[] = [
   {
     label: "Input",
     nodes: [
@@ -25,6 +25,7 @@ const ALL_NODES_CATEGORIES: { label: string; nodes: { type: NodeType; label: str
       { type: "prompt", label: "Prompt" },
       { type: "promptConstructor", label: "Prompt Constructor" },
       { type: "array", label: "Array" },
+      { type: "stickyNote", label: "Sticky Note" },
     ],
   },
   {
@@ -483,7 +484,7 @@ export function FloatingActionBar() {
 
   return (
     <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50">
-      <div className="flex items-center gap-0.5 bg-neutral-800/95 rounded-lg shadow-lg border border-neutral-700/80 px-1.5 py-1">
+      <div className="flex items-center gap-0.5 bg-[#1b1b1f]/95 backdrop-blur-md rounded-lg shadow-lg border border-neutral-700/60 px-1.5 py-1">
         <NodeButton type="imageInput" label="Image" dataTutorial="image-button" />
         <NodeButton type="videoInput" label="Video" />
         <NodeButton type="prompt" label="Prompt" dataTutorial="prompt-button" />

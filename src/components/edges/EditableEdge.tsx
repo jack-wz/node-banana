@@ -11,26 +11,12 @@ import {
 import { useWorkflowStore } from "@/store/workflowStore";
 import { NanoBananaNodeData, WorkflowEdgeData } from "@/types";
 import { getSharedGradientId } from "./SharedEdgeGradients";
+import { getHandleColor, EDGE_STATE_COLORS } from "@/utils/handleColors";
 
 interface EdgeData extends WorkflowEdgeData {
   offsetX?: number;
   offsetY?: number;
 }
-
-// Colors for different connection types (dimmed for softer appearance)
-const EDGE_COLORS: Record<string, string> = {
-  image: "#0d9668", // Green for image connections
-  prompt: "#2563eb", // Blue for prompt connections
-  default: "#64748b", // Gray for unknown
-  pause: "#ea580c", // Orange for paused edges
-  reference: "#52525b", // Gray for reference connections
-  video: "#ec4899", // Pink for video connections
-  audio: "#f97316", // Orange for audio connections
-  text: "#2563eb", // Blue for text connections
-  "3d": "#06b6d4", // Cyan for 3D connections
-  easeCurve: "#f59e0b", // Amber for ease curve connections
-  loop: "#d946ef", // Magenta for loop edges
-};
 
 export function EditableEdge({
   id,
@@ -72,16 +58,18 @@ export function EditableEdge({
     return (targetNode.data as NanoBananaNodeData).status === "loading";
   });
 
-  // Determine edge color based on handle type (magenta for loop edges, orange if paused)
+  // Determine edge color based on handle type (magenta for loop edges, amber if paused)
   const edgeColor = useMemo(() => {
-    if (edgeData?.isLoop) return EDGE_COLORS.loop;
-    if (hasPause) return EDGE_COLORS.pause;
-    // Use source handle to determine color (or target if source is not available)
-    // Strip numeric suffixes (e.g., "image-0" -> "image") for lookup
-    const handleType = sourceHandleId || targetHandleId || "";
-    const normalizedType = handleType.replace(/-\d+$/, "");
-    return EDGE_COLORS[normalizedType] || EDGE_COLORS.default;
+    if (edgeData?.isLoop) return EDGE_STATE_COLORS.loop;
+    if (hasPause) return EDGE_STATE_COLORS.pause;
+    return getHandleColor(sourceHandleId || targetHandleId);
   }, [edgeData?.isLoop, hasPause, sourceHandleId, targetHandleId]);
+
+  // Weavy signature: edge gradient runs from the SOURCE handle type color
+  // to the TARGET handle type color (per-edge, userSpaceOnUse).
+  const sourceColor = useMemo(() => getHandleColor(sourceHandleId), [sourceHandleId]);
+  const targetColor = useMemo(() => getHandleColor(targetHandleId), [targetHandleId]);
+  const pairGradientId = `nb-edge-grad-${id}`;
 
   // Reference shared gradient by color key + selection state
   const gradientId = useMemo(() => {
@@ -93,13 +81,12 @@ export function EditableEdge({
       const selectionKey = isConnectedToSelection ? "active" : "dimmed";
       return getSharedGradientId("pause", selectionKey);
     }
-    const handleType = sourceHandleId || targetHandleId || "default";
-    const normalizedType = handleType.replace(/-\d+$/, "");
-    // Use the normalized type if it exists in EDGE_COLORS, otherwise fall back to "default"
-    const colorKey = normalizedType in EDGE_COLORS ? normalizedType : "default";
-    const selectionKey = isConnectedToSelection ? "active" : "dimmed";
-    return getSharedGradientId(colorKey, selectionKey);
-  }, [edgeData?.isLoop, hasPause, sourceHandleId, targetHandleId, isConnectedToSelection]);
+    // Normal edges use the per-edge source→target pair gradient
+    return pairGradientId;
+  }, [edgeData?.isLoop, hasPause, pairGradientId]);
+
+  // Dim non-special edges slightly when they are not connected to the current selection
+  const edgeOpacity = edgeData?.isLoop || hasPause ? 1 : isConnectedToSelection ? 1 : 0.55;
 
   // Calculate the path based on edge style
   const [edgePath, labelX, labelY] = useMemo(() => {
@@ -220,6 +207,22 @@ export function EditableEdge({
 
   return (
     <>
+      {/* Per-edge source→target type-color gradient (Weavy signature) */}
+      {!edgeData?.isLoop && !hasPause && (
+        <defs>
+          <linearGradient
+            id={pairGradientId}
+            gradientUnits="userSpaceOnUse"
+            x1={sourceX}
+            y1={sourceY}
+            x2={targetX}
+            y2={targetY}
+          >
+            <stop offset="0%" stopColor={sourceColor} />
+            <stop offset="100%" stopColor={targetColor} />
+          </linearGradient>
+        </defs>
+      )}
       <BaseEdge
         id={id}
         path={edgePath}
@@ -227,9 +230,10 @@ export function EditableEdge({
         style={{
           ...style,
           stroke: `url(#${gradientId})`,
-          strokeWidth: 3,
+          strokeWidth: 2,
           strokeLinecap: "round",
           strokeLinejoin: "round",
+          opacity: edgeOpacity,
         }}
       />
 
@@ -272,11 +276,11 @@ export function EditableEdge({
         </>
       )}
 
-      {/* Invisible wider path for easier selection */}
+      {/* Invisible wider path for easier selection (Weavy uses 40px) */}
       <path
         d={edgePath}
         fill="none"
-        strokeWidth={15}
+        strokeWidth={40}
         stroke="transparent"
         className="react-flow__edge-interaction"
       />
@@ -322,7 +326,7 @@ export function EditableEdge({
               cy={handle.y}
               r={6}
               fill="white"
-              stroke="#3b82f6"
+              stroke={edgeColor}
               strokeWidth={2}
               style={{
                 cursor: handle.direction === "horizontal" ? "ew-resize" : "ns-resize",

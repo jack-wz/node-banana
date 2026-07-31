@@ -22,14 +22,18 @@ const shortcutGroups: ShortcutGroup[] = [
       { keys: [`${modKey}`, "Enter"], description: "Run workflow" },
       { keys: [`${modKey}`, "C"], description: "Copy selected nodes" },
       { keys: [`${modKey}`, "V"], description: "Paste nodes / image / text" },
+      { keys: [`${modKey}`, "D"], description: "Duplicate selected nodes" },
       { keys: [`${modKey}`, "Z"], description: "Undo" },
       { keys: [`${modKey}`, "Shift", "Z"], description: "Redo" },
+      { keys: [`${modKey}`, "P"], description: "New Prompt node" },
+      { keys: [`${modKey}`, "I"], description: "Import workflow JSON" },
       { keys: ["?"], description: "Show keyboard shortcuts" },
     ],
   },
   {
     title: "Add Nodes",
     shortcuts: [
+      { keys: ["Tab"], description: "Open node picker at cursor" },
       { keys: ["Shift", "P"], description: "Add Prompt node" },
       { keys: ["Shift", "I"], description: "Add Image Input node" },
       { keys: ["Shift", "G"], description: "Add Generate Image node" },
@@ -44,16 +48,21 @@ const shortcutGroups: ShortcutGroup[] = [
   {
     title: "Layout (select 2+ nodes first)",
     shortcuts: [
-      { keys: ["V"], description: "Stack selected vertically" },
-      { keys: ["H"], description: "Stack selected horizontally" },
-      { keys: ["G"], description: "Arrange selected as grid" },
+      { keys: ["Alt", "V"], description: "Stack selected vertically" },
+      { keys: ["Alt", "H"], description: "Stack selected horizontally" },
+      { keys: ["Alt", "G"], description: "Arrange selected as grid" },
     ],
   },
   {
     title: "Canvas",
     shortcuts: [
+      { keys: ["V"], description: "Navigate/select tool" },
+      { keys: ["H"], description: "Pan tool" },
       { keys: ["Scroll"], description: "Zoom in / out" },
       { keys: ["Trackpad"], description: "Pan (macOS)" },
+      { keys: [`${modKey}`, "0"], description: "Zoom to 100%" },
+      { keys: ["Shift", "1"], description: "Fit view" },
+      { keys: ["Right-click"], description: "Quick-add / node actions menu" },
       { keys: ["Delete"], description: "Delete selected nodes" },
     ],
   },
@@ -151,4 +160,3 @@ export function KeyboardShortcutsDialog({ isOpen, onClose }: KeyboardShortcutsDi
     </div>
   );
 }
-

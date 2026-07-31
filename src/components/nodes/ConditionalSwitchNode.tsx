@@ -6,6 +6,7 @@ import { BaseNode } from "./BaseNode";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { evaluateRule } from "@/store/utils/ruleEvaluation";
 import { getConnectedInputsPure } from "@/store/utils/connectedInputs";
+import { HANDLE_COLORS } from "@/utils/handleColors";
 import type { WorkflowNode, ConditionalSwitchNodeData, ConditionalSwitchRule, MatchMode } from "@/types";
 
 export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>) => {
@@ -237,7 +238,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
         data-handletype="text"
         style={{
           top: 38,
-          backgroundColor: "#3b82f6", // blue for text
+          backgroundColor: HANDLE_COLORS.text, // Weavy prompt pink
           width: 12,
           height: 12,
           border: "2px solid #1e1e1e",
@@ -401,7 +402,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
           data-handletype="text"
           style={{
             top: handleTops[rule.id] ?? (fallbackBase + index * handleSpacing),
-            backgroundColor: "#3b82f6", // blue for text
+            backgroundColor: HANDLE_COLORS.text, // Weavy prompt pink
             width: 12,
             height: 12,
             border: "2px solid #1e1e1e",
@@ -417,7 +418,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
         data-handletype="text"
         style={{
           top: handleTops['default'] ?? (fallbackBase + ruleCount * handleSpacing),
-          backgroundColor: "#3b82f6", // blue for text
+          backgroundColor: HANDLE_COLORS.text, // Weavy prompt pink
           width: 12,
           height: 12,
           border: "2px solid #1e1e1e",

@@ -4,6 +4,7 @@ import { useReactFlow } from "@xyflow/react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { useMemo, useCallback } from "react";
 import JSZip from "jszip";
+import { savePresetFromSelection } from "@/utils/presets";
 import type {
   ImageInputNodeData,
   AnnotationNodeData,
@@ -279,6 +280,25 @@ export function MultiSelectToolbar() {
           </svg>
         </button>
       )}
+
+      {/* Separator */}
+      <div className="w-px h-4 bg-neutral-600 mx-0.5" />
+
+      {/* Save as preset (Weavy "Save node/group" parity) */}
+      <button
+        onClick={() => {
+          const name = window.prompt("Preset name:", "My preset");
+          if (name !== null) {
+            savePresetFromSelection(name);
+          }
+        }}
+        className="p-1.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-neutral-100 transition-colors"
+        title="Save selection as preset"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+        </svg>
+      </button>
 
       {/* Separator */}
       <div className="w-px h-4 bg-neutral-600 mx-0.5" />

@@ -68,6 +68,7 @@ const DEFAULT_DIMENSIONS: Record<NodeType, { width: number; height: number }> = 
   switch: { width: 220, height: 120 },
   conditionalSwitch: { width: 260, height: 180 },
   glbViewer: { width: 360, height: 380 },
+  stickyNote: { width: 240, height: 160 },
 };
 
 /**
@@ -437,6 +438,10 @@ function createDefaultNodeData(type: NodeType): WorkflowNodeData {
         glbUrl: null,
         filename: null,
         capturedImage: null,
+      };
+    case "stickyNote":
+      return {
+        text: "",
       };
   }
 }

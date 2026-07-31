@@ -22,4 +22,5 @@ export { RemoveBackgroundNode } from "./RemoveBackgroundNode";
 export { RouterNode } from "./RouterNode";
 export { SwitchNode } from "./SwitchNode";
 export { ConditionalSwitchNode } from "./ConditionalSwitchNode";
+export { StickyNoteNode } from "./StickyNoteNode";
 export { GroupNode } from "./GroupNode";

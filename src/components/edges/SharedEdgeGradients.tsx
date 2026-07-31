@@ -4,18 +4,20 @@
 // Rendered once inside the React Flow SVG layer to avoid duplicating
 // <defs>/<linearGradient> in every edge component.
 
+import { HANDLE_COLORS, EDGE_STATE_COLORS } from "@/utils/handleColors";
+
 const EDGE_COLORS: Record<string, string> = {
-  image: "#0d9668",
-  prompt: "#2563eb",
-  default: "#64748b",
-  pause: "#ea580c",
-  reference: "#52525b",
-  video: "#ec4899",
-  audio: "#f97316",
-  text: "#2563eb",
-  "3d": "#06b6d4",
-  easeCurve: "#f59e0b",
-  loop: "#d946ef",
+  image: HANDLE_COLORS.image,
+  prompt: HANDLE_COLORS.prompt,
+  default: HANDLE_COLORS.default,
+  pause: EDGE_STATE_COLORS.pause,
+  reference: EDGE_STATE_COLORS.reference,
+  video: HANDLE_COLORS.video,
+  audio: HANDLE_COLORS.audio,
+  text: HANDLE_COLORS.text,
+  "3d": HANDLE_COLORS["3d"],
+  easeCurve: HANDLE_COLORS.easeCurve,
+  loop: EDGE_STATE_COLORS.loop,
 };
 
 const SELECTION_STATES = ["active", "dimmed"] as const;

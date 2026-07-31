@@ -7,6 +7,7 @@
  */
 
 import type { NodeExecutionContext } from "./types";
+import type { NanoBananaNodeData } from "@/types";
 import {
   executeAnnotation,
   executeArray,
@@ -74,9 +75,18 @@ export async function executeNode(
     case "promptConstructor":
       await executePromptConstructor(ctx);
       break;
-    case "nanoBanana":
-      await executeNanoBanana(ctx, regenOpts);
+    case "nanoBanana": {
+      // Runs × N (Weavy parity): execute the generation N times; each result
+      // is appended to the node's imageHistory carousel by the executor.
+      const freshNanoNode = ctx.getFreshNode(ctx.node.id);
+      const requestedRuns = (freshNanoNode?.data as NanoBananaNodeData | undefined)?.runs ?? 1;
+      const runs = Math.min(4, Math.max(1, Math.floor(requestedRuns)));
+      for (let runIndex = 0; runIndex < runs; runIndex++) {
+        if (ctx.signal?.aborted) break;
+        await executeNanoBanana(ctx, regenOpts);
+      }
       break;
+    }
     case "generateVideo":
       await executeGenerateVideo(ctx, regenOpts);
       break;

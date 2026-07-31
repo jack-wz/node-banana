@@ -7,6 +7,7 @@ import { NodeType, ProviderType } from "@/types";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
 import { ProviderBadge } from "./ProviderBadge";
+import { HandleTypeIcon, nodeTypeToIconType } from "./HandleTypeIcon";
 
 export interface CommentNavigationProps {
   currentIndex: number;
@@ -114,6 +115,17 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
       titleInputRef.current.select();
     }
   }, [isEditingTitle]);
+
+  // External rename requests (e.g. node context menu "Rename")
+  useEffect(() => {
+    const handleRenameRequest = (event: Event) => {
+      if ((event as CustomEvent).detail?.id === id) {
+        setIsEditingTitle(true);
+      }
+    };
+    window.addEventListener("nb:rename-node", handleRenameRequest);
+    return () => window.removeEventListener("nb:rename-node", handleRenameRequest);
+  }, [id]);
 
   // Continuously update tooltip position while showing
   useEffect(() => {
@@ -541,6 +553,11 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
               </button>
             </div>
           )}
+          </div>
+
+          {/* Node type badge — always visible (Weavy header style) */}
+          <div className="shrink-0 flex items-center pl-0.5" title={`Node type: ${type}`}>
+            <HandleTypeIcon type={nodeTypeToIconType(type)} size={12} />
           </div>
         </div>
       </div>

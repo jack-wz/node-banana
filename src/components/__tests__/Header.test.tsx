@@ -75,7 +75,9 @@ describe("Header", () => {
   describe("Basic Rendering", () => {
     it("should render the app title", () => {
       render(<Header />);
-      expect(screen.getByText("Node Banana")).toBeInTheDocument();
+      // Weavy-parity floating chrome: the wordmark is replaced by the logo
+      // button + workflow name (shown in the left pill)
+      expect(screen.getByTitle("Open welcome screen")).toBeInTheDocument();
     });
 
     it("should render the banana icon", () => {

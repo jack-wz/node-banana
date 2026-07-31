@@ -5,14 +5,15 @@ import { Handle, Position, useUpdateNodeInternals, useReactFlow, NodeProps } fro
 import { BaseNode } from "./BaseNode";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { WorkflowNode, SwitchNodeData, HandleType } from "@/types";
+import { HANDLE_COLORS as SHARED_HANDLE_COLORS } from "@/utils/handleColors";
 
 const HANDLE_COLORS: Record<HandleType, string> = {
-  image: "#10b981",             // emerald — matches globals.css
-  text: "#3b82f6",              // blue — matches globals.css
-  video: "#ec4899",             // pink — video handle style
-  audio: "rgb(167, 139, 250)", // violet — matches GenerateAudioNode/OutputNode
-  "3d": "#f97316",              // orange — matches globals.css
-  easeCurve: "#ffffff",         // white — default handle style
+  image: SHARED_HANDLE_COLORS.image,
+  text: SHARED_HANDLE_COLORS.text,
+  video: SHARED_HANDLE_COLORS.video,
+  audio: SHARED_HANDLE_COLORS.audio,
+  "3d": SHARED_HANDLE_COLORS["3d"],
+  easeCurve: SHARED_HANDLE_COLORS.easeCurve,
 };
 
 export const SwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>) => {

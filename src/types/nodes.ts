@@ -47,7 +47,8 @@ export type NodeType =
   | "switch"
   | "conditionalSwitch"
   | "generate3d"
-  | "glbViewer";
+  | "glbViewer"
+  | "stickyNote";
 
 /**
  * Node execution status
@@ -192,6 +193,7 @@ export interface NanoBananaNodeData extends BaseNodeData {
   aspectRatio: AspectRatio;
   resolution: Resolution; // Only used by Nano Banana Pro
   model: ModelType;
+  runs?: number; // Batch run count (1-4, default 1) — generates N images per execution
   selectedModel?: SelectedModel; // Multi-provider model selection (optional for backward compat)
   useGoogleSearch: boolean; // Only available for Nano Banana Pro and Nano Banana 2
   useImageSearch: boolean; // Only available for Nano Banana 2
@@ -512,6 +514,14 @@ export interface GLBViewerNodeData extends BaseNodeData {
 }
 
 /**
+ * Sticky note node - free-floating text annotation on the canvas (Weavy parity).
+ * Not runnable, no handles.
+ */
+export interface StickyNoteNodeData extends BaseNodeData {
+  text: string;
+}
+
+/**
  * Union of all node data types
  */
 export type WorkflowNodeData =
@@ -539,7 +549,8 @@ export type WorkflowNodeData =
   | RouterNodeData
   | SwitchNodeData
   | ConditionalSwitchNodeData
-  | GLBViewerNodeData;
+  | GLBViewerNodeData
+  | StickyNoteNodeData;
 
 /**
  * Workflow node with typed data (extended with optional groupId)

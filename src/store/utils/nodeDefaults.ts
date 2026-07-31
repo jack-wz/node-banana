@@ -25,6 +25,7 @@ import {
   SwitchNodeData,
   ConditionalSwitchNodeData,
   GLBViewerNodeData,
+  StickyNoteNodeData,
   WorkflowNodeData,
   GroupColor,
   SelectedModel,
@@ -35,23 +36,26 @@ import { loadGenerateImageDefaults, loadNodeDefaults } from "./localStorage";
 /**
  * Default dimensions for each node type.
  * Used in addNode and createGroup for consistent sizing.
+ *
+ * Primary content nodes use the Weavy standard 460px width; compact utility
+ * nodes (router/switch/sticky/annotation…) keep content-driven sizes.
  */
 export const defaultNodeDimensions: Record<NodeType, { width: number; height: number }> = {
-  imageInput: { width: 300, height: 280 },
-  audioInput: { width: 300, height: 200 },
-  videoInput: { width: 300, height: 280 },
+  imageInput: { width: 460, height: 280 },
+  audioInput: { width: 460, height: 200 },
+  videoInput: { width: 460, height: 280 },
   annotation: { width: 300, height: 280 },
-  prompt: { width: 320, height: 220 },
+  prompt: { width: 460, height: 220 },
   array: { width: 340, height: 260 },
   promptConstructor: { width: 340, height: 280 },
-  nanoBanana: { width: 300, height: 300 },
-  generateVideo: { width: 300, height: 300 },
-  generate3d: { width: 300, height: 300 },
-  generateAudio: { width: 300, height: 280 },
-  llmGenerate: { width: 320, height: 360 },
+  nanoBanana: { width: 460, height: 300 },
+  generateVideo: { width: 460, height: 300 },
+  generate3d: { width: 460, height: 300 },
+  generateAudio: { width: 460, height: 280 },
+  llmGenerate: { width: 460, height: 360 },
   splitGrid: { width: 300, height: 320 },
-  output: { width: 320, height: 320 },
-  outputGallery: { width: 320, height: 360 },
+  output: { width: 460, height: 320 },
+  outputGallery: { width: 460, height: 360 },
   imageCompare: { width: 400, height: 360 },
   videoStitch: { width: 400, height: 280 },
   easeCurve: { width: 340, height: 280 },
@@ -62,6 +66,7 @@ export const defaultNodeDimensions: Record<NodeType, { width: number; height: nu
   switch: { width: 220, height: 120 },
   conditionalSwitch: { width: 260, height: 180 },
   glbViewer: { width: 360, height: 380 },
+  stickyNote: { width: 240, height: 160 },
 };
 
 /**
@@ -344,5 +349,9 @@ export const createDefaultNodeData = (type: NodeType): WorkflowNodeData => {
         filename: null,
         capturedImage: null,
       } as GLBViewerNodeData;
+    case "stickyNote":
+      return {
+        text: "",
+      } as StickyNoteNodeData;
   }
 };

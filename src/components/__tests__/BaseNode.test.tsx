@@ -86,8 +86,10 @@ describe("BaseNode", () => {
         </TestWrapper>
       );
 
-      const nodeDiv = container.querySelector(".ring-2.ring-blue-500\\/40");
+      // Weavy parity: selection is a 2px inset white ring at 64% opacity
+      const nodeDiv = container.querySelector(".ring-2.ring-inset");
       expect(nodeDiv).toBeInTheDocument();
+      expect(nodeDiv?.className).toContain("ring-white/[0.64]");
     });
 
     it("should apply executing styling when isExecuting is true", () => {

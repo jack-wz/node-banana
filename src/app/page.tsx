@@ -5,11 +5,16 @@ import { ReactFlowProvider } from "@xyflow/react";
 import { Header } from "@/components/Header";
 import { WorkflowCanvas } from "@/components/WorkflowCanvas";
 import { FloatingActionBar } from "@/components/FloatingActionBar";
+import { LibraryPanel } from "@/components/LibraryPanel";
+import { NodeSettingsPanel } from "@/components/NodeSettingsPanel";
+import { CanvasLeftToolbar, CanvasRightToolbar } from "@/components/CanvasToolbars";
+import { IconRail } from "@/components/IconRail";
 import { AnnotationModal } from "@/components/AnnotationModal";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { FTUXModal } from "@/components/onboarding/FTUXModal";
 import { getFTUXCompleted, setFTUXCompleted } from "@/store/utils/localStorage";
 import { useFTUXStore } from "@/store/ftuxStore";
+import { captureSnapshotNow } from "@/utils/versionHistory";
 
 export default function Home() {
   const initializeAutoSave = useWorkflowStore(
@@ -18,11 +23,38 @@ export default function Home() {
   const cleanupAutoSave = useWorkflowStore((state) => state.cleanupAutoSave);
   const setShowQuickstart = useWorkflowStore((state) => state.setShowQuickstart);
   const [showFTUX, setShowFTUX] = useState(false);
+  const tutorialActive = useFTUXStore((state) => state.tutorialActive);
+  const [ftuxCompleted, setFtuxCompleted] = useState<boolean | null>(null);
+
+  // Weavy parity: the centered FloatingActionBar is FTUX-only chrome.
+  // It renders for first-run users and whenever the tutorial is active
+  // (tutorial anchors target its buttons), and stays hidden afterwards.
+  useEffect(() => {
+    setFtuxCompleted(getFTUXCompleted());
+  }, [tutorialActive, showFTUX]);
 
   useEffect(() => {
     initializeAutoSave();
     return () => cleanupAutoSave();
   }, [initializeAutoSave, cleanupAutoSave]);
+
+  // Version history: debounced auto-snapshot on meaningful manual edits
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const unsubscribe = useWorkflowStore.subscribe((state, prevState) => {
+      if (state.isRunning) return;
+      if (state.manualChangeCount === prevState.manualChangeCount) return;
+      if (state.nodes.length === 0) return;
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        captureSnapshotNow();
+      }, 15000);
+    });
+    return () => {
+      unsubscribe();
+      if (timer) clearTimeout(timer);
+    };
+  }, []);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -55,10 +87,16 @@ export default function Home() {
 
   return (
     <ReactFlowProvider>
-      <div className="h-screen flex flex-col">
-        <Header />
+      <div className="h-screen relative overflow-hidden">
+        {/* Full-bleed canvas (Weavy parity): header/panels float above it */}
         <WorkflowCanvas />
-        <FloatingActionBar />
+        <IconRail />
+        <Header />
+        <LibraryPanel />
+        <NodeSettingsPanel />
+        <CanvasLeftToolbar />
+        <CanvasRightToolbar />
+        {(tutorialActive || ftuxCompleted === false) && <FloatingActionBar />}
         <AnnotationModal />
         {showFTUX && (
           <FTUXModal
