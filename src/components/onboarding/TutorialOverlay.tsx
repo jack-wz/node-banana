@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { useFTUXStore } from "@/store/ftuxStore";
 import { useWorkflowStore } from "@/store/workflowStore";
@@ -8,12 +8,19 @@ import { ElementHighlight } from "./ElementHighlight";
 import { TutorialMessage } from "./TutorialMessage";
 import { getTutorialSampleContent } from "@/utils/tutorialDefaults";
 
+// Never fires — this snapshot only ever changes across a hydration
+// boundary, not while mounted, so there's nothing to subscribe to.
+const noopSubscribe = () => () => {};
+
 /**
  * Main tutorial coordination component.
  * Manages tutorial progression, action detection, and UI rendering.
  */
 export function TutorialOverlay() {
-  const [mounted, setMounted] = useState(false);
+  // Ensure portal rendering only happens client-side. useSyncExternalStore's
+  // server/client snapshot split is the React-blessed way to do this without
+  // the extra render pass a mounted-flag effect causes.
+  const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
   const [showHighlight, setShowHighlight] = useState(false);
   const nodesPopulated = useRef(false);
   const demonstrateNodesAdded = useRef(false);
@@ -34,11 +41,6 @@ export function TutorialOverlay() {
   const nodes = useWorkflowStore((state) => state.nodes);
   const edges = useWorkflowStore((state) => state.edges);
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
-
-  // Ensure portal rendering only happens client-side
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Action detection: monitor workflow state for required actions
   useEffect(() => {
@@ -152,7 +154,11 @@ export function TutorialOverlay() {
     const currentStep = tutorialSteps[currentTutorialStep];
 
     if (currentStep.highlightSelector && currentStep.highlightDelay) {
-      // Start with highlight hidden
+      // Start with highlight hidden. Genuinely timer-driven (setTimeout
+      // below), so this stays an effect rather than a render-time
+      // adjustment; the sync setState here is the step transition's actual
+      // starting state, not extra render churn worth restructuring around.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowHighlight(false);
       // Show highlight after delay
       const timer = setTimeout(() => {

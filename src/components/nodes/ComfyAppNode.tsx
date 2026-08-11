@@ -53,24 +53,30 @@ export function ComfyAppNode({ id, data, selected }: NodeProps<ComfyAppNodeType>
   const [dropped, setDropped] = useState<ComfyUpload | null>(null);
 
   // Created from the connection menu, which had nowhere to attach its wire —
-  // go straight to choosing a workflow so the node becomes usable.
-  useEffect(() => {
-    if (!nodeData._autoOpenImport) return;
-    setModal("replace");
-    updateNodeData(id, { _autoOpenImport: false });
-  }, [nodeData._autoOpenImport, id, updateNodeData]);
+  // go straight to choosing a workflow so the node becomes usable. Adjusted
+  // during render (tracking the previous flag) rather than in an effect.
+  const [prevAutoOpenImport, setPrevAutoOpenImport] = useState(nodeData._autoOpenImport);
+  if (nodeData._autoOpenImport !== prevAutoOpenImport) {
+    setPrevAutoOpenImport(nodeData._autoOpenImport);
+    if (nodeData._autoOpenImport) {
+      setModal("replace");
+      updateNodeData(id, { _autoOpenImport: false });
+    }
+  }
 
   // Created by dropping a ComfyUI workflow onto the canvas: skip the file step
   // and read the dropped file straight away. It moves into local state because
   // it belongs to this import, not to the node — a saved workflow should not
   // carry a copy of the upload it was built from.
-  useEffect(() => {
-    const pending = nodeData._pendingWorkflow;
-    if (!pending) return;
-    setDropped(pending);
-    setModal("replace");
-    updateNodeData(id, { _pendingWorkflow: null });
-  }, [nodeData._pendingWorkflow, id, updateNodeData]);
+  const [prevPendingWorkflow, setPrevPendingWorkflow] = useState(nodeData._pendingWorkflow);
+  if (nodeData._pendingWorkflow !== prevPendingWorkflow) {
+    setPrevPendingWorkflow(nodeData._pendingWorkflow);
+    if (nodeData._pendingWorkflow) {
+      setDropped(nodeData._pendingWorkflow);
+      setModal("replace");
+      updateNodeData(id, { _pendingWorkflow: null });
+    }
+  }
 
   const edges = useWorkflowStore((state) => state.edges);
   const removeEdge = useWorkflowStore((state) => state.removeEdge);
