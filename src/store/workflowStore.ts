@@ -40,7 +40,6 @@ import {
   saveWorkflowCostData,
   getProviderSettings,
   saveProviderSettings,
-  defaultProviderSettings,
   getRecentModels,
   saveRecentModels,
   MAX_RECENT_MODELS,
@@ -51,11 +50,9 @@ import {
 import {
   createDefaultNodeData,
   defaultNodeDimensions,
-  GROUP_COLORS,
   GROUP_COLOR_ORDER,
 } from "./utils/nodeDefaults";
 import {
-  CONCURRENCY_SETTINGS_KEY,
   loadConcurrencySetting,
   saveConcurrencySetting,
   groupNodesByLevel,
@@ -1282,7 +1279,8 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
   deleteGroup: (groupId: string) => {
     pushUndoCheckpoint(get, set);
     set((state) => {
-      const { [groupId]: _, ...remainingGroups } = state.groups;
+      const remainingGroups = { ...state.groups };
+      delete remainingGroups[groupId];
       return {
         nodes: state.nodes.map((node) =>
           node.groupId === groupId ? { ...node, groupId: undefined } : node
@@ -2495,7 +2493,11 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
       version: 1,
       name: name || `workflow-${new Date().toISOString().slice(0, 10)}`,
       // Strip selected property - selection is transient UI state and should not be persisted
-      nodes: nodes.map(({ selected, ...rest }) => rest),
+      nodes: nodes.map((node) => {
+        const rest = { ...node };
+        delete rest.selected;
+        return rest;
+      }),
       edges,
       edgeStyle,
       groups: groups && Object.keys(groups).length > 0 ? groups : undefined,
@@ -2786,7 +2788,6 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
 
   saveToFile: async () => {
     let {
-      nodes,
       edges,
       edgeStyle,
       groups,
