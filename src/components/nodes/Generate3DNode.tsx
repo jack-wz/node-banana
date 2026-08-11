@@ -4,13 +4,11 @@ import React, { useCallback, useState, useEffect, useMemo } from "react";
 import { Handle, Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { ModelParameters } from "./ModelParameters";
-import { useWorkflowStore, useProviderApiKeys } from "@/store/workflowStore";
+import { useWorkflowStore } from "@/store/workflowStore";
 import { Generate3DNodeData, ProviderType, SelectedModel, ModelInputDef } from "@/types";
-import { ProviderModel, ModelCapability } from "@/lib/providers/types";
+import { ProviderModel } from "@/lib/providers/types";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { useToast } from "@/components/Toast";
-import { ProviderBadge } from "./ProviderBadge";
-import { getModelPageUrl, getProviderDisplayName } from "@/utils/providerUrls";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
 import { InlineParameterPanel } from "./InlineParameterPanel";
 import { SettingsTabBar } from "./SettingsTabBar";
@@ -19,15 +17,11 @@ import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
 import { useErrorToast } from "@/hooks/useErrorToast";
 
-// 3D generation capabilities
-const THREE_D_CAPABILITIES: ModelCapability[] = ["text-to-3d", "image-to-3d"];
-
 type Generate3DNodeType = Node<Generate3DNodeData, "generate3d">;
 
 export function Generate3DNode({ id, data, selected }: NodeProps<Generate3DNodeType>) {
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
-  const { replicateApiKey, falApiKey, kieApiKey } = useProviderApiKeys();
   const [isBrowseDialogOpen, setIsBrowseDialogOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<"primary" | "fallback">("primary");
 
@@ -84,12 +78,7 @@ export function Generate3DNode({ id, data, selected }: NodeProps<Generate3DNodeT
     [id, setNodes]
   );
 
-  const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
   const isRunning = useWorkflowStore((state) => state.isRunning);
-
-  const handleRegenerate = useCallback(() => {
-    regenerateNode(id);
-  }, [id, regenerateNode]);
 
   // Handle model selection from browse dialog
   const handleBrowseModelSelect = useCallback((model: ProviderModel) => {

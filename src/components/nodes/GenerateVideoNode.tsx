@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState, useEffect, useMemo } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { Handle, Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { ModelParameters } from "./ModelParameters";
@@ -10,7 +10,6 @@ import { GenerateVideoNodeData, ProviderType, SelectedModel, ModelInputDef } fro
 import { ProviderModel, ModelCapability } from "@/lib/providers/types";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { getVideoDimensions } from "@/utils/nodeDimensions";
-import { ProviderBadge } from "./ProviderBadge";
 import { useVideoBlobUrl } from "@/hooks/useVideoBlobUrl";
 import { useVideoAutoplay } from "@/hooks/useVideoAutoplay";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
@@ -54,10 +53,10 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   // Use stable selector for API keys to prevent unnecessary re-fetches
-  const { geminiApiKey, replicateApiKey, falApiKey, kieApiKey, replicateEnabled, kieEnabled } = useProviderApiKeys();
-  const [externalModels, setExternalModels] = useState<ProviderModel[]>([]);
-  const [isLoadingModels, setIsLoadingModels] = useState(false);
-  const [modelsFetchError, setModelsFetchError] = useState<string | null>(null);
+  const { geminiApiKey, replicateApiKey, falApiKey, kieApiKey } = useProviderApiKeys();
+  const [, setExternalModels] = useState<ProviderModel[]>([]);
+  const [, setIsLoadingModels] = useState(false);
+  const [, setModelsFetchError] = useState<string | null>(null);
   const [isBrowseDialogOpen, setIsBrowseDialogOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<"primary" | "fallback">("primary");
 
@@ -81,26 +80,6 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
   }, [id]);
 
   const currentProvider: ProviderType = nodeData.selectedModel?.provider || "fal";
-
-  // Get enabled providers
-  const enabledProviders = useMemo(() => {
-    const providers: { id: ProviderType; name: string }[] = [];
-    // Gemini available when API key is configured (settings or env var)
-    if (geminiApiKey) {
-      providers.push({ id: "gemini", name: "Gemini" });
-    }
-    // fal.ai is always available (works without key but rate limited)
-    providers.push({ id: "fal", name: "fal.ai" });
-    // Add Replicate if configured
-    if (replicateEnabled && replicateApiKey) {
-      providers.push({ id: "replicate", name: "Replicate" });
-    }
-    // Add Kie.ai if configured
-    if (kieEnabled && kieApiKey) {
-      providers.push({ id: "kie", name: "Kie.ai" });
-    }
-    return providers;
-  }, [geminiApiKey, replicateEnabled, replicateApiKey, kieEnabled, kieApiKey]);
 
   // Fetch models from external providers when provider changes
   const fetchModels = useCallback(async () => {
@@ -156,45 +135,6 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
     updateNodeData(id, { parametersExpanded: !isParamsExpanded });
   }, [id, isParamsExpanded, updateNodeData]);
 
-  // Handle provider change
-  const handleProviderChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const provider = e.target.value as ProviderType;
-      // Set placeholder for the provider
-      const newSelectedModel: SelectedModel = {
-        provider,
-        modelId: "",
-        displayName: "Select model...",
-      };
-      // Clear parameters and schema when switching providers
-      updateNodeData(id, { selectedModel: newSelectedModel, parameters: {}, inputSchema: undefined });
-    },
-    [id, updateNodeData]
-  );
-
-  // Handle model change
-  const handleModelChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const modelId = e.target.value;
-      const model = externalModels.find(m => m.id === modelId);
-      if (model) {
-        const newSelectedModel: SelectedModel = {
-          provider: currentProvider,
-          modelId: model.id,
-          displayName: model.name,
-        };
-        // Clear parameters when changing models (different models have different schemas)
-        // Set inputSchema immediately for Veo models so handles render in the same update
-        updateNodeData(id, {
-          selectedModel: newSelectedModel,
-          parameters: {},
-          inputSchema: buildVeoInputSchema(model.id),
-        });
-      }
-    },
-    [id, currentProvider, externalModels, updateNodeData]
-  );
-
   const handleClearVideo = useCallback(() => {
     updateNodeData(id, { outputVideo: null, status: "idle", error: null });
   }, [id, updateNodeData]);
@@ -234,12 +174,7 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
     [id, setNodes]
   );
 
-  const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
   const isRunning = useWorkflowStore((state) => state.isRunning);
-
-  const handleRegenerate = useCallback(() => {
-    regenerateNode(id);
-  }, [id, regenerateNode]);
 
   // Load video by ID from generations folder
   const loadVideoById = useLoadGenerationById("video", "Video");
@@ -277,19 +212,6 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
     });
     setIsBrowseDialogOpen(false);
   }, [id, updateNodeData]);
-
-  // Dynamic title based on selected model - just the model name
-  const displayTitle = useMemo(() => {
-    if (nodeData.selectedModel?.displayName && nodeData.selectedModel.modelId) {
-      return nodeData.selectedModel.displayName;
-    }
-    return "Select model...";
-  }, [nodeData.selectedModel?.displayName, nodeData.selectedModel?.modelId]);
-
-  // Provider badge as title prefix
-  const titlePrefix = useMemo(() => (
-    <ProviderBadge provider={currentProvider} />
-  ), [currentProvider]);
 
   const hasCarouselVideos = (nodeData.videoHistory || []).length > 1;
 
