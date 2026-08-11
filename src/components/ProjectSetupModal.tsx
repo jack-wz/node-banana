@@ -915,7 +915,8 @@ export function ProjectSetupModal({
                       <button
                         type="button"
                         onClick={() => {
-                          const { generateImage, ...rest } = localNodeDefaults;
+                          const rest = { ...localNodeDefaults };
+                          delete rest.generateImage;
                           setLocalNodeDefaults(rest);
                         }}
                         className="text-xs text-neutral-400 hover:text-neutral-200"
@@ -962,7 +963,8 @@ export function ProjectSetupModal({
                       <button
                         type="button"
                         onClick={() => {
-                          const { generateVideo, ...rest } = localNodeDefaults;
+                          const rest = { ...localNodeDefaults };
+                          delete rest.generateVideo;
                           setLocalNodeDefaults(rest);
                         }}
                         className="text-xs text-neutral-400 hover:text-neutral-200"
@@ -995,7 +997,8 @@ export function ProjectSetupModal({
                     <button
                       type="button"
                       onClick={() => {
-                        const { llm, ...rest } = localNodeDefaults;
+                        const rest = { ...localNodeDefaults };
+                        delete rest.llm;
                         setLocalNodeDefaults(rest);
                       }}
                       className="text-xs text-neutral-400 hover:text-neutral-200"

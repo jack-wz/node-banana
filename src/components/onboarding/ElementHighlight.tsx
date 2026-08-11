@@ -18,7 +18,7 @@ interface ElementRect {
  * Highlights one or more UI elements with pulsing blue rings.
  * Supports single selector string or array of selectors.
  */
-export function ElementHighlight({ selector, onComplete }: ElementHighlightProps) {
+export function ElementHighlight({ selector }: ElementHighlightProps) {
   const [rects, setRects] = useState<ElementRect[]>([]);
   const observersRef = useRef<ResizeObserver[]>([]);
 

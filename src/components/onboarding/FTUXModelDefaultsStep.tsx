@@ -95,7 +95,8 @@ export function FTUXModelDefaultsStep({}: FTUXStepProps) {
                   <button
                     type="button"
                     onClick={() => {
-                      const { generateImage, ...rest } = localDefaults;
+                      const rest = { ...localDefaults };
+                      delete rest.generateImage;
                       setLocalDefaults(rest);
                       saveNodeDefaults(rest);
                     }}
@@ -143,7 +144,8 @@ export function FTUXModelDefaultsStep({}: FTUXStepProps) {
                   <button
                     type="button"
                     onClick={() => {
-                      const { generateVideo, ...rest } = localDefaults;
+                      const rest = { ...localDefaults };
+                      delete rest.generateVideo;
                       setLocalDefaults(rest);
                       saveNodeDefaults(rest);
                     }}

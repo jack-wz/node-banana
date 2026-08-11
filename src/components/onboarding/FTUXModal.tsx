@@ -38,21 +38,6 @@ export function FTUXModal({ onComplete, onStartTutorial }: FTUXModalProps) {
     onStartTutorial();
   };
 
-  const getStepTitle = () => {
-    switch (currentStep) {
-      case 1:
-        return "Welcome";
-      case 2:
-        return "API Keys";
-      case 3:
-        return "Model Defaults";
-      case 4:
-        return "Ready";
-      default:
-        return "";
-    }
-  };
-
   const getButtonText = () => {
     if (currentStep === 4) return "Get Started";
     return "Next";
