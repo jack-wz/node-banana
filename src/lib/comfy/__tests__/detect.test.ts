@@ -39,6 +39,7 @@ describe("isNodeBananaWorkflow", () => {
 
   it("rejects a partial file rather than half-loading it", () => {
     const { edges: _edges, ...noEdges } = ourWorkflow;
+    void _edges;
     expect(isNodeBananaWorkflow(noEdges)).toBe(false);
   });
 });

@@ -7,7 +7,7 @@
 import { describe, it, expect } from "vitest";
 import type { WorkflowNode } from "@/types/nodes";
 import type { WorkflowEdge } from "@/types/workflow";
-import { extractSubgraph, SubgraphResult } from "./subgraphExtractor";
+import { extractSubgraph } from "./subgraphExtractor";
 
 // Helper to create test nodes
 function createNode(id: string, type: string, selected = false): WorkflowNode {

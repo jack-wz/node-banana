@@ -8,7 +8,6 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { act } from "@testing-library/react";
 import { useWorkflowStore } from "../workflowStore";
 import type { WorkflowNode, WorkflowEdge } from "@/types";
 
@@ -834,12 +833,7 @@ describe("workflowStore integration tests", () => {
   });
 
   describe("executeWorkflow (topological sort)", () => {
-    // Track execution order via updateNodeData calls
-    let executionOrder: string[];
-
     beforeEach(() => {
-      executionOrder = [];
-
       // Mock fetch for API calls
       vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
         ok: true,

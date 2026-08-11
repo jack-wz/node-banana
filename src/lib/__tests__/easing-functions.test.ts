@@ -1,10 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   easing,
   createBezierEasing,
   getEasingFunction,
   getAllEasingNames,
-  type EasingFunction,
 } from "../easing-functions";
 
 describe("easing-functions", () => {
