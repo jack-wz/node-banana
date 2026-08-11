@@ -90,18 +90,26 @@ const GroupControls = memo(function GroupControls({
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Reset color picker when menu closes
-  useEffect(() => {
-    if (!showMenu) {
-      setShowColorPicker(false);
-    }
-  }, [showMenu]);
+  // Reset color picker when menu closes — adjusted during render (tracking
+  // the previous value) rather than in an effect.
+  const [prevShowMenu, setPrevShowMenu] = useState(showMenu);
+  if (showMenu !== prevShowMenu) {
+    setPrevShowMenu(showMenu);
+    if (!showMenu) setShowColorPicker(false);
+  }
 
-  useEffect(() => {
+  // Sync the editable name draft from the group whenever the name or the
+  // editing state changes and we're not mid-edit (same guard the effect
+  // used, just run during render instead of after commit).
+  const [prevGroupNameForSync, setPrevGroupNameForSync] = useState(group?.name);
+  const [prevIsEditingForSync, setPrevIsEditingForSync] = useState(isEditing);
+  if (group?.name !== prevGroupNameForSync || isEditing !== prevIsEditingForSync) {
+    setPrevGroupNameForSync(group?.name);
+    setPrevIsEditingForSync(isEditing);
     if (group?.name && !isEditing) {
       setEditName(group.name);
     }
-  }, [group?.name, isEditing]);
+  }
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -135,12 +143,17 @@ const GroupControls = memo(function GroupControls({
     setIsEditing(false);
   }, [editName, group?.name, groupId, updateGroup]);
 
-  useEffect(() => {
-    if (showInteractiveControls) return;
-    if (isEditing) handleNameSubmit();
-    setShowMenu(false);
-    setShowColorPicker(false);
-  }, [showInteractiveControls, isEditing, handleNameSubmit]);
+  // Submit any in-progress edit and close the menus once interactive
+  // controls go away (e.g. zoomed out too far to interact with the group).
+  const [prevShowInteractiveControls, setPrevShowInteractiveControls] = useState(showInteractiveControls);
+  if (showInteractiveControls !== prevShowInteractiveControls) {
+    setPrevShowInteractiveControls(showInteractiveControls);
+    if (!showInteractiveControls) {
+      if (isEditing) handleNameSubmit();
+      setShowMenu(false);
+      setShowColorPicker(false);
+    }
+  }
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
