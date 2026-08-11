@@ -175,7 +175,7 @@ describe("ConnectionDropMenu", () => {
 
   describe("Click Outside", () => {
     it("should call onClose when clicking outside the menu", () => {
-      const { container } = render(
+      render(
         <div>
           <div data-testid="outside">Outside</div>
           <ConnectionDropMenu {...defaultProps} />

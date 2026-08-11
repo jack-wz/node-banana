@@ -212,7 +212,7 @@ describe("Header", () => {
         }));
       });
 
-      const { container } = render(<Header />);
+      render(<Header />);
       // Find the save button area and check there's no red dot inside it
       const saveButton = screen.getByTitle("Save project");
       const redDotInSaveButton = saveButton.querySelector(".bg-red-500.rounded-full");
@@ -230,7 +230,7 @@ describe("Header", () => {
         }));
       });
 
-      const { container } = render(<Header />);
+      render(<Header />);
       const saveButton = screen.getByTitle("Saving...");
       const redDotInSaveButton = saveButton.querySelector(".bg-red-500.rounded-full");
       expect(redDotInSaveButton).not.toBeInTheDocument();
