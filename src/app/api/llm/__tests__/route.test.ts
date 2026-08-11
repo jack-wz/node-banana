@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 
 // Use vi.hoisted to define mocks that work with hoisted vi.mock
-const { mockGenerateContent, MockGoogleGenAI, mockGoogleGenAIInstance } = vi.hoisted(() => {
+const { mockGenerateContent, MockGoogleGenAI } = vi.hoisted(() => {
   const mockGenerateContent = vi.fn();
   const mockGoogleGenAIInstance = {
     models: {

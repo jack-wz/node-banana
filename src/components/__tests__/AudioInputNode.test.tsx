@@ -273,6 +273,26 @@ describe("AudioInputNode", () => {
       expect(screen.getByText("Loading waveform...")).toBeInTheDocument();
     });
 
+    it("should render the waveform canvas once waveform data has loaded", () => {
+      mockVisualizationReturn = {
+        waveformData: mockWaveformData,
+        isLoading: false,
+        error: null,
+      };
+      const { container } = render(
+        <AudioInputNode
+          {...createNodeProps({
+            audioFile: "data:audio/mp3;base64,abc",
+            filename: "test.mp3",
+            duration: 10,
+          })}
+        />
+      );
+      expect(container.querySelector("canvas")).toBeInTheDocument();
+      expect(screen.queryByText("Loading waveform...")).not.toBeInTheDocument();
+      expect(screen.queryByText("Processing...")).not.toBeInTheDocument();
+    });
+
     it("should show processing state when no waveform and not loading", () => {
       mockVisualizationReturn = {
         waveformData: null,
@@ -340,7 +360,7 @@ describe("AudioInputNode", () => {
 
   describe("Drag and Drop", () => {
     it("should handle dragOver by preventing default", () => {
-      const { container } = render(
+      render(
         <AudioInputNode {...createNodeProps()} />
       );
       const dropZone = screen.getByText("Drop audio or click").closest("div")!;

@@ -137,6 +137,19 @@ describe("/api/list-workflows route", () => {
       expect(data.workflows).toEqual([]);
     });
 
+    it("should skip file entries alongside directories, not just directories that stay empty", async () => {
+      setupFs({
+        "/home/user/projects": [dirEntry("empty-dir"), fileEntry("README.md")],
+        "/home/user/projects/empty-dir": [],
+      });
+
+      const response = await GET(createRequest("/home/user/projects"));
+      const data = await response.json();
+
+      expect(data.success).toBe(true);
+      expect(data.workflows).toEqual([]);
+    });
+
     it("should detect a valid workflow and extract name from header", async () => {
       setupFs(
         {
