@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useCallback, useState, useEffect, useMemo, useRef } from "react";
-import { Handle, Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
+import { Handle, Position, NodeProps, Node } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { ModelParameters } from "./ModelParameters";
 import { useWorkflowStore, saveNanoBananaDefaults, useProviderApiKeys } from "@/store/workflowStore";
@@ -10,7 +10,6 @@ import { NanoBananaNodeData, AspectRatio, Resolution, MODEL_DISPLAY_NAMES, Provi
 import { ProviderModel, ModelCapability } from "@/lib/providers/types";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { getImageDimensions } from "@/utils/nodeDimensions";
-import { ProviderBadge } from "./ProviderBadge";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
 import { InlineParameterPanel } from "./InlineParameterPanel";
 import { SettingsTabBar } from "./SettingsTabBar";
@@ -58,10 +57,10 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
   const adaptiveOutputImage = useAdaptiveImageSrc(data.outputImage, id);
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   // Use stable selector for API keys to prevent unnecessary re-fetches
-  const { replicateApiKey, falApiKey, kieApiKey, openaiApiKey, replicateEnabled, kieEnabled, openaiEnabled } = useProviderApiKeys();
-  const [externalModels, setExternalModels] = useState<ProviderModel[]>([]);
-  const [isLoadingModels, setIsLoadingModels] = useState(false);
-  const [modelsFetchError, setModelsFetchError] = useState<string | null>(null);
+  const { replicateApiKey, falApiKey, kieApiKey, openaiApiKey } = useProviderApiKeys();
+  const [, setExternalModels] = useState<ProviderModel[]>([]);
+  const [, setIsLoadingModels] = useState(false);
+  const [, setModelsFetchError] = useState<string | null>(null);
   const [isBrowseDialogOpen, setIsBrowseDialogOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<"primary" | "fallback">("primary");
 
@@ -83,28 +82,6 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
 
   // Get the current selected provider (default to gemini)
   const currentProvider: ProviderType = nodeData.selectedModel?.provider || "gemini";
-
-  // Get enabled providers
-  const enabledProviders = useMemo(() => {
-    const providers: { id: ProviderType; name: string }[] = [];
-    // Gemini is always available
-    providers.push({ id: "gemini", name: "Gemini" });
-    // fal.ai is always available (works without key but rate limited)
-    providers.push({ id: "fal", name: "fal.ai" });
-    // Add Replicate if configured
-    if (replicateEnabled && replicateApiKey) {
-      providers.push({ id: "replicate", name: "Replicate" });
-    }
-    // Add Kie.ai if configured
-    if (kieEnabled && kieApiKey) {
-      providers.push({ id: "kie", name: "Kie.ai" });
-    }
-    // Add OpenAI if configured
-    if (openaiEnabled && openaiApiKey) {
-      providers.push({ id: "openai", name: "OpenAI" });
-    }
-    return providers;
-  }, [replicateEnabled, replicateApiKey, kieEnabled, kieApiKey, openaiEnabled, openaiApiKey]);
 
   // Migrate legacy data: derive selectedModel from model field if missing
   useEffect(() => {
@@ -179,53 +156,6 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
     updateNodeData(id, { parametersExpanded: !isParamsExpanded });
   }, [id, isParamsExpanded, updateNodeData]);
 
-  // Handle provider change
-  const handleProviderChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const provider = e.target.value as ProviderType;
-
-      if (provider === "gemini") {
-        // Reset to Gemini default
-        const newSelectedModel: SelectedModel = {
-          provider: "gemini",
-          modelId: nodeData.model || "nano-banana-pro",
-          displayName: GEMINI_IMAGE_MODELS.find(m => m.value === (nodeData.model || "nano-banana-pro"))?.label || "Nano Banana Pro",
-        };
-        // Clear parameters when switching providers (different providers have different schemas)
-        updateNodeData(id, { selectedModel: newSelectedModel, parameters: {} });
-      } else {
-        // Set placeholder for external provider
-        const newSelectedModel: SelectedModel = {
-          provider,
-          modelId: "",
-          displayName: "Select model...",
-        };
-        // Clear parameters when switching providers
-        updateNodeData(id, { selectedModel: newSelectedModel, parameters: {} });
-      }
-    },
-    [id, nodeData.model, updateNodeData]
-  );
-
-  // Handle model change for external providers
-  const handleExternalModelChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const modelId = e.target.value;
-      const model = externalModels.find(m => m.id === modelId);
-      if (model) {
-        const newSelectedModel: SelectedModel = {
-          provider: currentProvider,
-          modelId: model.id,
-          displayName: model.name,
-          capabilities: model.capabilities,
-        };
-        // Clear parameters when changing models (different models have different schemas)
-        updateNodeData(id, { selectedModel: newSelectedModel, parameters: {} });
-      }
-    },
-    [id, currentProvider, externalModels, updateNodeData]
-  );
-
   const handleAspectRatioChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const aspectRatio = e.target.value as AspectRatio;
@@ -294,36 +224,11 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
     [id, updateNodeData]
   );
 
-  // Handle parameters expand/collapse - resize node height
-  const { setNodes } = useReactFlow();
-  const handleParametersExpandChange = useCallback(
-    (expanded: boolean, parameterCount: number) => {
-      // Each parameter row is ~24px, plus some padding
-      const parameterHeight = expanded ? Math.max(parameterCount * 28 + 16, 60) : 0;
-      const baseHeight = 300; // Default node height
-      const newHeight = baseHeight + parameterHeight;
-
-      setNodes((nodes) =>
-        nodes.map((node) =>
-          node.id === id
-            ? { ...node, style: { ...node.style, height: newHeight } }
-            : node
-        )
-      );
-    },
-    [id, setNodes]
-  );
-
   const handleClearImage = useCallback(() => {
     updateNodeData(id, { outputImage: null, status: "idle", error: null });
   }, [id, updateNodeData]);
 
-  const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
   const isRunning = useWorkflowStore((state) => state.isRunning);
-
-  const handleRegenerate = useCallback(() => {
-    regenerateNode(id);
-  }, [id, regenerateNode]);
 
   const loadImageById = useLoadGenerationById("image", "Image");
 
@@ -357,23 +262,6 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
   }, [id, updateNodeData]);
 
   const isGeminiProvider = currentProvider === "gemini";
-
-  // Dynamic title based on selected model - just the model name
-  const displayTitle = useMemo(() => {
-    if (nodeData.selectedModel?.displayName && nodeData.selectedModel.modelId) {
-      return nodeData.selectedModel.displayName;
-    }
-    // Fallback for legacy data or no model selected
-    if (nodeData.model) {
-      return GEMINI_IMAGE_MODELS.find(m => m.value === nodeData.model)?.label || nodeData.model;
-    }
-    return "Select model...";
-  }, [nodeData.selectedModel?.displayName, nodeData.selectedModel?.modelId, nodeData.model]);
-
-  // Provider badge as title prefix
-  const titlePrefix = useMemo(() => (
-    <ProviderBadge provider={currentProvider} />
-  ), [currentProvider]);
 
   // Use selectedModel.modelId for Gemini models, fallback to legacy model field
   const currentModelId = isGeminiProvider ? (nodeData.selectedModel?.modelId || nodeData.model) : null;
