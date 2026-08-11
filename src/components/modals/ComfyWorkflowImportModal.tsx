@@ -270,19 +270,27 @@ export function ComfyWorkflowImportModal({
     setSaveResult(null);
   }, []);
 
-  // The tab only exists while there is a library to show, so deleting the last
-  // entry has to put the dialog back on a step that still exists.
-  useEffect(() => {
+  // The tab only exists while there is a library to show, so deleting the
+  // last entry has to put the dialog back on a step that still exists.
+  // Adjusted during render (React's own pattern for this) rather than in an
+  // effect, tracking the previous count so it only fires on a real
+  // transition, not every render.
+  const [prevSavedNodesLength, setPrevSavedNodesLength] = useState(savedNodes.length);
+  if (savedNodes.length !== prevSavedNodesLength) {
+    setPrevSavedNodesLength(savedNodes.length);
     if (tab === "saved" && savedNodes.length === 0) setTab("file");
-  }, [tab, savedNodes.length]);
+  }
 
-  useEffect(() => {
-    if (!isOpen) setView("main");
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) reset();
-  }, [isOpen, reset]);
+  // Reset the dialog when it closes — adjusted during render rather than in
+  // an effect, same pattern as the tab correction above.
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (!isOpen) {
+      setView("main");
+      reset();
+    }
+  }
 
   /**
    * Move an inspection into the confirm step.
@@ -386,6 +394,11 @@ export function ComfyWorkflowImportModal({
     const from = app.source === "blueprint" ? "blueprint" : "upload";
 
     if (stored) {
+      // This branch is a genuine reaction to the reconfigure prop changing
+      // identity, sharing the effect with the async fetch branch below;
+      // splitting it out to compute during render would fragment the
+      // reconfigure flow for no correctness gain.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       adopt(withAppLabels({ ...stored, graph: app.graph }, app), from, app);
       return;
     }
@@ -423,9 +436,11 @@ export function ComfyWorkflowImportModal({
     };
   }, [isOpen, reconfigure, adopt, readError]);
 
+  // Purely async — no synchronous setState, so the auto-load effect below
+  // can call it directly without triggering a cascading render. It only
+  // needs to fire when blueprints/blueprintError are already null/unset
+  // (see the effect's guard), so it doesn't need to reset them itself.
   const loadBlueprints = useCallback(async () => {
-    setBlueprintError(null);
-    setBlueprints(null);
     try {
       const response = await fetch("/api/comfy/blueprints", {
         headers: buildComfyHeaders(getComfySettings()),
@@ -442,8 +457,19 @@ export function ComfyWorkflowImportModal({
     }
   }, []);
 
+  // Retry button: clears the previous error/list before loading again.
+  const retryLoadBlueprints = useCallback(() => {
+    setBlueprintError(null);
+    setBlueprints(null);
+    void loadBlueprints();
+  }, [loadBlueprints]);
+
   useEffect(() => {
     if (isOpen && tab === "blueprints" && blueprints === null && !blueprintError) {
+      // loadBlueprints has no synchronous setState left (see above) — every
+      // setState it makes happens after an await. The linter can't trace
+      // that through the useCallback boundary and still flags the call.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       void loadBlueprints();
     }
   }, [isOpen, tab, blueprints, blueprintError, loadBlueprints]);
@@ -830,7 +856,7 @@ export function ComfyWorkflowImportModal({
               error={blueprintError}
               selected={blueprintId}
               onSelect={setBlueprintId}
-              onRetry={loadBlueprints}
+              onRetry={retryLoadBlueprints}
               onAdd={() => void importBlueprint(blueprintId)}
               busy={busy}
             />
