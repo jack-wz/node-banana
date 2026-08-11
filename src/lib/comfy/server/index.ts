@@ -4,7 +4,7 @@
  */
 
 import type { ComfyConnection, ComfyObjectInfo } from "../types";
-import { connectionFromRequest, ComfyConfigError, orgKeyFromRequest } from "./connection";
+import { connectionFromRequest, orgKeyFromRequest } from "./connection";
 import type { ComfyEngine } from "./engine";
 import { LegacyComfyEngine } from "./legacyEngine";
 import { SdkComfyEngine } from "./sdkEngine";

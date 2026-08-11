@@ -89,24 +89,6 @@ const createNanoBananaData = () => ({
   selectedHistoryIndex: 0,
 });
 
-const createLLMGenerateData = () => ({
-  inputPrompt: null,
-  inputImages: [],
-  outputText: null,
-  provider: "google" as const,
-  model: "gemini-3-flash-preview" as const,
-  temperature: 0.7,
-  maxTokens: 8192,
-  status: "idle" as const,
-  error: null,
-});
-
-const createAnnotationData = () => ({
-  sourceImage: null,
-  annotations: [],
-  outputImage: null,
-});
-
 const createOutputData = () => ({
   image: null,
 });
