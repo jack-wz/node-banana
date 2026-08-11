@@ -79,7 +79,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
       if (!sourceNode) return;
 
       let videoData: string | null = null;
-      let duration: number | null = null;
+      const duration: number | null = null;
 
       if (sourceNode.type === "generateVideo" || sourceNode.type === "easeCurve" || sourceNode.type === "videoStitch" || sourceNode.type === "videoTrim") {
         videoData = (sourceNode.data as any).outputVideo || null;

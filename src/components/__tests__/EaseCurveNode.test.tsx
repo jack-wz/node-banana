@@ -19,7 +19,6 @@ vi.mock("@/store/workflowStore", () => ({
 
 // Mock @xyflow/react
 vi.mock("@xyflow/react", () => {
-  const React = require("react");
   const MockHandle = (props: Record<string, unknown>) =>
     React.createElement("div", {
       "data-testid": `handle-${props.id}-${props.type}`,
@@ -69,7 +68,6 @@ vi.mock("@/hooks/useCommentNavigation", () => ({
 }));
 
 vi.mock("@/components/nodes/BaseNode", () => {
-  const React = require("react");
   return {
     BaseNode: ({ children, ...props }: Record<string, unknown>) =>
       React.createElement(
