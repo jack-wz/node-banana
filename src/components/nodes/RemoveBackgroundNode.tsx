@@ -80,6 +80,7 @@ export function RemoveBackgroundNode({ id, data, selected }: NodeProps<RemoveBac
         <div className="flex-1 min-h-0 relative rounded" style={CHECKERBOARD_STYLE}>
           {nodeData.outputImage ? (
             <>
+              {/* eslint-disable-next-line @next/next/no-img-element -- runtime workflow media routed through useAdaptiveImageSrc's zoom-based thumbnail system, not a static asset */}
               <img
                 src={adaptiveOutputImage ?? undefined}
                 className="absolute inset-0 w-full h-full object-contain rounded"

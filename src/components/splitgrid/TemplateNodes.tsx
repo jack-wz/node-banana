@@ -240,6 +240,7 @@ function BaseImageBody({ sourceImage }: { sourceImage?: string | null }) {
     <div className="relative w-full h-full overflow-clip rounded-lg">
       {sourceImage ? (
         <>
+          {/* eslint-disable-next-line @next/next/no-img-element -- runtime workflow media (data/blob URL), not a static asset */}
           <img src={sourceImage} alt="Source" className="w-full h-full object-cover rounded-lg opacity-50" />
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="px-2 py-1 rounded bg-neutral-950/80 text-[10px] text-neutral-300">

@@ -76,6 +76,7 @@ function useThumbnailSrc(fullSrc: string | null): string | null {
 function FrameThumbnail({ src, alt }: { src: string; alt: string }) {
   const thumbSrc = useThumbnailSrc(src);
   return (
+    // eslint-disable-next-line @next/next/no-img-element -- runtime workflow media (data/blob URL or thumbnail), not a static asset
     <img src={thumbSrc ?? src} alt={alt} className="w-full h-full object-contain rounded" />
   );
 }
@@ -309,6 +310,7 @@ export function GifEncoderNode({ id, data, selected }: NodeProps<GifEncoderNodeT
         <div className="relative flex-1 min-h-0 bg-neutral-900/40 rounded">
           {nodeData.outputGif ? (
             <>
+              {/* eslint-disable-next-line @next/next/no-img-element -- runtime workflow media (generated GIF data URL), not a static asset */}
               <img src={nodeData.outputGif} alt="GIF preview" className="absolute inset-0 w-full h-full object-contain rounded" />
               <button
                 onClick={() => updateNodeData(id, { outputGif: null, status: "idle", outputBytes: null, outputDimensions: null })}

@@ -491,6 +491,7 @@ export function GLBViewerNode({ id, data, selected }: NodeProps<GLBViewerNodeTyp
                   </button>
                 </div>
               </div>
+              {/* eslint-disable-next-line @next/next/no-img-element -- runtime workflow media routed through useAdaptiveImageSrc's zoom-based thumbnail system, not a static asset */}
               <img
                 src={adaptiveCapturedImage ?? undefined}
                 alt="Captured 3D render"

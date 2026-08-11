@@ -131,6 +131,7 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
           className="relative group cursor-pointer w-full h-full overflow-clip rounded-lg"
           onClick={handleEdit}
         >
+          {/* eslint-disable-next-line @next/next/no-img-element -- runtime workflow media routed through useAdaptiveImageSrc's zoom-based thumbnail system, not a static asset */}
           <img
             src={adaptiveDisplayImage ?? undefined}
             alt="Annotated"

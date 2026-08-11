@@ -497,6 +497,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
         {/* Preview area */}
         {nodeData.outputImage ? (
           <>
+            {/* eslint-disable-next-line @next/next/no-img-element -- runtime workflow media routed through useAdaptiveImageSrc's zoom-based thumbnail system, not a static asset */}
             <img
               src={adaptiveOutputImage ?? undefined}
               alt="Generated"

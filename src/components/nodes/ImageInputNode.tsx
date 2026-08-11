@@ -103,6 +103,7 @@ export function ImageInputNode({ id, data, selected }: NodeProps<ImageInputNodeT
 
       {nodeData.image ? (
         <div className="relative group w-full h-full overflow-clip rounded-lg">
+          {/* eslint-disable-next-line @next/next/no-img-element -- runtime workflow media routed through useAdaptiveImageSrc's zoom-based thumbnail system, not a static asset */}
           <img
             src={adaptiveImage ?? undefined}
             alt={nodeData.filename || "Uploaded image"}

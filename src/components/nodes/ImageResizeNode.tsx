@@ -83,6 +83,7 @@ export function ImageResizeNode({ id, data, selected }: NodeProps<ImageResizeNod
         {/* Preview */}
         <div className="relative flex-1 min-h-0 bg-neutral-900/40 rounded">
           {nodeData.outputImage || nodeData.sourceImage ? (
+            // eslint-disable-next-line @next/next/no-img-element -- runtime workflow media routed through useAdaptiveImageSrc's zoom-based thumbnail system, not a static asset
             <img
               src={adaptiveOutput ?? nodeData.sourceImage ?? undefined}
               alt="Resize preview"

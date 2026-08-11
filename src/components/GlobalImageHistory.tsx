@@ -75,6 +75,7 @@ function FanItem({
       }
       title={`${formatRelativeTime(item.timestamp)}\n${item.prompt?.substring(0, 50) || ""}...`}
     >
+      {/* eslint-disable-next-line @next/next/no-img-element -- runtime workflow media (data/blob URL), not a static asset */}
       <img
         src={item.image}
         alt={`History ${index + 1}`}
@@ -184,7 +185,8 @@ function HistorySidebar({
           >
             {/* Thumbnail */}
             <div className="w-14 h-14 rounded overflow-hidden shrink-0 border border-neutral-600 group-hover:border-blue-500 transition-colors">
-              <img
+              {/* eslint-disable-next-line @next/next/no-img-element -- runtime workflow media (data/blob URL), not a static asset */}
+            <img
                 src={item.image}
                 alt={`History ${index + 1}`}
                 className="w-full h-full object-cover pointer-events-none"

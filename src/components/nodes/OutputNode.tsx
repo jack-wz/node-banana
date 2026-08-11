@@ -141,6 +141,7 @@ export function OutputNode({ id, data, selected }: NodeProps<OutputNodeType>) {
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
+                  // eslint-disable-next-line @next/next/no-img-element -- runtime workflow media routed through useAdaptiveImageSrc's zoom-based thumbnail system, not a static asset
                   <img
                     src={adaptiveImage ?? contentSrc}
                     alt="Output"
@@ -193,6 +194,7 @@ export function OutputNode({ id, data, selected }: NodeProps<OutputNodeType>) {
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (
+              // eslint-disable-next-line @next/next/no-img-element -- runtime workflow media (data/blob URL), not a static asset
               <img
                 src={contentSrc}
                 alt="Output full size"

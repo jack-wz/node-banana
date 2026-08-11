@@ -967,6 +967,7 @@ export function ModelSearchDialog({
                           {/* Small cover image */}
                           <div className="w-10 h-10 rounded bg-neutral-600 overflow-hidden flex-shrink-0">
                             {matchingModel?.coverImage ? (
+                              // eslint-disable-next-line @next/next/no-img-element -- arbitrary third-party provider URL, no remotePatterns configured
                               <img
                                 src={matchingModel.coverImage}
                                 alt={recent.displayName}
@@ -1018,6 +1019,7 @@ export function ModelSearchDialog({
                   {/* Cover Image - larger */}
                   <div className="w-20 h-20 rounded bg-neutral-600 overflow-hidden flex-shrink-0">
                     {model.coverImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- arbitrary third-party provider URL, no remotePatterns configured
                       <img
                         src={model.coverImage}
                         alt={model.name}

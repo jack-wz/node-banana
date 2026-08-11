@@ -311,6 +311,7 @@ export function SplitGridNode({ id, data, selected }: NodeProps<SplitGridNodeTyp
                     : { width: "100%", height: "100%" }
                 }
               >
+                {/* eslint-disable-next-line @next/next/no-img-element -- runtime workflow media routed through useAdaptiveImageSrc's zoom-based thumbnail system, not a static asset */}
                 <img
                   src={adaptiveSourceImage ?? undefined}
                   alt="Source grid"

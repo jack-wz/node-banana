@@ -240,11 +240,9 @@ describe("buildEditSystemPrompt", () => {
 });
 
 describe("createChatTools", () => {
-  const nodeIds = ["prompt-1", "gen-1", "out-1"];
-
   describe("tool structure", () => {
     it("returns object with exactly 3 keys", () => {
-      const tools = createChatTools(nodeIds);
+      const tools = createChatTools();
 
       const keys = Object.keys(tools);
       expect(keys).toHaveLength(3);
@@ -254,7 +252,7 @@ describe("createChatTools", () => {
     });
 
     it("each tool has description property", () => {
-      const tools = createChatTools(nodeIds);
+      const tools = createChatTools();
 
       expect(tools.answerQuestion).toHaveProperty("description");
       expect(tools.createWorkflow).toHaveProperty("description");
@@ -262,7 +260,7 @@ describe("createChatTools", () => {
     });
 
     it("each tool has execute property", () => {
-      const tools = createChatTools(nodeIds);
+      const tools = createChatTools();
 
       expect(tools.answerQuestion).toHaveProperty("execute");
       expect(tools.createWorkflow).toHaveProperty("execute");
@@ -272,13 +270,13 @@ describe("createChatTools", () => {
 
   describe("answerQuestion tool", () => {
     it("has description mentioning informational questions", () => {
-      const tools = createChatTools(nodeIds);
+      const tools = createChatTools();
 
       expect(tools.answerQuestion.description).toMatch(/question/i);
     });
 
     it("execute returns { answer } when called", async () => {
-      const tools = createChatTools(nodeIds);
+      const tools = createChatTools();
 
       const result = await tools.answerQuestion.execute(
         { answer: "Use the Resolution dropdown on the Generate node." },
@@ -293,13 +291,13 @@ describe("createChatTools", () => {
 
   describe("createWorkflow tool", () => {
     it("has description mentioning new workflow", () => {
-      const tools = createChatTools(nodeIds);
+      const tools = createChatTools();
 
       expect(tools.createWorkflow.description).toMatch(/new.*workflow/i);
     });
 
     it("execute returns { description } when called", async () => {
-      const tools = createChatTools(nodeIds);
+      const tools = createChatTools();
 
       const result = await tools.createWorkflow.execute(
         { description: "A workflow for batch image processing" },
@@ -314,13 +312,13 @@ describe("createChatTools", () => {
 
   describe("editWorkflow tool", () => {
     it("has description mentioning edit/modify", () => {
-      const tools = createChatTools(nodeIds);
+      const tools = createChatTools();
 
       expect(tools.editWorkflow.description).toMatch(/edit|modify/i);
     });
 
     it("execute returns { operations, explanation } when called", async () => {
-      const tools = createChatTools(nodeIds);
+      const tools = createChatTools();
 
       const testOps = [
         { type: "addNode" as const, nodeType: "prompt" },

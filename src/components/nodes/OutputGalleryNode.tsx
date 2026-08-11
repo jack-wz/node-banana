@@ -18,6 +18,7 @@ type MediaItem = { type: "image" | "video"; src: string };
 function AdaptiveGalleryThumbnail({ src, alt, nodeId }: { src: string; alt: string; nodeId: string }) {
   const adaptiveSrc = useAdaptiveImageSrc(src, nodeId);
   return (
+    // eslint-disable-next-line @next/next/no-img-element -- runtime workflow media routed through useAdaptiveImageSrc's zoom-based thumbnail system, not a static asset
     <img
       src={adaptiveSrc ?? undefined}
       alt={alt}
@@ -372,6 +373,7 @@ export function OutputGalleryNode({ id, data, selected }: NodeProps<OutputGaller
                   {item.type === "video" ? (
                     <>
                       {videoThumbnails.get(item.src) ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- generated video-frame thumbnail (data URL), a static <img> poster keeps the grid cheap
                         <img
                           src={videoThumbnails.get(item.src)}
                           alt={`Video ${idx + 1}`}
@@ -408,6 +410,7 @@ export function OutputGalleryNode({ id, data, selected }: NodeProps<OutputGaller
               {currentItem.type === "video" ? (
                 <LightboxVideo src={currentItem.src} />
               ) : (
+                // eslint-disable-next-line @next/next/no-img-element -- runtime workflow media (data/blob URL), not a static asset
                 <img
                   src={currentItem.src}
                   alt={`Gallery image ${lightboxIndex + 1}`}

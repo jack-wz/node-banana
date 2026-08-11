@@ -479,6 +479,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
                       }`}
                     >
                       {thumbnail ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- generated video-frame thumbnail (data URL), not a static asset
                         <img
                           src={thumbnail}
                           alt={`Clip ${clip.edgeId}`}
