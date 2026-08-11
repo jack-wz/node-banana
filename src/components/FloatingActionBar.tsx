@@ -347,7 +347,7 @@ export function FloatingActionBar() {
 
   // FTUX tutorial state (client-side only to avoid SSR hydration issues)
   const [tutorialActive, setTutorialActive] = useState(false);
-  const [lockedFeatures, setLockedFeatures] = useState(false);
+  const [, setLockedFeatures] = useState(false);
   const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
   const [tutorialSteps, setTutorialSteps] = useState<TutorialStep[]>([]);
 

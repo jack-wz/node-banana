@@ -33,7 +33,7 @@ function formatRelativeTime(timestamp: number): string {
 }
 
 // Calculate fan position for each item (vertical stack with slight curve to the right, like macOS Downloads)
-function calculateFanPosition(index: number, total: number) {
+function calculateFanPosition(index: number) {
   // Vertical spacing between items
   const verticalSpacing = 60;
 
@@ -51,15 +51,13 @@ function calculateFanPosition(index: number, total: number) {
 function FanItem({
   item,
   index,
-  total,
   onDragStart,
 }: {
   item: ImageHistoryItem;
   index: number;
-  total: number;
   onDragStart: (e: React.DragEvent, item: ImageHistoryItem) => void;
 }) {
-  const { x, y } = calculateFanPosition(index, total);
+  const { x, y } = calculateFanPosition(index);
   const delay = index * 30;
 
   return (
@@ -347,7 +345,6 @@ export function GlobalImageHistory() {
                 key={item.id}
                 item={item}
                 index={index}
-                total={fanItems.length}
                 onDragStart={handleDragStart}
               />
             ))}
@@ -355,7 +352,7 @@ export function GlobalImageHistory() {
 
           {/* Show All button (if more than 10 items) - positioned relative to top fan item */}
           {hasOverflow && (() => {
-            const topItemPos = calculateFanPosition(fanItems.length - 1, fanItems.length);
+            const topItemPos = calculateFanPosition(fanItems.length - 1);
             return (
               <button
                 onClick={handleShowAll}
