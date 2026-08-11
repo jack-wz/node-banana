@@ -2,13 +2,8 @@ import { WorkflowNode } from "@/types";
 import { WorkflowEdge } from "@/types/workflow";
 import type {
   ImageInputNodeData,
-  AnnotationNodeData,
-  PromptNodeData,
   NanoBananaNodeData,
   GenerateVideoNodeData,
-  LLMGenerateNodeData,
-  SplitGridNodeData,
-  OutputNodeData,
 } from "@/types";
 
 /**
@@ -227,7 +222,8 @@ export function formatContextForPrompt(context: WorkflowContext): string {
 
     // Emit the remaining settings as a compact JSON block. customTitle is
     // already shown as the title above, so omit it to avoid duplication.
-    const { customTitle: _customTitle, ...settings } = node.data;
+    const settings = { ...node.data };
+    delete settings.customTitle;
     if (Object.keys(settings).length > 0) {
       lines.push(`    settings: ${JSON.stringify(settings)}`);
     }

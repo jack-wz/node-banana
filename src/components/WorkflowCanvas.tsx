@@ -62,7 +62,7 @@ import { MultiSelectToolbar } from "./MultiSelectToolbar";
 import { EdgeToolbar } from "./EdgeToolbar";
 import { GlobalImageHistory } from "./GlobalImageHistory";
 import { GroupBackgroundsPortal, GroupControlsOverlay } from "./GroupsOverlay";
-import { NodeType, NanoBananaNodeData, HandleType, PromptNodeData, LLMGenerateNodeData, PromptConstructorNodeData, AvailableVariable, WorkflowNodeData } from "@/types";
+import { NodeType, NanoBananaNodeData, HandleType, PromptNodeData, LLMGenerateNodeData, PromptConstructorNodeData, AvailableVariable } from "@/types";
 import { isComfyWorkflow, isNodeBananaWorkflow } from "@/lib/comfy/detect";
 import { getSavedComfyNode, seedFromSavedComfyNode } from "@/lib/comfy/library";
 import { appInputHandles } from "@/lib/comfy/nodeSchema";
@@ -71,7 +71,6 @@ import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
 import { FloatingNodeHeader } from "./nodes/FloatingNodeHeader";
 import { ControlPanel } from "./nodes/ControlPanel";
 import { detectAndSplitGrid } from "@/utils/gridSplitter";
-import { logger } from "@/utils/logger";
 import { WelcomeModal } from "./quickstart";
 import { ProjectSetupModal } from "./ProjectSetupModal";
 import { ChatPanel } from "./ChatPanel";
@@ -438,9 +437,6 @@ export function WorkflowCanvas() {
       isDraggingNodeRef.current = false;
     };
   }, []);
-
-  // Detect if canvas is empty for showing quickstart
-  const isCanvasEmpty = nodes.length === 0;
 
   // Handle comment navigation - center viewport on target node
   useEffect(() => {
@@ -2082,7 +2078,7 @@ export function WorkflowCanvas() {
       const historyImageData = event.dataTransfer.getData("application/history-image");
       if (historyImageData) {
         try {
-          const { image, prompt } = JSON.parse(historyImageData);
+          const { image } = JSON.parse(historyImageData);
           const position = screenToFlowPosition({
             x: event.clientX,
             y: event.clientY,
