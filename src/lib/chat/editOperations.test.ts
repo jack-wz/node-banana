@@ -142,6 +142,23 @@ describe("applyEditOperations", () => {
       expect(added.id).toMatch(/^prompt-ai-\d+-0$/);
     });
 
+    it("skips an unknown nodeType instead of adding a broken node", () => {
+      // nodeType arrives from the LLM's tool call as an unvalidated string
+      // (the zod schema only constrains it to `string`), so an invalid
+      // value is a realistic input here, not just a type-system exercise.
+      const ops = [
+        { type: "addNode", nodeType: "totallyMadeUpType" },
+      ] as unknown as EditOperation[];
+
+      const result = applyEditOperations(ops, { nodes: [], edges: [] });
+
+      expect(result.nodes).toHaveLength(0);
+      expect(result.applied).toBe(0);
+      expect(result.skipped).toEqual([
+        'addNode: unknown nodeType "totallyMadeUpType"',
+      ]);
+    });
+
     it("uses provided position or defaults to {x:200, y:200}", () => {
       const opsWithPos: EditOperation[] = [
         { type: "addNode", nodeType: "output", position: { x: 500, y: 600 } },

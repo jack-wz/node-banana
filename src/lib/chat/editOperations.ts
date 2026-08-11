@@ -4,6 +4,25 @@ import { createDefaultNodeData } from "@/store/utils/nodeDefaults";
 import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
 
 /**
+ * Node types the LLM is allowed to create via addNode. The tool's input
+ * schema only constrains nodeType to `string` (zod can't express the full
+ * NodeType union without duplicating it), so this is the actual runtime
+ * gate against a malformed or hallucinated type reaching workflow state.
+ */
+const VALID_NODE_TYPES: NodeType[] = [
+  "imageInput",
+  "annotation",
+  "prompt",
+  "array",
+  "nanoBanana",
+  "generateVideo",
+  "generate3d",
+  "llmGenerate",
+  "splitGrid",
+  "output",
+];
+
+/**
  * Edit operation types for workflow modifications.
  * Each operation represents a single atomic change to the workflow.
  */
@@ -56,6 +75,13 @@ export function applyEditOperations(
   for (const [index, operation] of operations.entries()) {
     switch (operation.type) {
       case "addNode": {
+        if (!VALID_NODE_TYPES.includes(operation.nodeType)) {
+          skipped.push(
+            `addNode: unknown nodeType "${operation.nodeType}"`
+          );
+          break;
+        }
+
         // Generate unique ID with timestamp and index
         const nodeId = `${operation.nodeType}-ai-${Date.now()}-${index}`;
 

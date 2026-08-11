@@ -1,26 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { EditOperation } from "./editOperations";
 import { WorkflowContext, formatContextForPrompt } from "./contextBuilder";
 import { SubgraphResult } from "./subgraphExtractor";
-import { NodeType } from "@/types";
-
-/**
- * Valid node types for workflow editing.
- * Kept in sync with NodeType union from @/types.
- */
-const VALID_NODE_TYPES: NodeType[] = [
-  "imageInput",
-  "annotation",
-  "prompt",
-  "array",
-  "nanoBanana",
-  "generateVideo",
-  "generate3d",
-  "llmGenerate",
-  "splitGrid",
-  "output",
-];
 
 /**
  * Builds the enhanced system prompt with current workflow context and tool usage rules.
@@ -162,10 +143,9 @@ Do NOT use "text", "content", or other guessed property names. Use ONLY the exac
  * Creates the tool definitions for the chat agent.
  * Uses the AI SDK v6 tool calling pattern with zod schemas.
  *
- * @param nodeIds - Currently available node IDs in the workflow
  * @returns Tools object with answerQuestion, createWorkflow, and editWorkflow
  */
-export function createChatTools(nodeIds: string[]) {
+export function createChatTools() {
   return {
     answerQuestion: tool({
       description:

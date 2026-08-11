@@ -38,11 +38,8 @@ export async function POST(request: Request) {
     // Build context-aware system prompt with optional rest summary
     const systemPrompt = buildEditSystemPrompt(context, subgraph.restSummary);
 
-    // Extract node IDs for tool validation
-    const nodeIds = (workflowState?.nodes || []).map(n => n.id);
-
     // Create chat tools with current workflow context
-    const tools = createChatTools(nodeIds);
+    const tools = createChatTools();
 
     // Create Google provider with API key
     const google = createGoogleGenerativeAI({ apiKey });
