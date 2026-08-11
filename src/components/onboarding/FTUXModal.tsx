@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { FTUXModalProps, FTUXStep } from "@/types/ftux";
 import { setFTUXCompleted } from "@/store/utils/localStorage";
 import { FTUXWelcomeStep } from "./FTUXWelcomeStep";
@@ -54,7 +55,7 @@ export function FTUXModal({ onComplete, onStartTutorial }: FTUXModalProps) {
           <div className="px-8 pt-8 pb-4 border-b border-neutral-700/50 shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <img src="/banana_icon.png" alt="" className="w-6 h-6" />
+                <Image src="/banana_icon.png" alt="" width={24} height={24} className="w-6 h-6" />
                 <h2 className="text-xl font-medium text-neutral-100">
                   Welcome to Node Banana
                 </h2>

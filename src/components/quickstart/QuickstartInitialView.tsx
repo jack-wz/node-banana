@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 interface QuickstartInitialViewProps {
   onNewProject: () => void;
   onSelectTemplates: () => void;
@@ -20,7 +22,7 @@ export function QuickstartInitialView({
         <div className="flex-1 flex flex-col">
           <div className="mb-4">
             <div className="flex items-center gap-2">
-              <img src="/banana_icon.png" alt="" className="w-7 h-7" />
+              <Image src="/banana_icon.png" alt="" width={28} height={28} className="w-7 h-7" />
               <h1 className="text-2xl font-medium text-neutral-100">
                 Node Banana
               </h1>
@@ -89,7 +91,7 @@ export function QuickstartInitialView({
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-sm text-neutral-400 hover:text-neutral-200 transition-colors"
             >
-              <img src="/banana_icon.png" alt="" className="w-4 h-4" />
+              <Image src="/banana_icon.png" alt="" width={16} height={16} className="w-4 h-4" />
               NB Pro Waitlist
             </a>
           </div>

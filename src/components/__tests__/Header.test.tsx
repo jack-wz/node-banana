@@ -82,7 +82,9 @@ describe("Header", () => {
       render(<Header />);
       const icon = screen.getByAltText("Banana");
       expect(icon).toBeInTheDocument();
-      expect(icon).toHaveAttribute("src", "/banana_icon.png");
+      // next/image rewrites src through the optimizer, so check the
+      // underlying source it's pointed at rather than the raw src.
+      expect(icon).toHaveAttribute("src", expect.stringContaining("banana_icon.png"));
     });
 
     it("should render 'Made by Willie' link", () => {
