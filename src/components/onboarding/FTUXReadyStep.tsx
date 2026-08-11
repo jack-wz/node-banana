@@ -9,7 +9,7 @@ export function FTUXReadyStep({ onStartTutorial, onComplete }: FTUXReadyStepProp
   return (
     <div className="flex flex-col items-center justify-center py-12 px-8">
       <h2 className="text-2xl font-semibold text-neutral-100 mb-4">
-        You're ready!
+        You&apos;re ready!
       </h2>
       <p className="text-neutral-300 text-center leading-relaxed mb-8">
         Want a quick tutorial?
