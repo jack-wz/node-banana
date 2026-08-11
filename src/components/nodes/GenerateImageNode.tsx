@@ -4,10 +4,9 @@ import React, { useCallback, useState, useEffect, useRef } from "react";
 import { Handle, Position, NodeProps, Node } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { ModelParameters } from "./ModelParameters";
-import { useWorkflowStore, saveNanoBananaDefaults, useProviderApiKeys } from "@/store/workflowStore";
-import { deduplicatedFetch } from "@/utils/deduplicatedFetch";
+import { useWorkflowStore, saveNanoBananaDefaults } from "@/store/workflowStore";
 import { NanoBananaNodeData, AspectRatio, Resolution, MODEL_DISPLAY_NAMES, ProviderType, SelectedModel, ModelInputDef, GEMINI_IMAGE_MODELS, ModelType } from "@/types";
-import { ProviderModel, ModelCapability } from "@/lib/providers/types";
+import { ProviderModel } from "@/lib/providers/types";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { getImageDimensions } from "@/utils/nodeDimensions";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
@@ -47,28 +46,23 @@ const EXTENDED_ASPECT_RATIOS: AspectRatio[] = ["1:1", "1:4", "1:8", "2:3", "3:2"
 const RESOLUTIONS_PRO: Resolution[] = ["1K", "2K", "4K"];
 const RESOLUTIONS_NB2: Resolution[] = ["512", "1K", "2K", "4K"];
 
-// Image generation capabilities
-const IMAGE_CAPABILITIES: ModelCapability[] = ["text-to-image", "image-to-image"];
-
 type NanoBananaNodeType = Node<NanoBananaNodeData, "nanoBanana">;
 
 export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNodeType>) {
   const nodeData = data;
   const adaptiveOutputImage = useAdaptiveImageSrc(data.outputImage, id);
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
-  // Use stable selector for API keys to prevent unnecessary re-fetches
-  const { replicateApiKey, falApiKey, kieApiKey, openaiApiKey } = useProviderApiKeys();
-  const [, setExternalModels] = useState<ProviderModel[]>([]);
-  const [, setIsLoadingModels] = useState(false);
-  const [, setModelsFetchError] = useState<string | null>(null);
   const [isBrowseDialogOpen, setIsBrowseDialogOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<"primary" | "fallback">("primary");
 
-  useEffect(() => {
+  // Adjusted during render rather than in an effect.
+  const [prevFallbackModelCheck, setPrevFallbackModelCheck] = useState({ fallbackModel: nodeData.fallbackModel, settingsTab });
+  if (nodeData.fallbackModel !== prevFallbackModelCheck.fallbackModel || settingsTab !== prevFallbackModelCheck.settingsTab) {
+    setPrevFallbackModelCheck({ fallbackModel: nodeData.fallbackModel, settingsTab });
     if (!nodeData.fallbackModel && settingsTab === "fallback") {
       setSettingsTab("primary");
     }
-  }, [nodeData.fallbackModel, settingsTab]);
+  }
 
   // Inline parameters infrastructure
   const { inlineParametersEnabled } = useInlineParameters();
@@ -95,59 +89,6 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
       updateNodeData(id, { selectedModel: newSelectedModel });
     }
   }, [id, nodeData.model, nodeData.selectedModel, updateNodeData]);
-
-  // Fetch models from external providers when provider changes
-  const fetchModels = useCallback(async () => {
-    if (currentProvider === "gemini") {
-      setExternalModels([]);
-      setModelsFetchError(null);
-      return;
-    }
-
-    setIsLoadingModels(true);
-    setModelsFetchError(null);
-    try {
-      const capabilities = IMAGE_CAPABILITIES.join(",");
-      const headers: HeadersInit = {};
-      if (replicateApiKey) {
-        headers["X-Replicate-Key"] = replicateApiKey;
-      }
-      if (falApiKey) {
-        headers["X-Fal-Key"] = falApiKey;
-      }
-      if (kieApiKey) {
-        headers["X-Kie-Key"] = kieApiKey;
-      }
-      if (openaiApiKey) {
-        headers["X-OpenAI-API-Key"] = openaiApiKey;
-      }
-      const response = await deduplicatedFetch(`/api/models?provider=${currentProvider}&capabilities=${capabilities}`, { headers });
-      if (response.ok) {
-        const data = await response.json();
-        setExternalModels(data.models || []);
-        setModelsFetchError(null);
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMsg = errorData.error || `Failed to load models (${response.status})`;
-        setExternalModels([]);
-        setModelsFetchError(
-          currentProvider === "replicate" && response.status === 401
-            ? "Invalid Replicate API key. Check your settings."
-            : errorMsg
-        );
-      }
-    } catch (error) {
-      console.error("Failed to fetch models:", error);
-      setExternalModels([]);
-      setModelsFetchError("Failed to load models. Check your connection.");
-    } finally {
-      setIsLoadingModels(false);
-    }
-  }, [currentProvider, replicateApiKey, falApiKey, kieApiKey, openaiApiKey]);
-
-  useEffect(() => {
-    fetchModels();
-  }, [fetchModels]);
 
   // Inline parameters: compute collapse state and toggle handler
   const isParamsExpanded = nodeData.parametersExpanded ?? true; // default expanded

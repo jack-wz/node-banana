@@ -644,6 +644,7 @@ describe("GenerateVideoNode", () => {
 
   describe("ModelParameters Component", () => {
     it("should render ModelParameters when model is selected", async () => {
+      localStorage.clear(); // ensure a cache miss so ModelParameters actually fetches
       render(
         <TestWrapper>
           <GenerateVideoNode {...createNodeProps({
@@ -654,43 +655,10 @@ describe("GenerateVideoNode", () => {
 
       // ModelParameters should attempt to load schema
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalled();
-      });
-    });
-  });
-
-  describe("Fetch Models on Mount", () => {
-    it("should fetch models when provider is fal", async () => {
-      render(
-        <TestWrapper>
-          <GenerateVideoNode {...createNodeProps({
-            selectedModel: { provider: "fal", modelId: "", displayName: "Select model..." },
-          })} />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        const fetchCalls = mockFetch.mock.calls.filter(call =>
-          typeof call[0] === 'string' && call[0].includes('/api/models?')
+        const schemaFetches = mockFetch.mock.calls.filter(call =>
+          typeof call[0] === "string" && call[0].includes("/api/models/")
         );
-        expect(fetchCalls.length).toBeGreaterThan(0);
-      });
-    });
-
-    it("should request video capabilities when fetching models", async () => {
-      render(
-        <TestWrapper>
-          <GenerateVideoNode {...createNodeProps({
-            selectedModel: { provider: "fal", modelId: "", displayName: "Select model..." },
-          })} />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        const fetchCalls = mockFetch.mock.calls.filter(call =>
-          typeof call[0] === 'string' && call[0].includes('text-to-video')
-        );
-        expect(fetchCalls.length).toBeGreaterThan(0);
+        expect(schemaFetches.length).toBeGreaterThan(0);
       });
     });
   });

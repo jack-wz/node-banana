@@ -4,10 +4,9 @@ import React, { useCallback, useState, useEffect } from "react";
 import { Handle, Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { ModelParameters } from "./ModelParameters";
-import { useWorkflowStore, useProviderApiKeys } from "@/store/workflowStore";
-import { deduplicatedFetch } from "@/utils/deduplicatedFetch";
+import { useWorkflowStore } from "@/store/workflowStore";
 import { GenerateVideoNodeData, ProviderType, SelectedModel, ModelInputDef } from "@/types";
-import { ProviderModel, ModelCapability } from "@/lib/providers/types";
+import { ProviderModel } from "@/lib/providers/types";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { getVideoDimensions } from "@/utils/nodeDimensions";
 import { useVideoBlobUrl } from "@/hooks/useVideoBlobUrl";
@@ -23,9 +22,6 @@ import { useLoadGenerationById } from "@/hooks/useLoadGenerationById";
 import { useGenerationCarousel } from "@/hooks/useGenerationCarousel";
 import { useErrorToast } from "@/hooks/useErrorToast";
 import { useAutoResizeOnMedia } from "@/hooks/useAutoResizeOnMedia";
-
-// Video generation capabilities
-const VIDEO_CAPABILITIES: ModelCapability[] = ["text-to-video", "image-to-video", "audio-to-video"];
 
 /** Returns true for Gemini-native Veo video models */
 function isVeoModel(modelId: string | undefined): boolean {
@@ -52,19 +48,17 @@ type GenerateVideoNodeType = Node<GenerateVideoNodeData, "generateVideo">;
 export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVideoNodeType>) {
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
-  // Use stable selector for API keys to prevent unnecessary re-fetches
-  const { geminiApiKey, replicateApiKey, falApiKey, kieApiKey } = useProviderApiKeys();
-  const [, setExternalModels] = useState<ProviderModel[]>([]);
-  const [, setIsLoadingModels] = useState(false);
-  const [, setModelsFetchError] = useState<string | null>(null);
   const [isBrowseDialogOpen, setIsBrowseDialogOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<"primary" | "fallback">("primary");
 
-  useEffect(() => {
+  // Adjusted during render rather than in an effect.
+  const [prevFallbackModelCheck, setPrevFallbackModelCheck] = useState({ fallbackModel: nodeData.fallbackModel, settingsTab });
+  if (nodeData.fallbackModel !== prevFallbackModelCheck.fallbackModel || settingsTab !== prevFallbackModelCheck.settingsTab) {
+    setPrevFallbackModelCheck({ fallbackModel: nodeData.fallbackModel, settingsTab });
     if (!nodeData.fallbackModel && settingsTab === "fallback") {
       setSettingsTab("primary");
     }
-  }, [nodeData.fallbackModel, settingsTab]);
+  }
 
   const videoBlobUrl = useVideoBlobUrl(nodeData.outputVideo ?? null);
   const videoAutoplayRef = useVideoAutoplay(id, selected);
@@ -80,53 +74,6 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
   }, [id]);
 
   const currentProvider: ProviderType = nodeData.selectedModel?.provider || "fal";
-
-  // Fetch models from external providers when provider changes
-  const fetchModels = useCallback(async () => {
-    setIsLoadingModels(true);
-    setModelsFetchError(null);
-    try {
-      const capabilities = VIDEO_CAPABILITIES.join(",");
-      const headers: HeadersInit = {};
-      if (geminiApiKey) {
-        headers["X-Gemini-API-Key"] = geminiApiKey;
-      }
-      if (replicateApiKey) {
-        headers["X-Replicate-Key"] = replicateApiKey;
-      }
-      if (falApiKey) {
-        headers["X-Fal-Key"] = falApiKey;
-      }
-      if (kieApiKey) {
-        headers["X-Kie-Key"] = kieApiKey;
-      }
-      const response = await deduplicatedFetch(`/api/models?provider=${currentProvider}&capabilities=${capabilities}`, { headers });
-      if (response.ok) {
-        const data = await response.json();
-        setExternalModels(data.models || []);
-        setModelsFetchError(null);
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMsg = errorData.error || `Failed to load models (${response.status})`;
-        setExternalModels([]);
-        setModelsFetchError(
-          currentProvider === "replicate" && response.status === 401
-            ? "Invalid Replicate API key. Check your settings."
-            : errorMsg
-        );
-      }
-    } catch (error) {
-      console.error("Failed to fetch video models:", error);
-      setExternalModels([]);
-      setModelsFetchError("Failed to load models. Check your connection.");
-    } finally {
-      setIsLoadingModels(false);
-    }
-  }, [currentProvider, geminiApiKey, replicateApiKey, falApiKey, kieApiKey]);
-
-  useEffect(() => {
-    fetchModels();
-  }, [fetchModels]);
 
   // Inline parameters: compute collapse state and toggle handler
   const isParamsExpanded = nodeData.parametersExpanded ?? true; // default expanded

@@ -554,18 +554,31 @@ describe("GenerateImageNode", () => {
 
   describe("ModelParameters Component", () => {
     it("should render ModelParameters when external provider model is selected", async () => {
-      render(
-        <TestWrapper>
-          <GenerateImageNode {...createNodeProps({
-            selectedModel: { provider: "fal", modelId: "flux/dev", displayName: "FLUX.1 Dev" },
-          })} />
-        </TestWrapper>
-      );
+      // ModelParameters only renders inside the inline settings panel, and
+      // its schema fetch is cache-gated — need both a cache miss and inline
+      // parameters enabled for it to actually mount and fetch.
+      localStorage.clear();
+      localStorage.setItem("node-banana-inline-parameters", "true");
+      try {
+        render(
+          <TestWrapper>
+            <GenerateImageNode {...createNodeProps({
+              selectedModel: { provider: "fal", modelId: "flux/dev", displayName: "FLUX.1 Dev" },
+              parametersExpanded: true,
+            })} />
+          </TestWrapper>
+        );
 
-      // ModelParameters should attempt to load schema
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalled();
-      });
+        // ModelParameters should attempt to load schema
+        await waitFor(() => {
+          const schemaFetches = mockFetch.mock.calls.filter(call =>
+            typeof call[0] === "string" && call[0].includes("/api/models/")
+          );
+          expect(schemaFetches.length).toBeGreaterThan(0);
+        });
+      } finally {
+        localStorage.removeItem("node-banana-inline-parameters");
+      }
     });
 
     it("should not render ModelParameters for Gemini provider", async () => {
@@ -662,43 +675,4 @@ describe("GenerateImageNode", () => {
     });
   });
 
-  describe("Fetch Models on Provider Change", () => {
-    it("should fetch models when provider is fal", async () => {
-      render(
-        <TestWrapper>
-          <GenerateImageNode {...createNodeProps({
-            selectedModel: { provider: "fal", modelId: "", displayName: "Select model..." },
-          })} />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        const fetchCalls = mockFetch.mock.calls.filter(call =>
-          typeof call[0] === 'string' && call[0].includes('/api/models?')
-        );
-        expect(fetchCalls.length).toBeGreaterThan(0);
-      });
-    });
-
-    it("should not fetch models when provider is gemini", async () => {
-      mockFetch.mockClear();
-
-      render(
-        <TestWrapper>
-          <GenerateImageNode {...createNodeProps({
-            selectedModel: { provider: "gemini", modelId: "nano-banana-pro", displayName: "Nano Banana Pro" },
-          })} />
-        </TestWrapper>
-      );
-
-      // Give time for any effects to run
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Should not fetch models for Gemini (those are hardcoded)
-      const fetchCalls = mockFetch.mock.calls.filter(call =>
-        typeof call[0] === 'string' && call[0].includes('/api/models?provider=gemini')
-      );
-      expect(fetchCalls.length).toBe(0);
-    });
-  });
 });

@@ -28,11 +28,14 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
   const [isBrowseDialogOpen, setIsBrowseDialogOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<"primary" | "fallback">("primary");
 
-  useEffect(() => {
+  // Adjusted during render rather than in an effect.
+  const [prevFallbackModelCheck, setPrevFallbackModelCheck] = useState({ fallbackModel: nodeData.fallbackModel, settingsTab });
+  if (nodeData.fallbackModel !== prevFallbackModelCheck.fallbackModel || settingsTab !== prevFallbackModelCheck.settingsTab) {
+    setPrevFallbackModelCheck({ fallbackModel: nodeData.fallbackModel, settingsTab });
     if (!nodeData.fallbackModel && settingsTab === "fallback") {
       setSettingsTab("primary");
     }
-  }, [nodeData.fallbackModel, settingsTab]);
+  }
 
   // Inline parameters infrastructure
   const { inlineParametersEnabled } = useInlineParameters();
@@ -51,15 +54,21 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const { waveformData, isLoading: isLoadingWaveform } = useAudioVisualization(audioBlob);
 
+  // Clear the decoded blob synchronously when outputAudio goes away (during
+  // render, not an effect) — the effect below converts a new URL into a
+  // Blob asynchronously.
+  const [prevOutputAudio, setPrevOutputAudio] = useState(nodeData.outputAudio);
+  if (nodeData.outputAudio !== prevOutputAudio) {
+    setPrevOutputAudio(nodeData.outputAudio);
+    if (!nodeData.outputAudio) setAudioBlob(null);
+  }
+
   useEffect(() => {
-    if (nodeData.outputAudio) {
-      fetch(nodeData.outputAudio)
-        .then((r) => r.blob())
-        .then(setAudioBlob)
-        .catch(() => setAudioBlob(null));
-    } else {
-      setAudioBlob(null);
-    }
+    if (!nodeData.outputAudio) return;
+    fetch(nodeData.outputAudio)
+      .then((r) => r.blob())
+      .then(setAudioBlob)
+      .catch(() => setAudioBlob(null));
   }, [nodeData.outputAudio]);
 
   const {
