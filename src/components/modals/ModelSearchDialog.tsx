@@ -224,12 +224,13 @@ export function ModelSearchDialog({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Update provider filter when initialProvider changes
-  useEffect(() => {
-    if (initialProvider) {
-      setProviderFilter(initialProvider);
-    }
-  }, [initialProvider]);
+  // Update provider filter when initialProvider changes — adjusted during
+  // render rather than in an effect.
+  const [prevInitialProvider, setPrevInitialProvider] = useState(initialProvider);
+  if (initialProvider !== prevInitialProvider) {
+    setPrevInitialProvider(initialProvider);
+    if (initialProvider) setProviderFilter(initialProvider);
+  }
 
   // Fetch models
   const fetchModels = useCallback(async (bypassCache = false) => {
@@ -346,9 +347,14 @@ export function ModelSearchDialog({
     }
   }, [debouncedSearch, providerFilter, capabilityFilter, replicateApiKey, falApiKey, kieApiKey, wavespeedApiKey, openaiApiKey]);
 
-  // Fetch models when filters change
+  // Fetch models when filters change. fetchModels has a synchronous
+  // cache-hit fast path (setModels/setServerAvailableProviders with no
+  // await at all) alongside the async network path, guarded by a request
+  // version ref to avoid races — splitting those apart to satisfy the
+  // linter isn't worth the risk to that race-guard logic.
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchModels();
     }
   }, [isOpen, fetchModels]);
@@ -510,12 +516,18 @@ export function ModelSearchDialog({
     return providers;
   }, [replicateApiKey, kieApiKey, wavespeedApiKey, openaiApiKey, serverAvailableProviders]);
 
-  // Reset provider filter if current selection becomes unavailable
-  useEffect(() => {
+  // Reset provider filter if current selection becomes unavailable —
+  // adjusted during render rather than in an effect.
+  const [prevProviderFilterCheck, setPrevProviderFilterCheck] = useState({ providerFilter, availableProviders });
+  if (
+    providerFilter !== prevProviderFilterCheck.providerFilter ||
+    availableProviders !== prevProviderFilterCheck.availableProviders
+  ) {
+    setPrevProviderFilterCheck({ providerFilter, availableProviders });
     if (providerFilter !== "all" && !availableProviders.has(providerFilter as ProviderType)) {
       setProviderFilter("all");
     }
-  }, [providerFilter, availableProviders]);
+  }
 
   // Filter recent models by capability
   const filteredRecentModels = useMemo(() => {
