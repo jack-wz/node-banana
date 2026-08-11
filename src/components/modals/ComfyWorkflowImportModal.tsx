@@ -558,6 +558,7 @@ export function ComfyWorkflowImportModal({
     // listing and the import-time warnings — both describe the upload, not the
     // contract, and replaying "could not reach the engine" weeks later misleads.
     const { graph: _graph, ...snapshot } = inspection;
+    void _graph;
     return {
       app: buildComfyApp({
         name,

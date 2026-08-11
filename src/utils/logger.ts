@@ -48,12 +48,6 @@ export interface LogSession {
   entries: LogEntry[];
 }
 
-// Type for server-only operations
-type LoggerServer = {
-  saveSession: (session: LogSession) => Promise<void>;
-  rotateLogFiles: () => Promise<void>;
-};
-
 class Logger {
   private currentSession: LogSession | null = null;
   private isClient: boolean;

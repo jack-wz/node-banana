@@ -8,7 +8,6 @@
 import { Node } from "@xyflow/react";
 import type {
   AnnotationNodeData,
-  AnnotationShape,
   BaseNodeData,
 } from "./annotation";
 

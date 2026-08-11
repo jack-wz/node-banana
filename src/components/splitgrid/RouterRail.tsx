@@ -220,7 +220,7 @@ export function RouterRail({
   onDisconnectType: (type: string) => void;
 }) {
   const viewport = useViewport();
-  const { types, railH, blockTop, contentLeft } = useMemo(
+  const { types, railH, blockTop } = useMemo(
     () => railMetrics(wires, size),
     [wires, size]
   );

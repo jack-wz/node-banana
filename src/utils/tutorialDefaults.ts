@@ -1,20 +1,6 @@
 import { WorkflowNodeData, ImageInputNodeData, PromptNodeData } from "@/types";
 
 /**
- * Returns tutorial-specific default data for newly created nodes.
- * Returns undefined - nodes should be created empty initially.
- * Content is populated after the prompt node is connected.
- */
-export function getTutorialNodeData(
-  nodeType: string,
-  tutorialActive: boolean,
-  tutorialSampleImage?: string | null
-): Partial<WorkflowNodeData> | undefined {
-  // Nodes are created empty during tutorial
-  return undefined;
-}
-
-/**
  * Returns the sample content to populate nodes after connection is made.
  */
 export function getTutorialSampleContent(

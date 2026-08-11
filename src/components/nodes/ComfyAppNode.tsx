@@ -21,7 +21,6 @@ import { appInputHandles, appToInputSchema } from "@/lib/comfy/nodeSchema";
 import { mergeParamValues } from "@/lib/comfy/reconfigure";
 import type {
   ComfyAppDefinition,
-  ComfyInputType,
   ComfyOutputType,
   ComfyWorkflowInspection,
 } from "@/lib/comfy/types";

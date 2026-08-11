@@ -31,7 +31,6 @@ import {
   SwitchNodeData,
   ConditionalSwitchNodeData,
   ComfyAppNodeData,
-  MatchMode,
 } from "@/types";
 
 /**

@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { useWorkflowStore, useProviderApiKeys } from "@/store/workflowStore";
 import { deduplicatedFetch, clearFetchCache } from "@/utils/deduplicatedFetch";
 import { useReactFlow } from "@xyflow/react";
-import { ProviderType, RecentModel } from "@/types";
+import { ProviderType } from "@/types";
 import { ProviderModel, ModelCapability } from "@/lib/providers/types";
 
 // localStorage cache for models (persists across dev server restarts)
