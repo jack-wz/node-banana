@@ -35,10 +35,13 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
     return DEFAULT_FONT_SIZE;
   });
 
-  // Update local state when initial prompt changes
-  useEffect(() => {
+  // Update local state when initial prompt changes — adjusted during render
+  // rather than in an effect.
+  const [prevInitialPrompt, setPrevInitialPrompt] = useState(initialPrompt);
+  if (initialPrompt !== prevInitialPrompt) {
+    setPrevInitialPrompt(initialPrompt);
     setPrompt(initialPrompt);
-  }, [initialPrompt]);
+  }
 
   // Save font size to localStorage when it changes
   useEffect(() => {

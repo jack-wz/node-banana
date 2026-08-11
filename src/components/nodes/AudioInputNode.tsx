@@ -21,16 +21,22 @@ export function AudioInputNode({ id, data, selected }: NodeProps<AudioInputNodeT
 
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
+  // Clear the decoded blob synchronously when audioFile goes away (during
+  // render, not an effect) — the effect below converts a new data URL into
+  // a Blob asynchronously.
+  const [prevAudioFile, setPrevAudioFile] = useState(nodeData.audioFile);
+  if (nodeData.audioFile !== prevAudioFile) {
+    setPrevAudioFile(nodeData.audioFile);
+    if (!nodeData.audioFile) setAudioBlob(null);
+  }
+
   // Convert base64 data URL to Blob for the hook
   useEffect(() => {
-    if (nodeData.audioFile) {
-      fetch(nodeData.audioFile)
-        .then((r) => r.blob())
-        .then(setAudioBlob)
-        .catch(() => setAudioBlob(null));
-    } else {
-      setAudioBlob(null);
-    }
+    if (!nodeData.audioFile) return;
+    fetch(nodeData.audioFile)
+      .then((r) => r.blob())
+      .then(setAudioBlob)
+      .catch(() => setAudioBlob(null));
   }, [nodeData.audioFile]);
 
   const { waveformData, isLoading } = useAudioVisualization(audioBlob);

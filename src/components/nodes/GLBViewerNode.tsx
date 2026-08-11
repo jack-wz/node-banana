@@ -28,6 +28,10 @@ function Model({ url, onError }: { url: string; onError?: () => void }) {
 
   useEffect(() => {
     let cancelled = false;
+    // Matches the `loaded` useState default, so this is a no-op on mount;
+    // genuinely resets it on later url changes while a GLTFLoader load is
+    // already underway below, which is why this stays an effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoaded(false);
 
     const loader = new GLTFLoader();

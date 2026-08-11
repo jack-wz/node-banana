@@ -25,11 +25,14 @@ export function Generate3DNode({ id, data, selected }: NodeProps<Generate3DNodeT
   const [isBrowseDialogOpen, setIsBrowseDialogOpen] = useState(false);
   const [settingsTab, setSettingsTab] = useState<"primary" | "fallback">("primary");
 
-  useEffect(() => {
+  // Adjusted during render rather than in an effect.
+  const [prevFallbackModelCheck, setPrevFallbackModelCheck] = useState({ fallbackModel: nodeData.fallbackModel, settingsTab });
+  if (nodeData.fallbackModel !== prevFallbackModelCheck.fallbackModel || settingsTab !== prevFallbackModelCheck.settingsTab) {
+    setPrevFallbackModelCheck({ fallbackModel: nodeData.fallbackModel, settingsTab });
     if (!nodeData.fallbackModel && settingsTab === "fallback") {
       setSettingsTab("primary");
     }
-  }, [nodeData.fallbackModel, settingsTab]);
+  }
 
   // Inline parameters infrastructure
   const { inlineParametersEnabled } = useInlineParameters();

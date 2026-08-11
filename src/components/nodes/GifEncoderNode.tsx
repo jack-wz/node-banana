@@ -32,6 +32,12 @@ function useThumbnailSrc(fullSrc: string | null): string | null {
 
   useEffect(() => {
     if (!fullSrc) {
+      // Matches the lazy useState initializer above (which computes the
+      // same fullSrc ? cache-lookup : null), so this is a no-op on mount;
+      // genuinely resets it on later fullSrc changes. The rest of this
+      // effect does real async generation with cancellation tracking, so
+      // it stays an effect rather than a render-time adjustment.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setThumb(null);
       return;
     }

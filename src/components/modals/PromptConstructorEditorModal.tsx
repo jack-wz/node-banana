@@ -39,9 +39,12 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
     return DEFAULT_FONT_SIZE;
   });
 
-  useEffect(() => {
+  // Adjusted during render rather than in an effect.
+  const [prevInitialTemplate, setPrevInitialTemplate] = useState(initialTemplate);
+  if (initialTemplate !== prevInitialTemplate) {
+    setPrevInitialTemplate(initialTemplate);
     setTemplate(initialTemplate);
-  }, [initialTemplate]);
+  }
 
   useEffect(() => {
     if (typeof window !== "undefined") {
