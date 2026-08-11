@@ -403,7 +403,6 @@ describe("OutputNode", () => {
       vi.spyOn(document, "createElement").mockImplementation((tagName: string, options?: ElementCreationOptions) => {
         const element = originalCreateElement(tagName, options);
         if (tagName === "a") {
-          const originalClick = element.click.bind(element);
           element.click = () => {
             anchorClicks.push({
               href: (element as HTMLAnchorElement).href,

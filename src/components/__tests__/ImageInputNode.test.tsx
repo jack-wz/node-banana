@@ -151,14 +151,12 @@ describe("ImageInputNode", () => {
   describe("File Input Change Handler", () => {
     it("should process valid image file and call updateNodeData", async () => {
       // Mock FileReader as a class
-      let mockOnload: ((event: ProgressEvent<FileReader>) => void) | null = null;
       const mockReadAsDataURL = vi.fn();
 
       class MockFileReader {
         onload: ((event: ProgressEvent<FileReader>) => void) | null = null;
         result: string = "data:image/png;base64,test123";
         readAsDataURL(file: Blob) {
-          mockOnload = this.onload;
           mockReadAsDataURL(file);
           // Trigger onload asynchronously
           setTimeout(() => {
@@ -169,7 +167,6 @@ describe("ImageInputNode", () => {
       global.FileReader = MockFileReader as unknown as typeof FileReader;
 
       // Mock Image as a class
-      let mockImageOnload: (() => void) | null = null;
       class MockImage {
         onload: (() => void) | null = null;
         width: number = 1024;
@@ -178,7 +175,6 @@ describe("ImageInputNode", () => {
         get src() { return this._src; }
         set src(value: string) {
           this._src = value;
-          mockImageOnload = this.onload;
           // Trigger onload asynchronously
           setTimeout(() => {
             this.onload?.();
