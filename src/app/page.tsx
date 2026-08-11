@@ -35,9 +35,13 @@ export default function Home() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
 
-  // Client-side only FTUX check (SSR-safe)
+  // Client-side only FTUX check. Deferred to an effect (not a lazy
+  // useState initializer) for SSR hydration safety: reading localStorage
+  // during the pre-hydration client render would mismatch the server's
+  // default.
   useEffect(() => {
     if (!getFTUXCompleted()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowFTUX(true);
     }
   }, []);

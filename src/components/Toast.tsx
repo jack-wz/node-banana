@@ -56,11 +56,14 @@ export function Toast() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    // Reset expanded state when toast changes
+  // Reset expanded state when toast changes — adjusted during render rather
+  // than in an effect.
+  const [prevMessage, setPrevMessage] = useState(message);
+  if (message !== prevMessage) {
+    setPrevMessage(message);
     setIsExpanded(false);
     setCopied(false);
-  }, [message]);
+  }
 
   const handleCopy = async () => {
     const textToCopy = details ? `${message}\n\n${details}` : message;

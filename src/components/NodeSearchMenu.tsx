@@ -50,10 +50,13 @@ export function NodeSearchMenu({ position, onSelect, onClose }: NodeSearchMenuPr
     );
   }, [search, options]);
 
-  // Reset the highlight to the top whenever the filtered list changes.
-  useEffect(() => {
+  // Reset the highlight to the top whenever the filtered list changes —
+  // adjusted during render rather than in an effect.
+  const [prevSearch, setPrevSearch] = useState(search);
+  if (search !== prevSearch) {
+    setPrevSearch(search);
     setSelectedIndex(0);
-  }, [search]);
+  }
 
   // Focus the search box on open.
   useEffect(() => {

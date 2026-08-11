@@ -409,24 +409,11 @@ export function WorkflowCanvas() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const tutorialViewportSet = useRef(false);
 
-  // FTUX tutorial state (client-side only to avoid SSR hydration issues)
-  const [tutorialActive, setTutorialActive] = useState(false);
-  const [lockedFeatures, setLockedFeatures] = useState(false);
-
-  useEffect(() => {
-    // Subscribe to FTUX store on client-side only
-    const unsubscribe = useFTUXStore.subscribe((state) => {
-      setTutorialActive(state.tutorialActive);
-      setLockedFeatures(state.lockedFeatures);
-    });
-
-    // Initialize with current state
-    const currentState = useFTUXStore.getState();
-    setTutorialActive(currentState.tutorialActive);
-    setLockedFeatures(currentState.lockedFeatures);
-
-    return unsubscribe;
-  }, []);
+  // FTUX tutorial state — plain in-memory store (no persisted/localStorage
+  // state), so its defaults are identical on server and client and reading
+  // it directly via selectors is hydration-safe.
+  const tutorialActive = useFTUXStore((state) => state.tutorialActive);
+  const lockedFeatures = useFTUXStore((state) => state.lockedFeatures);
 
   useEffect(() => {
     const wrapper = reactFlowWrapper.current;

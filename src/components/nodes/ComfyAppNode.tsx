@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Handle, NodeProps, Node, Position, useUpdateNodeInternals } from "@xyflow/react";
 
 import { BaseNode } from "./BaseNode";
@@ -55,8 +55,13 @@ export function ComfyAppNode({ id, data, selected }: NodeProps<ComfyAppNodeType>
   // Created from the connection menu, which had nowhere to attach its wire —
   // go straight to choosing a workflow so the node becomes usable. Adjusted
   // during render (tracking the previous flag) rather than in an effect.
+  // _autoOpenImport is typically already true on the node's very first
+  // render (set at creation time), so this must also fire on mount, not
+  // just on later transitions.
+  const isFirstAutoOpenRenderRef = useRef(true);
   const [prevAutoOpenImport, setPrevAutoOpenImport] = useState(nodeData._autoOpenImport);
-  if (nodeData._autoOpenImport !== prevAutoOpenImport) {
+  if (isFirstAutoOpenRenderRef.current || nodeData._autoOpenImport !== prevAutoOpenImport) {
+    isFirstAutoOpenRenderRef.current = false;
     setPrevAutoOpenImport(nodeData._autoOpenImport);
     if (nodeData._autoOpenImport) {
       setModal("replace");
@@ -67,9 +72,12 @@ export function ComfyAppNode({ id, data, selected }: NodeProps<ComfyAppNodeType>
   // Created by dropping a ComfyUI workflow onto the canvas: skip the file step
   // and read the dropped file straight away. It moves into local state because
   // it belongs to this import, not to the node — a saved workflow should not
-  // carry a copy of the upload it was built from.
+  // carry a copy of the upload it was built from. Same mount-time concern as
+  // above: _pendingWorkflow is set at creation time.
+  const isFirstPendingWorkflowRenderRef = useRef(true);
   const [prevPendingWorkflow, setPrevPendingWorkflow] = useState(nodeData._pendingWorkflow);
-  if (nodeData._pendingWorkflow !== prevPendingWorkflow) {
+  if (isFirstPendingWorkflowRenderRef.current || nodeData._pendingWorkflow !== prevPendingWorkflow) {
+    isFirstPendingWorkflowRenderRef.current = false;
     setPrevPendingWorkflow(nodeData._pendingWorkflow);
     if (nodeData._pendingWorkflow) {
       setDropped(nodeData._pendingWorkflow);

@@ -134,10 +134,13 @@ export function ChatPanel({ isOpen, onClose, onBuildWorkflow, isBuildingWorkflow
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Reset chip dismissed state when selection changes
-  useEffect(() => {
+  // Reset chip dismissed state when selection changes — adjusted during
+  // render rather than in an effect.
+  const [prevSelectedNodeIds, setPrevSelectedNodeIds] = useState(selectedNodeIds);
+  if (selectedNodeIds !== prevSelectedNodeIds) {
+    setPrevSelectedNodeIds(selectedNodeIds);
     setChipDismissed(false);
-  }, [selectedNodeIds]);
+  }
 
   if (!isOpen) return null;
 

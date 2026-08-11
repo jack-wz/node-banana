@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { generateWorkflowId, useWorkflowStore } from "@/store/workflowStore";
 import { ProviderType, ProviderSettings, NodeDefaultsConfig, LLMProvider, LLMModelType } from "@/types";
@@ -192,8 +192,28 @@ export function ProjectSetupModal({
   // ComfyUI tab state
   const [localComfySettings, setLocalComfySettings] = useComfySettingsDraft(isOpen);
 
-  // Pre-fill when opening in settings mode
-  useEffect(() => {
+  // Pre-fill when opening in settings mode — adjusted during render rather
+  // than in an effect. The env-status fetch stays in the effect below:
+  // starting a network request during render isn't safe the way setState is
+  // (a discarded/retried render pass would double-fire it).
+  const isFirstPrefillRenderRef = useRef(true);
+  const [prevPrefillDeps, setPrevPrefillDeps] = useState({
+    isOpen, mode, workflowName, saveDirectoryPath, useExternalImageStorage, providerSettings, canvasNavigationSettings,
+  });
+  if (
+    isFirstPrefillRenderRef.current ||
+    isOpen !== prevPrefillDeps.isOpen ||
+    mode !== prevPrefillDeps.mode ||
+    workflowName !== prevPrefillDeps.workflowName ||
+    saveDirectoryPath !== prevPrefillDeps.saveDirectoryPath ||
+    useExternalImageStorage !== prevPrefillDeps.useExternalImageStorage ||
+    providerSettings !== prevPrefillDeps.providerSettings ||
+    canvasNavigationSettings !== prevPrefillDeps.canvasNavigationSettings
+  ) {
+    isFirstPrefillRenderRef.current = false;
+    setPrevPrefillDeps({
+      isOpen, mode, workflowName, saveDirectoryPath, useExternalImageStorage, providerSettings, canvasNavigationSettings,
+    });
     if (isOpen) {
       // Reset to project tab when opening
       if (mode === "new") {
@@ -232,13 +252,15 @@ export function ProjectSetupModal({
 
       // Sync canvas settings
       setLocalCanvasSettings(canvasNavigationSettings);
-
-      // Fetch env status
-      fetch("/api/env-status")
-        .then((res) => res.json())
-        .then((data: EnvStatusResponse) => setEnvStatus(data))
-        .catch(() => setEnvStatus(null));
     }
+  }
+
+  useEffect(() => {
+    if (!isOpen) return;
+    fetch("/api/env-status")
+      .then((res) => res.json())
+      .then((data: EnvStatusResponse) => setEnvStatus(data))
+      .catch(() => setEnvStatus(null));
   }, [isOpen, mode, workflowName, saveDirectoryPath, useExternalImageStorage, providerSettings, canvasNavigationSettings]);
 
   const handleBrowse = async () => {
