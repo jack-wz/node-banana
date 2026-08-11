@@ -749,7 +749,7 @@ export async function fetchKieMediaResult(
   requestId: string,
   info: KieMediaResultInput
 ): Promise<GenerationOutput> {
-  const { pollData: data, isVeo, modelName, capabilities } = info;
+  const { pollData: data, isVeo, capabilities } = info;
 
   if (isVeo) {
     let mediaUrl: string | null = null;

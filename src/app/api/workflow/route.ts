@@ -249,7 +249,7 @@ export async function GET(request: NextRequest) {
       exists: true,
       isDirectory,
     });
-  } catch (error) {
+  } catch {
     logger.info('file.load', 'Directory does not exist', {
       directoryPath,
     });

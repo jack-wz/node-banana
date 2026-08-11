@@ -101,7 +101,6 @@ export function extractSubgraph(
 
   // Build boundaryConnections from boundary edges with direction
   const boundaryConnections: BoundaryConnection[] = boundaryEdges.map((edge) => {
-    const sourceSelected = selectedSet.has(edge.source);
     const targetSelected = selectedSet.has(edge.target);
 
     if (targetSelected) {

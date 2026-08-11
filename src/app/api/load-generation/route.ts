@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-    } catch (dirError) {
+    } catch {
       logger.warn('file.error', 'Generation load failed: directory does not exist', {
         directoryPath,
       });
