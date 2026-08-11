@@ -3,7 +3,6 @@
 import React, { useCallback, useState, useEffect, useMemo } from "react";
 import { Handle, Position, NodeProps, Node, useReactFlow } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
-import { ProviderBadge } from "./ProviderBadge";
 import { ModelParameters } from "./ModelParameters";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { GenerateAudioNodeData, ProviderType, SelectedModel, ModelInputDef } from "@/types";
@@ -119,12 +118,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
     [id, setNodes]
   );
 
-  const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
   const isRunning = useWorkflowStore((state) => state.isRunning);
-
-  const handleRegenerate = useCallback(() => {
-    regenerateNode(id);
-  }, [id, regenerateNode]);
 
   // Load audio by ID from generations folder
   const loadAudioById = useLoadGenerationById("audio", "Audio");

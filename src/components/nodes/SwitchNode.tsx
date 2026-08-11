@@ -178,7 +178,7 @@ export const SwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
           </div>
         ) : (
           <>
-            {nodeData.switches.map((sw, index) => (
+            {nodeData.switches.map((sw) => (
               <div
                 key={sw.id}
                 className="flex items-center gap-2 group py-0.5"

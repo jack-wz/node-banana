@@ -3,7 +3,6 @@
 import { useCallback, useState, useMemo, useEffect, useRef } from "react";
 import { Handle, Position, NodeProps, Node } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
-import { useCommentNavigation } from "@/hooks/useCommentNavigation";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { OutputNodeData } from "@/types";
 import { useVideoBlobUrl } from "@/hooks/useVideoBlobUrl";
@@ -17,8 +16,6 @@ type OutputNodeType = Node<OutputNodeData, "output">;
 
 export function OutputNode({ id, data, selected }: NodeProps<OutputNodeType>) {
   const nodeData = data;
-  const commentNavigation = useCommentNavigation(id);
-  const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
   const connectedEdgeCount = useWorkflowStore(
     (state) => state.edges.filter((edge) => edge.target === id).length
@@ -70,11 +67,6 @@ export function OutputNode({ id, data, selected }: NodeProps<OutputNodeType>) {
     }
     previousEdgeCountRef.current = connectedEdgeCount;
   }, [connectedEdgeCount, id, regenerateNode]);
-
-  // Handle Run button click
-  const handleRun = useCallback(() => {
-    regenerateNode(id);
-  }, [id, regenerateNode]);
 
   const handleDownload = useCallback(async () => {
     if (!contentSrc) return;

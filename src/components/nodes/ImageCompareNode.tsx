@@ -18,7 +18,6 @@ export function ImageCompareNode({
   selected,
 }: NodeProps<ImageCompareNodeType>) {
   const nodeData = data;
-  const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const edges = useWorkflowStore((state) => state.edges);
   const nodes = useWorkflowStore((state) => state.nodes);
 

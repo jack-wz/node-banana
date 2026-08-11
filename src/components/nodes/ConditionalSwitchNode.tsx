@@ -33,9 +33,6 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
       isMatched: evaluateRule(incomingText, rule.value, rule.mode)
     }));
 
-    // Check if any rule matched
-    const anyMatched = updatedRules.some(r => r.isMatched);
-
     // Only update if something changed
     const hasChanges =
       nodeData.incomingText !== incomingText ||

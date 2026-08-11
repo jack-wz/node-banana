@@ -4,7 +4,7 @@ import { memo, useMemo, useEffect } from "react";
 import { Handle, Position, useUpdateNodeInternals, useReactFlow, NodeProps } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { useWorkflowStore } from "@/store/workflowStore";
-import type { WorkflowNode, RouterNodeData } from "@/types";
+import type { WorkflowNode } from "@/types";
 
 const ALL_HANDLE_TYPES = ["image", "text", "video", "audio", "3d", "easeCurve"] as const;
 
@@ -17,10 +17,8 @@ const HANDLE_COLORS: Record<(typeof ALL_HANDLE_TYPES)[number], string> = {
   easeCurve: "#ffffff",         // white — default handle style
 };
 
-export const RouterNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>) => {
-  const nodeData = data as RouterNodeData;
+export const RouterNode = memo(({ id, selected }: NodeProps<WorkflowNode>) => {
   const edges = useWorkflowStore((state) => state.edges);
-  const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const updateNodeInternals = useUpdateNodeInternals();
   const { setNodes } = useReactFlow();
 

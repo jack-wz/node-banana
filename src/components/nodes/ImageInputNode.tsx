@@ -3,7 +3,6 @@
 import { useCallback, useRef } from "react";
 import { Handle, Position, NodeProps, Node } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
-import { useCommentNavigation } from "@/hooks/useCommentNavigation";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { ImageInputNodeData } from "@/types";
 import { useAdaptiveImageSrc } from "@/hooks/useAdaptiveImageSrc";
@@ -16,7 +15,6 @@ type ImageInputNodeType = Node<ImageInputNodeData, "imageInput">;
 export function ImageInputNode({ id, data, selected }: NodeProps<ImageInputNodeType>) {
   const nodeData = data;
   const adaptiveImage = useAdaptiveImageSrc(nodeData.image, id);
-  const commentNavigation = useCommentNavigation(id);
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const showLabels = useShowHandleLabels(selected);
