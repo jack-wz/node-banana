@@ -122,7 +122,7 @@ describe("EdgeToolbar", () => {
       );
 
       // Look for button with pause title
-      const pauseButton = screen.queryByTitle("Add pause");
+      screen.queryByTitle("Add pause");
       // The button might not render if click position isn't set
       // This is expected behavior - toolbar needs click position
     });
@@ -134,7 +134,7 @@ describe("EdgeToolbar", () => {
         </TestWrapper>
       );
 
-      const deleteButton = screen.queryByTitle("Delete");
+      screen.queryByTitle("Delete");
       // The button might not render if click position isn't set
     });
   });
@@ -160,7 +160,7 @@ describe("EdgeToolbar", () => {
       );
 
       // When not paused, should show "Add pause" title
-      const pauseButton = screen.queryByTitle("Add pause");
+      screen.queryByTitle("Add pause");
       // Button is conditional on click position being set
 
       document.body.removeChild(edgeElement);
@@ -185,7 +185,7 @@ describe("EdgeToolbar", () => {
       );
 
       // When paused, should show "Remove pause" title
-      const playButton = screen.queryByTitle("Remove pause");
+      screen.queryByTitle("Remove pause");
 
       document.body.removeChild(edgeElement);
     });

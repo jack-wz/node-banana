@@ -4,8 +4,8 @@ import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Node } from "@xyflow/react";
 import { useWorkflowStore, saveNanoBananaDefaults, useProviderApiKeys } from "@/store/workflowStore";
-import { NodeType, NanoBananaNodeData, LLMGenerateNodeData, GenerateVideoNodeData, Generate3DNodeData, GenerateAudioNodeData, EaseCurveNodeData, ConditionalSwitchNodeData, AspectRatio, Resolution, ProviderType, SelectedModel, LLMProvider, LLMModelType, MatchMode, ConditionalSwitchRule, GEMINI_IMAGE_MODELS } from "@/types";
-import { ProviderModel, ModelCapability } from "@/lib/providers/types";
+import { NodeType, NanoBananaNodeData, LLMGenerateNodeData, GenerateVideoNodeData, Generate3DNodeData, EaseCurveNodeData, ConditionalSwitchNodeData, AspectRatio, Resolution, ProviderType, SelectedModel, LLMProvider, LLMModelType, MatchMode, ConditionalSwitchRule, GEMINI_IMAGE_MODELS } from "@/types";
+import { ProviderModel } from "@/lib/providers/types";
 import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { ModelParameters } from "./ModelParameters";
 import { CubicBezierEditor } from "@/components/CubicBezierEditor";
@@ -68,11 +68,6 @@ const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> 
     { value: "claude-opus-4.6", label: "Claude Opus 4.6" },
   ],
 };
-
-// Image/video/audio/3d generation capabilities
-const VIDEO_CAPABILITIES: ModelCapability[] = ["text-to-video", "image-to-video"];
-const AUDIO_CAPABILITIES: ModelCapability[] = ["text-to-audio"];
-const MODEL_3D_CAPABILITIES: ModelCapability[] = ["text-to-3d", "image-to-3d"];
 
 // Easing names
 const ALL_EASING_NAMES = getAllEasingNames();
