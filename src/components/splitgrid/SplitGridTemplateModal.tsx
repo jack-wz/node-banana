@@ -406,14 +406,17 @@ function SplitGridTemplateModalInner({ nodeId, nodeData, onClose }: SplitGridTem
     return () => observer.disconnect();
   }, []);
 
-  // Drop router wires whose terminal node was deleted from the set
-  useEffect(() => {
+  // Drop router wires whose terminal node was deleted from the set —
+  // adjusted during render rather than in an effect.
+  const [prevRfNodesForWires, setPrevRfNodesForWires] = useState(rfNodes);
+  if (rfNodes !== prevRfNodesForWires) {
+    setPrevRfNodesForWires(rfNodes);
     setRouterWires((prev) => {
       const ids = new Set(rfNodes.map((node) => node.id));
       const next = prev.filter((wire) => ids.has(wire.source));
       return next.length === prev.length ? prev : next;
     });
-  }, [rfNodes]);
+  }
 
   const addRouterWire = useCallback((source: string, sourceHandle: string) => {
     setRouterWires((prev) =>
@@ -485,8 +488,11 @@ function SplitGridTemplateModalInner({ nodeId, nodeData, onClose }: SplitGridTem
     return () => wrapper.removeEventListener("mousedown", handlePointerDown);
   }, []);
 
-  // Dismiss the toolbar if its target disappears (its node/edge/wire is removed)
-  useEffect(() => {
+  // Dismiss the toolbar if its target disappears (its node/edge/wire is
+  // removed) — adjusted during render rather than in an effect.
+  const [prevEdgeToolbarDeps, setPrevEdgeToolbarDeps] = useState({ rfEdges, routerWires });
+  if (rfEdges !== prevEdgeToolbarDeps.rfEdges || routerWires !== prevEdgeToolbarDeps.routerWires) {
+    setPrevEdgeToolbarDeps({ rfEdges, routerWires });
     setEdgeToolbar((current) => {
       if (!current) return current;
       const target = current.target;
@@ -499,7 +505,7 @@ function SplitGridTemplateModalInner({ nodeId, nodeData, onClose }: SplitGridTem
         ? current
         : null;
     });
-  }, [rfEdges, routerWires]);
+  }
 
   // Dirty check: compare against the initial template mapped through the same
   // serializer, so an untouched editor is never considered dirty

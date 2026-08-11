@@ -50,6 +50,10 @@ export function WorkflowBrowserView({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Deferred to an effect (not a lazy useState initializer) for SSR
+    // hydration safety: reading localStorage during the initial client
+    // render, before hydration completes, would mismatch the server's null.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDefaultDir(getWorkflowsDirectory());
   }, []);
 
@@ -78,6 +82,10 @@ export function WorkflowBrowserView({
 
   useEffect(() => {
     if (defaultDir) {
+      // fetchWorkflows synchronously sets isLoading/error before its await;
+      // genuinely reacting to defaultDir becoming available, not a
+      // derivable-state case worth restructuring.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchWorkflows(defaultDir);
     }
   }, [defaultDir, fetchWorkflows]);

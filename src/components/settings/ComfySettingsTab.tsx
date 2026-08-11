@@ -58,10 +58,14 @@ export function ComfySettingsTab({ settings, onChange }: ComfySettingsTabProps) 
   const probeGeneration = useRef(0);
 
   useEffect(() => {
+    // Mutates a ref, which must not happen during render — a discarded or
+    // retried render pass (Strict Mode, concurrent features) would
+    // double-increment it and corrupt the generation count. Stays an effect.
     probeGeneration.current += 1;
     // Released here, not only in the probe's own `finally` — which is skipped
     // once the generation has moved on, and skipping it left the Test button
     // disabled with nothing able to re-enable it.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTesting(false);
     setResult(null);
   }, [
@@ -377,8 +381,12 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 /** Read the stored settings once on mount, for a modal that opens with them. */
 export function useComfySettingsDraft(isOpen: boolean): [ComfySettings, (s: ComfySettings) => void] {
   const [draft, setDraft] = useState<ComfySettings>(() => getComfySettings());
-  useEffect(() => {
+  // Re-read from storage each time the modal opens — adjusted during render
+  // rather than in an effect.
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) setDraft(getComfySettings());
-  }, [isOpen]);
+  }
   return [draft, setDraft];
 }
