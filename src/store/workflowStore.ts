@@ -2787,16 +2787,17 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
   },
 
   saveToFile: async () => {
-    let {
+    const state = get();
+    const {
       edges,
       edgeStyle,
       groups,
-      workflowId,
       workflowName,
       saveDirectoryPath,
       useExternalImageStorage,
       imageRefBasePath,
-    } = get();
+    } = state;
+    let { workflowId } = state;
 
     if (!workflowId || !workflowName || !saveDirectoryPath) {
       return false;
