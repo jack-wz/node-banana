@@ -6,7 +6,7 @@ import { useShallow } from "zustand/shallow";
 import { NodeType } from "@/types";
 import { useReactFlow } from "@xyflow/react";
 import { ModelSearchDialog } from "./modals/ModelSearchDialog";
-import { useFTUXStore, TutorialStep } from "@/store/ftuxStore";
+import { useFTUXStore } from "@/store/ftuxStore";
 
 // All nodes menu categories
 const ALL_NODES_CATEGORIES: { label: string; nodes: { type: NodeType; label: string }[] }[] = [
@@ -345,30 +345,12 @@ export function FloatingActionBar() {
     modelSearchProvider: state.modelSearchProvider,
   })));
 
-  // FTUX tutorial state (client-side only to avoid SSR hydration issues)
-  const [tutorialActive, setTutorialActive] = useState(false);
-  const [, setLockedFeatures] = useState(false);
-  const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
-  const [tutorialSteps, setTutorialSteps] = useState<TutorialStep[]>([]);
-
-  useEffect(() => {
-    // Subscribe to FTUX store on client-side only
-    const unsubscribe = useFTUXStore.subscribe((state) => {
-      setTutorialActive(state.tutorialActive);
-      setLockedFeatures(state.lockedFeatures);
-      setCurrentTutorialStep(state.currentTutorialStep);
-      setTutorialSteps(state.tutorialSteps);
-    });
-
-    // Initialize with current state
-    const currentState = useFTUXStore.getState();
-    setTutorialActive(currentState.tutorialActive);
-    setLockedFeatures(currentState.lockedFeatures);
-    setCurrentTutorialStep(currentState.currentTutorialStep);
-    setTutorialSteps(currentState.tutorialSteps);
-
-    return unsubscribe;
-  }, []);
+  // FTUX tutorial state — plain in-memory store (no persisted/localStorage
+  // state), so its defaults are identical on server and client and reading
+  // it directly via selectors is hydration-safe.
+  const tutorialActive = useFTUXStore((state) => state.tutorialActive);
+  const currentTutorialStep = useFTUXStore((state) => state.currentTutorialStep);
+  const tutorialSteps = useFTUXStore((state) => state.tutorialSteps);
 
   // Get display text for running nodes
   const runningNodeCount = currentNodeIds.length;
@@ -422,23 +404,31 @@ export function FloatingActionBar() {
     };
   }, [runMenuOpen, isRunOptionsTutorialStep]);
 
-  // Open run menu when tutorial step is "explain-run-options"
-  useEffect(() => {
-    if (isRunOptionsTutorialStep) {
-      setRunMenuOpen(true);
-    }
-  }, [isRunOptionsTutorialStep]);
+  // Force the run menu open for the "explain-run-options" tutorial step, and
+  // closed once the tutorial moves past it. runMenuOpen is also toggled
+  // directly by clicks (open button, click-outside), so it stays real state
+  // rather than becoming fully derived — adjusted during render, tracking
+  // the previous step so each correction only fires on an actual transition.
+  const [prevIsRunOptionsTutorialStep, setPrevIsRunOptionsTutorialStep] = useState(isRunOptionsTutorialStep);
+  if (isRunOptionsTutorialStep !== prevIsRunOptionsTutorialStep) {
+    setPrevIsRunOptionsTutorialStep(isRunOptionsTutorialStep);
+    if (isRunOptionsTutorialStep) setRunMenuOpen(true);
+  }
 
-  // Close run menu when tutorial advances past run options
-  useEffect(() => {
-    if (tutorialActive && tutorialSteps.length > 0) {
-      const currentStep = tutorialSteps[currentTutorialStep];
-      // Close menu when we're on run-workflow or later steps
-      if (currentStep?.id === "run-workflow" || currentStep?.id === "demonstrate-downstream" || currentStep?.id === "demonstrate-complete") {
-        setRunMenuOpen(false);
-      }
+  const currentTutorialStepId =
+    tutorialActive && tutorialSteps.length > 0 ? tutorialSteps[currentTutorialStep]?.id : undefined;
+  const [prevTutorialStepId, setPrevTutorialStepId] = useState(currentTutorialStepId);
+  if (currentTutorialStepId !== prevTutorialStepId) {
+    setPrevTutorialStepId(currentTutorialStepId);
+    // Close the menu once we're on run-workflow or later steps
+    if (
+      currentTutorialStepId === "run-workflow" ||
+      currentTutorialStepId === "demonstrate-downstream" ||
+      currentTutorialStepId === "demonstrate-complete"
+    ) {
+      setRunMenuOpen(false);
     }
-  }, [tutorialActive, currentTutorialStep, tutorialSteps]);
+  }
 
   const toggleEdgeStyle = () => {
     setEdgeStyle(edgeStyle === "angular" ? "curved" : "angular");
