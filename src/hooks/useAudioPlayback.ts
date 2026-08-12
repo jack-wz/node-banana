@@ -29,13 +29,16 @@ export function useAudioPlayback({ audioSrc, waveformData, isLoadingWaveform }: 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
 
-  // Setup audio element
+  // Setup audio element. The !audioSrc branch matches isPlaying/currentTime's
+  // own useState defaults (no-op on mount); the rest of this effect creates
+  // and wires up a real Audio element, so it stays an effect.
   useEffect(() => {
     if (!audioSrc) {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
       }
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsPlaying(false);
       setCurrentTime(0);
       return;

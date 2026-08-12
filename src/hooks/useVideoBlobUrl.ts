@@ -25,8 +25,12 @@ export function useVideoBlobUrl(videoUrl: string | null): string | null {
       prevBlobUrlRef.current = null;
     }
 
-    // Null input
+    // Null input. Matches blobUrl's own useState default (no-op on mount);
+    // this effect also revokes the previous object URL above, a real
+    // imperative side effect that has to run outside render, so it stays
+    // an effect.
     if (!videoUrl) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBlobUrl(null);
       return;
     }

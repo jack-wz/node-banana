@@ -44,9 +44,13 @@ export function useAdaptiveImageSrc(
   const [thumbnailSrc, setThumbnailSrc] = useState<string | null>(null);
   const prevSrcRef = useRef<string | null>(null);
 
-  // Eagerly generate thumbnail when fullSrc changes
+  // Eagerly generate thumbnail when fullSrc changes. The !fullSrc branch
+  // matches thumbnailSrc's own useState default (no-op on mount); the rest
+  // of this effect does real async thumbnail generation, so it stays an
+  // effect.
   useEffect(() => {
     if (!fullSrc) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setThumbnailSrc(null);
       prevSrcRef.current = null;
       return;

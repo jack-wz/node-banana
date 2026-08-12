@@ -22,8 +22,11 @@ export function useComfyPreview(jobId: string | null | undefined, active: boolea
   useEffect(() => {
     // Cleared here on the way out too, so the next run never opens on the last
     // one's latent. The effect re-runs on both `active` and `jobId`, so this is
-    // the only place that needs to do it.
+    // the only place that needs to do it. Matches preview's own useState
+    // default (no-op on mount); the rest of this effect opens a real SSE
+    // stream, so it stays an effect.
     if (!active || !jobId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPreview(null);
       return;
     }

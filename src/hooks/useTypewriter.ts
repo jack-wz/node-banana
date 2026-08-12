@@ -17,11 +17,14 @@ export function useTypewriter(text: string, speed: number = 50): UseTypewriterRe
   const [displayedText, setDisplayedText] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    // Reset when text changes
+  // Reset when text changes — adjusted during render rather than in an
+  // effect.
+  const [prevText, setPrevText] = useState(text);
+  if (text !== prevText) {
+    setPrevText(text);
     setDisplayedText("");
     setCurrentIndex(0);
-  }, [text]);
+  }
 
   useEffect(() => {
     if (currentIndex >= text.length) {

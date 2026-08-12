@@ -43,7 +43,9 @@ export function ElementHighlight({ selector }: ElementHighlightProps) {
   };
 
   useEffect(() => {
-    // Initial measurement
+    // Initial measurement — needs the DOM committed (querySelector +
+    // getBoundingClientRect), so this can't move to render time.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     updateRects();
 
     // Update on resize

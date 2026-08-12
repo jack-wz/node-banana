@@ -82,8 +82,12 @@ export function useAudioVisualization(audioFile: File | Blob | null) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // The !audioFile branch matches waveformData/error/isLoading's own
+  // useState defaults (no-op on mount); the rest of this effect does real
+  // async decoding, so it stays an effect.
   useEffect(() => {
     if (!audioFile) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWaveformData(null);
       setError(null);
       setIsLoading(false);

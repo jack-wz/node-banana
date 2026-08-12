@@ -56,9 +56,12 @@ export function FTUXModelDefaultsStep({}: FTUXStepProps) {
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [showVideoDialog, setShowVideoDialog] = useState(false);
 
-  // Load current defaults on mount
+  // Load current defaults on mount. Deferred to an effect (not a lazy
+  // useState initializer) for SSR hydration safety — reading localStorage
+  // during the pre-hydration client render would mismatch the server's {}.
   useEffect(() => {
     const currentDefaults = loadNodeDefaults();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLocalDefaults(currentDefaults);
   }, []);
 
