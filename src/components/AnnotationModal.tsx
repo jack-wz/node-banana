@@ -66,6 +66,20 @@ export function AnnotationModal() {
   const [pendingTextPosition, setPendingTextPosition] = useState<{ x: number; y: number } | null>(null);
   const textInputCreatedAt = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState({ width: 800, height: 600 });
+
+  // Track the container's actual pixel size reactively, instead of reading
+  // containerRef.current directly during render (which only reflects
+  // whatever it happened to be on the last unrelated re-render).
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const measure = () => setContainerSize({ width: el.clientWidth, height: el.clientHeight });
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (sourceImage) {
@@ -390,7 +404,10 @@ export function AnnotationModal() {
             }}
             onDblClick={() => {
               if (currentTool === "select") {
-                const stage = stageRef.current;
+                // Both ref reads below only run inside this click handler,
+                // well after render — not during render itself, so this is
+                // safe despite the linter's static analysis flagging it.
+                const stage = stageRef.current; // eslint-disable-line react-hooks/refs
                 if (stage) {
                   const stageBox = stage.container().getBoundingClientRect();
                   const screenX = stageBox.left + text.x * scale + position.x;
@@ -398,7 +415,7 @@ export function AnnotationModal() {
                   setTextInputPosition({ x: screenX, y: screenY });
                 }
                 setEditingTextId(shape.id);
-                setTimeout(() => textInputRef.current?.focus(), 0);
+                setTimeout(() => textInputRef.current?.focus(), 0); // eslint-disable-line react-hooks/refs
               }
             }}
           />
@@ -461,8 +478,8 @@ export function AnnotationModal() {
       <div ref={containerRef} className="flex-1 overflow-hidden bg-neutral-900">
         <Stage
           ref={stageRef}
-          width={containerRef.current?.clientWidth || 800}
-          height={containerRef.current?.clientHeight || 600}
+          width={containerSize.width || 800}
+          height={containerSize.height || 600}
           scaleX={scale}
           scaleY={scale}
           x={position.x}
