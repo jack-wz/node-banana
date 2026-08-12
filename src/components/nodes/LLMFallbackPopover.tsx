@@ -9,7 +9,7 @@
  * provider info so JSON round-trips cleanly).
  */
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type {
@@ -75,14 +75,14 @@ export function LLMFallbackPopover({ nodeId, onClose }: LLMFallbackPopoverProps)
   // derived together from the same saved fallbackModel, but that derivation
   // isn't obviously guaranteed consistent, so this also needs to run on the
   // very first render, not just later transitions.
-  const isFirstModelValidityRenderRef = useRef(true);
+  const [hasCheckedModelValidity, setHasCheckedModelValidity] = useState(false);
   const [prevModelValidityCheck, setPrevModelValidityCheck] = useState({ provider, model });
   if (
-    isFirstModelValidityRenderRef.current ||
+    !hasCheckedModelValidity ||
     provider !== prevModelValidityCheck.provider ||
     model !== prevModelValidityCheck.model
   ) {
-    isFirstModelValidityRenderRef.current = false;
+    setHasCheckedModelValidity(true);
     setPrevModelValidityCheck({ provider, model });
     const valid = LLM_MODELS[provider].some((m) => m.value === model);
     if (!valid) setModel(LLM_MODELS[provider][0].value);

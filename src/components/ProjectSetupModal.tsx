@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { generateWorkflowId, useWorkflowStore } from "@/store/workflowStore";
 import { ProviderType, ProviderSettings, NodeDefaultsConfig, LLMProvider, LLMModelType } from "@/types";
@@ -196,12 +196,12 @@ export function ProjectSetupModal({
   // than in an effect. The env-status fetch stays in the effect below:
   // starting a network request during render isn't safe the way setState is
   // (a discarded/retried render pass would double-fire it).
-  const isFirstPrefillRenderRef = useRef(true);
+  const [hasCheckedPrefill, setHasCheckedPrefill] = useState(false);
   const [prevPrefillDeps, setPrevPrefillDeps] = useState({
     isOpen, mode, workflowName, saveDirectoryPath, useExternalImageStorage, providerSettings, canvasNavigationSettings,
   });
   if (
-    isFirstPrefillRenderRef.current ||
+    !hasCheckedPrefill ||
     isOpen !== prevPrefillDeps.isOpen ||
     mode !== prevPrefillDeps.mode ||
     workflowName !== prevPrefillDeps.workflowName ||
@@ -210,7 +210,7 @@ export function ProjectSetupModal({
     providerSettings !== prevPrefillDeps.providerSettings ||
     canvasNavigationSettings !== prevPrefillDeps.canvasNavigationSettings
   ) {
-    isFirstPrefillRenderRef.current = false;
+    setHasCheckedPrefill(true);
     setPrevPrefillDeps({
       isOpen, mode, workflowName, saveDirectoryPath, useExternalImageStorage, providerSettings, canvasNavigationSettings,
     });

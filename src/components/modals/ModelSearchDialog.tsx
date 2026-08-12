@@ -518,14 +518,14 @@ export function ModelSearchDialog({
 
   // Reset provider filter if current selection becomes unavailable —
   // adjusted during render rather than in an effect.
-  const isFirstProviderFilterRenderRef = useRef(true);
+  const [hasCheckedProviderFilter, setHasCheckedProviderFilter] = useState(false);
   const [prevProviderFilterCheck, setPrevProviderFilterCheck] = useState({ providerFilter, availableProviders });
   if (
-    isFirstProviderFilterRenderRef.current ||
+    !hasCheckedProviderFilter ||
     providerFilter !== prevProviderFilterCheck.providerFilter ||
     availableProviders !== prevProviderFilterCheck.availableProviders
   ) {
-    isFirstProviderFilterRenderRef.current = false;
+    setHasCheckedProviderFilter(true);
     setPrevProviderFilterCheck({ providerFilter, availableProviders });
     if (providerFilter !== "all" && !availableProviders.has(providerFilter as ProviderType)) {
       setProviderFilter("all");

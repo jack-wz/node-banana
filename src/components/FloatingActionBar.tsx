@@ -409,20 +409,20 @@ export function FloatingActionBar() {
   // directly by clicks (open button, click-outside), so it stays real state
   // rather than becoming fully derived — adjusted during render, tracking
   // the previous step so each correction only fires on an actual transition.
-  const isFirstRunMenuRenderRef = useRef(true);
+  const [hasCheckedRunMenu, setHasCheckedRunMenu] = useState(false);
   const [prevIsRunOptionsTutorialStep, setPrevIsRunOptionsTutorialStep] = useState(isRunOptionsTutorialStep);
-  if (isFirstRunMenuRenderRef.current || isRunOptionsTutorialStep !== prevIsRunOptionsTutorialStep) {
-    isFirstRunMenuRenderRef.current = false;
+  if (!hasCheckedRunMenu || isRunOptionsTutorialStep !== prevIsRunOptionsTutorialStep) {
+    setHasCheckedRunMenu(true);
     setPrevIsRunOptionsTutorialStep(isRunOptionsTutorialStep);
     if (isRunOptionsTutorialStep) setRunMenuOpen(true);
   }
 
   const currentTutorialStepId =
     tutorialActive && tutorialSteps.length > 0 ? tutorialSteps[currentTutorialStep]?.id : undefined;
-  const isFirstTutorialStepRenderRef = useRef(true);
+  const [hasCheckedTutorialStep, setHasCheckedTutorialStep] = useState(false);
   const [prevTutorialStepId, setPrevTutorialStepId] = useState(currentTutorialStepId);
-  if (isFirstTutorialStepRenderRef.current || currentTutorialStepId !== prevTutorialStepId) {
-    isFirstTutorialStepRenderRef.current = false;
+  if (!hasCheckedTutorialStep || currentTutorialStepId !== prevTutorialStepId) {
+    setHasCheckedTutorialStep(true);
     setPrevTutorialStepId(currentTutorialStepId);
     // Close the menu once we're on run-workflow or later steps
     if (
