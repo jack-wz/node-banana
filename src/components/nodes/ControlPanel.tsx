@@ -842,7 +842,7 @@ function EaseCurveControls({ node }: { node: Node }) {
     return ALL_EASING_NAMES.map((name) => ({
       name,
       polyline: generateEasingPolyline(name, 36, 36),
-      isPreset: PRESET_NAMES.has(name as any),
+      isPreset: (PRESET_NAMES as Set<string>).has(name),
     }));
   }, []);
 

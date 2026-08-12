@@ -41,14 +41,15 @@ export function ImageCompareNode({
       let image: string | null = null;
 
       // Extract image from different node types
+      const sourceData = sourceNode.data as Record<string, unknown>;
       if (sourceNode.type === "imageInput") {
-        image = (sourceNode.data as any).image;
-      } else if (sourceNode.type === "annotation") {
-        image = (sourceNode.data as any).outputImage;
-      } else if (sourceNode.type === "nanoBanana") {
-        image = (sourceNode.data as any).outputImage;
-      } else if (sourceNode.type === "removeBackground") {
-        image = (sourceNode.data as any).outputImage;
+        image = typeof sourceData.image === "string" ? sourceData.image : null;
+      } else if (
+        sourceNode.type === "annotation" ||
+        sourceNode.type === "nanoBanana" ||
+        sourceNode.type === "removeBackground"
+      ) {
+        image = typeof sourceData.outputImage === "string" ? sourceData.outputImage : null;
       }
 
       if (image) {

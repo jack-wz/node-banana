@@ -33,7 +33,7 @@ export interface LogEntry {
   level: LogLevel;
   category: LogCategory;
   message: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   error?: {
     message: string;
     stack?: string;
@@ -104,7 +104,7 @@ class Logger {
     level: LogLevel,
     category: LogCategory,
     message: string,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     error?: Error
   ): void {
     const entry: LogEntry = {
@@ -139,15 +139,15 @@ class Logger {
   /**
    * Convenience methods
    */
-  info(category: LogCategory, message: string, context?: Record<string, any>): void {
+  info(category: LogCategory, message: string, context?: Record<string, unknown>): void {
     this.log('info', category, message, context);
   }
 
-  warn(category: LogCategory, message: string, context?: Record<string, any>): void {
+  warn(category: LogCategory, message: string, context?: Record<string, unknown>): void {
     this.log('warn', category, message, context);
   }
 
-  error(category: LogCategory, message: string, context?: Record<string, any>, error?: Error): void {
+  error(category: LogCategory, message: string, context?: Record<string, unknown>, error?: Error): void {
     this.log('error', category, message, context, error);
   }
 
@@ -170,8 +170,8 @@ class Logger {
   /**
    * Sanitize context to protect privacy and reduce log size
    */
-  private sanitizeContext(context: Record<string, any>): Record<string, any> {
-    const sanitized: Record<string, any> = {};
+  private sanitizeContext(context: Record<string, unknown>): Record<string, unknown> {
+    const sanitized: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(context)) {
       // Truncate prompts to 200 characters
@@ -194,7 +194,7 @@ class Logger {
       }
       // Handle nested objects
       else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-        sanitized[key] = this.sanitizeContext(value);
+        sanitized[key] = this.sanitizeContext(value as Record<string, unknown>);
       }
       // Keep other values as-is
       else {

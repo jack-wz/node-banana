@@ -62,7 +62,7 @@ import { MultiSelectToolbar } from "./MultiSelectToolbar";
 import { EdgeToolbar } from "./EdgeToolbar";
 import { GlobalImageHistory } from "./GlobalImageHistory";
 import { GroupBackgroundsPortal, GroupControlsOverlay } from "./GroupsOverlay";
-import { NodeType, NanoBananaNodeData, HandleType, PromptNodeData, LLMGenerateNodeData, PromptConstructorNodeData, AvailableVariable } from "@/types";
+import { NodeType, NanoBananaNodeData, HandleType, PromptNodeData, LLMGenerateNodeData, PromptConstructorNodeData, AvailableVariable, SelectedModel, AnnotationShape, SplitGridNodeData } from "@/types";
 import { isComfyWorkflow, isNodeBananaWorkflow } from "@/lib/comfy/detect";
 import { getSavedComfyNode, seedFromSavedComfyNode } from "@/lib/comfy/library";
 import { appInputHandles } from "@/lib/comfy/nodeSchema";
@@ -384,7 +384,7 @@ const NODE_TITLES: Record<string, string> = {
 };
 
 export function WorkflowCanvas() {
-  const { nodes, edges, groups, isModalOpen, showQuickstart, navigationTarget, canvasNavigationSettings, dimmedNodeIds, skippedNodeIds } =
+  const { nodes, edges, groups, isModalOpen, showQuickstart, navigationTarget, canvasNavigationSettings, dimmedNodeIds, skippedNodeIds, isRunning, focusedCommentNodeId } =
     useWorkflowStore(useShallow((state) => ({
       nodes: state.nodes,
       edges: state.edges,
@@ -395,6 +395,8 @@ export function WorkflowCanvas() {
       canvasNavigationSettings: state.canvasNavigationSettings,
       dimmedNodeIds: state.dimmedNodeIds,
       skippedNodeIds: state.skippedNodeIds,
+      isRunning: state.isRunning,
+      focusedCommentNodeId: state.focusedCommentNodeId,
     })));
   const onNodesChange = useWorkflowStore((state) => state.onNodesChange);
   const onEdgesChange = useWorkflowStore((state) => state.onEdgesChange);
@@ -549,15 +551,17 @@ export function WorkflowCanvas() {
 
   // Helper to get node title (used for FloatingNodeHeader)
   const getNodeTitle = useCallback((node: Node) => {
+    const nodeData = node.data as Record<string, unknown>;
+
     // For generate nodes, check for selectedModel display name
     if (node.type === "nanoBanana" || node.type === "generateVideo" || node.type === "generate3d" || node.type === "generateAudio") {
-      const model = (node.data as any)?.selectedModel;
+      const model = nodeData?.selectedModel as SelectedModel | undefined;
       if (model?.displayName) return model.displayName;
     }
 
     // For LLM nodes, check for selectedLLMModel or selectedModel
     if (node.type === "llmGenerate") {
-      const model = (node.data as any)?.selectedLLMModel || (node.data as any)?.selectedModel;
+      const model = (nodeData?.selectedLLMModel ?? nodeData?.selectedModel) as (SelectedModel & { name?: string }) | undefined;
       if (model?.displayName) return model.displayName;
       if (model?.name) return model.name;
     }
@@ -565,7 +569,8 @@ export function WorkflowCanvas() {
     // A Comfy node is titled by the workflow it runs; the wordmark beside it
     // already says what kind of node it is. Unattached, the mark stands alone.
     if (node.type === "comfyApp") {
-      return ((node.data as any)?.app?.name as string) || "";
+      const app = nodeData?.app as { name?: string } | undefined;
+      return app?.name || "";
     }
 
     return NODE_TITLES[node.type || ""] || "Node";
@@ -594,9 +599,10 @@ export function WorkflowCanvas() {
     if (nodeType === 'annotation') {
       const node = getNodeById(nodeId);
       if (!node) return;
-      const imageToEdit = (node.data as any)?.outputImage || (node.data as any)?.image;
+      const nodeData = node.data as Record<string, unknown>;
+      const imageToEdit = (nodeData.outputImage as string | undefined) || (nodeData.image as string | undefined);
       if (!imageToEdit) return;
-      openAnnotationModal(nodeId, imageToEdit, (node.data as any)?.annotations);
+      openAnnotationModal(nodeId, imageToEdit, nodeData.annotations as AnnotationShape[] | undefined);
     } else {
       setExpandingNode({ id: nodeId, type: nodeType });
     }
@@ -2401,7 +2407,7 @@ export function WorkflowCanvas() {
         <ViewportPortal>
           {allNodes.map((node) => {
             // Groups don't get floating headers
-            if (node.type === "group" as any) return null;
+            if ((node.type as string) === "group") return null;
 
             const defaultWidth = defaultNodeDimensions[node.type as NodeType]?.width ?? 250;
             const headerWidth = node.measured?.width || (node.style?.width as number) || defaultWidth;
@@ -2422,7 +2428,7 @@ export function WorkflowCanvas() {
 
             // Optional toggle for input nodes
             const isInputNode = node.type === "imageInput" || node.type === "audioInput" || node.type === "prompt";
-            const isOptional = !!(node.data as any)?.isOptional;
+            const isOptional = !!(node.data as Record<string, unknown>)?.isOptional;
             const optionalToggle = isInputNode ? (
               <button
                 onClick={() => updateNodeData(node.id, { isOptional: !isOptional })}
@@ -2444,7 +2450,7 @@ export function WorkflowCanvas() {
               node.type === "generate3d" ||
               node.type === "generateAudio" ||
               node.type === "llmGenerate";
-            const fbData = node.data as any;
+            const fbData = node.data as { fallbackModel?: SelectedModel };
             const hasFallback = !!fbData?.fallbackModel;
             const fallbackName = fbData?.fallbackModel?.displayName;
             const capabilityForNodeType = (t: string | undefined) => {
@@ -2488,9 +2494,9 @@ export function WorkflowCanvas() {
                 key={`header-${node.id}`}
                 id={node.id}
                 type={node.type as NodeType}
-                isInLockedGroup={!!(node.data as any)?.isInLockedGroup}
-                isExecuting={!!(node.data as any)?.isExecuting}
-                focusedCommentNodeId={(node.data as any)?.focusedCommentNodeId}
+                isInLockedGroup={!!(node.groupId && groups[node.groupId]?.locked)}
+                isExecuting={isRunning}
+                focusedCommentNodeId={focusedCommentNodeId}
                 position={node.position}
                 width={headerWidth}
                 selected={!!node.selected}
@@ -2502,7 +2508,7 @@ export function WorkflowCanvas() {
                 }
                 customTitle={node.data?.customTitle}
                 comment={node.data?.comment}
-                provider={(node.data as any)?.selectedModel?.provider}
+                provider={(node.data as { selectedModel?: SelectedModel })?.selectedModel?.provider}
                 headerAction={(browseAction || fallbackButton) ? (
                   <>
                     {browseAction}
@@ -2572,7 +2578,7 @@ export function WorkflowCanvas() {
         return createPortal(
           <PromptEditorModal
             isOpen={true}
-            initialPrompt={(node.data as any)?.prompt || ''}
+            initialPrompt={(node.data as PromptNodeData)?.prompt || ''}
             onSubmit={(prompt) => {
               updateNodeData(expandingNode.id, { prompt });
               setExpandingNode(null);
@@ -2646,7 +2652,7 @@ export function WorkflowCanvas() {
         return (
           <SplitGridTemplateModal
             nodeId={expandingNode.id}
-            nodeData={node.data as any}
+            nodeData={node.data as SplitGridNodeData}
             onClose={() => setExpandingNode(null)}
           />
         );

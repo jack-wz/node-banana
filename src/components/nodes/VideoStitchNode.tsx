@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Handle, Position, NodeProps, Node } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { useWorkflowStore } from "@/store/workflowStore";
-import { VideoStitchNodeData } from "@/types";
+import { VideoStitchNodeData, WorkflowEdge, WorkflowNode } from "@/types";
 import { checkEncoderSupport } from "@/hooks/useStitchVideos";
 import { useVideoBlobUrl } from "@/hooks/useVideoBlobUrl";
 import { useVideoAutoplay } from "@/hooks/useVideoAutoplay";
@@ -72,7 +72,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
 
   // Get ordered clips based on clipOrder or connection order
   const orderedClips = useMemo(() => {
-    const clipMap = new Map<string, { edge: any; sourceNode: any; videoData: string | null; duration: number | null }>();
+    const clipMap = new Map<string, { edge: WorkflowEdge; sourceNode: WorkflowNode; videoData: string | null; duration: number | null }>();
 
     videoEdges.forEach((edge) => {
       const sourceNode = nodes.find((n) => n.id === edge.source);
@@ -82,13 +82,14 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
       const duration: number | null = null;
 
       if (sourceNode.type === "generateVideo" || sourceNode.type === "easeCurve" || sourceNode.type === "videoStitch" || sourceNode.type === "videoTrim") {
-        videoData = (sourceNode.data as any).outputVideo || null;
+        const outputVideo = (sourceNode.data as Record<string, unknown>).outputVideo;
+        videoData = typeof outputVideo === "string" ? outputVideo : null;
       }
 
       clipMap.set(edge.id, { edge, sourceNode, videoData, duration });
     });
 
-    let ordered: Array<{ edgeId: string; edge: any; sourceNode: any; videoData: string | null; duration: number | null }>;
+    let ordered: Array<{ edgeId: string; edge: WorkflowEdge; sourceNode: WorkflowNode; videoData: string | null; duration: number | null }>;
 
     if (nodeData.clipOrder && nodeData.clipOrder.length > 0) {
       ordered = nodeData.clipOrder
@@ -111,8 +112,8 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
     } else {
       ordered = videoEdges
         .sort((a, b) => {
-          const timeA = (a.data as any)?.createdAt ?? 0;
-          const timeB = (b.data as any)?.createdAt ?? 0;
+          const timeA = a.data?.createdAt ?? 0;
+          const timeB = b.data?.createdAt ?? 0;
           return timeA - timeB;
         })
         .map((edge) => {
