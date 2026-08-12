@@ -82,6 +82,14 @@ describe("OutputNode", () => {
       ...data,
     },
     selected: false,
+    dragging: false,
+    zIndex: 0,
+    selectable: true,
+    deletable: true,
+    draggable: true,
+    isConnectable: true,
+    positionAbsoluteX: 0,
+    positionAbsoluteY: 0,
   });
 
   describe("Empty State Rendering", () => {

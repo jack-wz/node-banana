@@ -51,6 +51,7 @@ describe("PromptNode", () => {
     dragging: false,
     deletable: true,
     selectable: true,
+    draggable: true,
     parentId: undefined,
     dragHandle: undefined,
   };
