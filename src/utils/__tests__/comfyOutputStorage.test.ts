@@ -11,7 +11,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { externalizeWorkflowMedia, hydrateWorkflowMedia } from "../mediaStorage";
-import type { WorkflowFile } from "@/types";
+import type { WorkflowFile } from "@/store/workflowStore";
 
 const IMAGE = "data:image/png;base64,aW1hZ2U=";
 const VIDEO = "data:video/mp4;base64,dmlkZW8=";

@@ -522,7 +522,7 @@ describe("AnnotationModal", () => {
     // Simulates React Flow's document-level key handler (deleteKeyCode etc.).
     // While the modal is open, destructive keys must never reach it — otherwise
     // Delete removes the selected NODE on the canvas behind the modal.
-    let canvasKeyHandler: ReturnType<typeof vi.fn>;
+    let canvasKeyHandler: ReturnType<typeof vi.fn<(ev: KeyboardEvent) => void>>;
 
     beforeEach(() => {
       canvasKeyHandler = vi.fn();

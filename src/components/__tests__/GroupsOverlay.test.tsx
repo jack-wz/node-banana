@@ -6,7 +6,7 @@ import {
   GroupsOverlay,
   selectViewportZoom,
 } from "@/components/GroupsOverlay";
-import { Group } from "@/types";
+import { NodeGroup } from "@/types";
 
 const mockViewport = vi.hoisted(() => ({ zoom: 1 }));
 
@@ -47,18 +47,18 @@ vi.mock("@/store/workflowStore", () => ({
 }));
 
 // Helper to create mock group
-const createMockGroup = (overrides: Partial<Group> = {}): Group => ({
+const createMockGroup = (overrides: Partial<NodeGroup> = {}): NodeGroup => ({
+  id: "group-1",
   name: "Test Group",
   color: "blue",
   position: { x: 100, y: 100 },
   size: { width: 400, height: 300 },
-  nodeIds: ["node-1", "node-2"],
   locked: false,
   ...overrides,
 });
 
 // Default store state factory
-const createDefaultState = (overrides: { groups?: Record<string, Group> } = {}) => ({
+const createDefaultState = (overrides: { groups?: Record<string, NodeGroup> } = {}) => ({
   groups: {},
   updateGroup: mockUpdateGroup,
   deleteGroup: mockDeleteGroup,

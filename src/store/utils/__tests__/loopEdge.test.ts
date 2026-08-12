@@ -10,7 +10,7 @@ import {
   findLoopSubgraph,
   copyLoopOutput,
 } from "@/store/utils/executionUtils";
-import { WorkflowEdge, WorkflowNode, WorkflowNodeData } from "@/types";
+import { WorkflowEdge, WorkflowNode, WorkflowNodeData, NodeType } from "@/types";
 
 // Helper to create minimal edge objects
 function makeEdge(source: string, target: string, data?: Record<string, unknown>): WorkflowEdge {
@@ -23,7 +23,7 @@ function makeEdge(source: string, target: string, data?: Record<string, unknown>
 }
 
 // Helper to create minimal node objects
-function makeNode(id: string, type: string, data: Partial<WorkflowNodeData> = {}): WorkflowNode {
+function makeNode(id: string, type: NodeType, data: Partial<WorkflowNodeData> = {}): WorkflowNode {
   return {
     id,
     type,

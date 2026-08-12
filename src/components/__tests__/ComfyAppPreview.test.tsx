@@ -118,7 +118,7 @@ describe("a running Comfy node", () => {
     expect(mockPreview).toHaveBeenCalledWith("job_1", true);
 
     mockPreview.mockClear();
-    render(tree(nodeData({ status: "success", runStatus: null })));
+    render(tree(nodeData({ status: "complete", runStatus: null })));
     expect(mockPreview).toHaveBeenCalledWith("job_1", false);
   });
 
