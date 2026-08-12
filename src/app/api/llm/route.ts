@@ -29,6 +29,11 @@ const ANTHROPIC_MODEL_MAP: Record<string, string> = {
   "claude-opus-4.6": "claude-opus-4-6",
 };
 
+const DEEPSEEK_MODEL_MAP: Record<string, string> = {
+  "deepseek-chat": "deepseek-chat",
+  "deepseek-reasoner": "deepseek-reasoner",
+};
+
 async function generateWithGoogle(
   prompt: string,
   model: LLMModelType,
@@ -289,6 +294,90 @@ async function generateWithAnthropic(
   return text;
 }
 
+async function generateWithDeepSeek(
+  prompt: string,
+  model: LLMModelType,
+  temperature: number,
+  maxTokens: number,
+  images?: string[],
+  requestId?: string,
+  userApiKey?: string | null
+): Promise<string> {
+  const apiKey = userApiKey || process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) {
+    logger.error('api.error', 'DEEPSEEK_API_KEY not configured', { requestId });
+    throw new Error("DEEPSEEK_API_KEY not configured. Add it to .env.local or configure in Settings.");
+  }
+
+  const modelId = DEEPSEEK_MODEL_MAP[model] || model;
+
+  logger.info('api.llm', 'Calling DeepSeek API', {
+    requestId,
+    model: modelId,
+    temperature,
+    maxTokens,
+    imageCount: images?.length || 0,
+    promptLength: prompt.length,
+  });
+
+  // DeepSeek uses OpenAI-compatible API format
+  let content: string | Array<{ type: string; text?: string; image_url?: { url: string } }>;
+  if (images && images.length > 0) {
+    content = [
+      { type: "text", text: prompt },
+      ...images.map((img) => ({
+        type: "image_url" as const,
+        image_url: { url: img },
+      })),
+    ];
+  } else {
+    content = prompt;
+  }
+
+  const startTime = Date.now();
+  const response = await fetch("https://api.deepseek.com/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: modelId,
+      messages: [{ role: "user", content }],
+      temperature,
+      max_tokens: maxTokens,
+    }),
+  });
+  const duration = Date.now() - startTime;
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    logger.error('api.error', 'DeepSeek API request failed', {
+      requestId,
+      status: response.status,
+      error: error.error?.message,
+    });
+    throw new Error(error.error?.message || `DeepSeek API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  // DeepSeek R1 returns reasoning_content + content; we use content (the final answer)
+  const text = data.choices?.[0]?.message?.content;
+
+  if (!text) {
+    logger.error('api.error', 'No text in DeepSeek response', { requestId });
+    throw new Error("No text in DeepSeek response");
+  }
+
+  logger.info('api.llm', 'DeepSeek API response received', {
+    requestId,
+    duration,
+    responseLength: text.length,
+  });
+
+  return text;
+}
+
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId();
 
@@ -297,6 +386,7 @@ export async function POST(request: NextRequest) {
     const geminiApiKey = request.headers.get("X-Gemini-API-Key");
     const openaiApiKey = request.headers.get("X-OpenAI-API-Key");
     const anthropicApiKey = request.headers.get("X-Anthropic-API-Key");
+    const deepseekApiKey = request.headers.get("X-DeepSeek-API-Key");
 
     const body: LLMGenerateRequest = await request.json();
     const {
@@ -335,6 +425,8 @@ export async function POST(request: NextRequest) {
       text = await generateWithOpenAI(prompt, model, temperature, maxTokens, images, requestId, openaiApiKey);
     } else if (provider === "anthropic") {
       text = await generateWithAnthropic(prompt, model, temperature, maxTokens, images, requestId, anthropicApiKey);
+    } else if (provider === "deepseek") {
+      text = await generateWithDeepSeek(prompt, model, temperature, maxTokens, images, requestId, deepseekApiKey);
     } else {
       logger.warn('api.llm', 'Unknown provider requested', { requestId, provider });
       return NextResponse.json<LLMGenerateResponse>(

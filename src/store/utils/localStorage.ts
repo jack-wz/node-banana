@@ -53,6 +53,7 @@ export const defaultProviderSettings: ProviderSettings = {
     fal: { id: "fal", name: "fal.ai", enabled: false, apiKey: null, apiKeyEnvVar: "FAL_API_KEY" },
     kie: { id: "kie", name: "Kie.ai", enabled: false, apiKey: null, apiKeyEnvVar: "KIE_API_KEY" },
     wavespeed: { id: "wavespeed", name: "WaveSpeed", enabled: false, apiKey: null, apiKeyEnvVar: "WAVESPEED_API_KEY" },
+    deepseek: { id: "deepseek", name: "DeepSeek", enabled: false, apiKey: null, apiKeyEnvVar: "DEEPSEEK_API_KEY" },
   }
 };
 
@@ -255,6 +256,37 @@ export const getFTUXCompleted = (): boolean => {
 export const setFTUXCompleted = (completed: boolean): void => {
   if (typeof window === "undefined") return;
   localStorage.setItem(FTUX_COMPLETED_KEY, completed ? "true" : "false");
+};
+
+// Recent models helpers
+export const loadRecentModels = (): RecentModel[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(RECENT_MODELS_KEY);
+    if (!stored) return [];
+    const parsed = JSON.parse(stored) as RecentModel[];
+    return Array.isArray(parsed) ? parsed.slice(0, MAX_RECENT_MODELS) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const addRecentModel = (model: Omit<RecentModel, "timestamp">): void => {
+  if (typeof window === "undefined") return;
+  try {
+    const existing = loadRecentModels();
+    // Remove duplicate by modelId+provider
+    const filtered = existing.filter(
+      (m) => !(m.modelId === model.modelId && m.provider === model.provider)
+    );
+    const updated: RecentModel[] = [
+      { ...model, timestamp: Date.now() },
+      ...filtered,
+    ].slice(0, MAX_RECENT_MODELS);
+    localStorage.setItem(RECENT_MODELS_KEY, JSON.stringify(updated));
+  } catch {
+    // Silently fail
+  }
 };
 
 /**

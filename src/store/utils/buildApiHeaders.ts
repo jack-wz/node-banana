@@ -18,6 +18,7 @@ const PROVIDER_HEADER_MAP: Record<ProviderType, string> = {
   wavespeed: "X-WaveSpeed-Key",
   openai: "X-OpenAI-API-Key",
   anthropic: "X-Anthropic-API-Key",
+  deepseek: "X-DeepSeek-API-Key",
 };
 
 /**
@@ -70,6 +71,13 @@ export function buildLlmHeaders(
     const anthropicConfig = providerSettings.providers.anthropic;
     if (anthropicConfig?.apiKey) {
       headers["X-Anthropic-API-Key"] = anthropicConfig.apiKey;
+    }
+  } else if (llmProvider === "deepseek") {
+    // DeepSeek shares the ProviderSettings namespace via a dedicated key
+    // stored under providers.deepseek (added by ProjectSetupModal / Settings)
+    const deepseekConfig = (providerSettings.providers as Record<string, { apiKey?: string | null }>).deepseek;
+    if (deepseekConfig?.apiKey) {
+      headers["X-DeepSeek-API-Key"] = deepseekConfig.apiKey;
     }
   }
 
