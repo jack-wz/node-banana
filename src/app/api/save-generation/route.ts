@@ -3,6 +3,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import * as crypto from "crypto";
 import { logger } from "@/utils/logger";
+import { recordGeneration } from "@/lib/db";
 
 export const maxDuration = 300; // 5 minute timeout for large media operations
 
@@ -113,6 +114,11 @@ export async function POST(request: NextRequest) {
     const imageId = body.imageId; // Optional ID for carousel support
     const customFilename = body.customFilename; // Optional custom filename (without extension)
     const createDirectory = body.createDirectory; // Optional flag to create directory if it doesn't exist
+    const provider = typeof body.provider === "string" ? body.provider : null; // Optional provider metadata for DB record
+    const model = typeof body.model === "string" ? body.model : null; // Optional model ID for DB record
+    const cost = typeof body.cost === "number" && Number.isFinite(body.cost) ? body.cost : null; // Optional incurred cost
+
+    const mediaType = video ? "video" : model3d ? "model3d" : audio ? "audio" : "image";
 
     const isVideo = !!video;
     const isModel = !!model3d;
@@ -275,6 +281,17 @@ export async function POST(request: NextRequest) {
         filePath: existingPath,
       });
 
+      await recordGeneration({
+        mediaType,
+        prompt,
+        provider,
+        model,
+        cost,
+        filePath: existingPath,
+        contentHash,
+        isDuplicate: true,
+      });
+
       return NextResponse.json({
         success: true,
         filePath: existingPath,
@@ -317,6 +334,17 @@ export async function POST(request: NextRequest) {
       isModel,
       isAudio,
       contentHash,
+    });
+
+    await recordGeneration({
+      mediaType,
+      prompt,
+      provider,
+      model,
+      cost,
+      filePath,
+      contentHash,
+      isDuplicate: false,
     });
 
     return NextResponse.json({

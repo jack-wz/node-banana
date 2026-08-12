@@ -1,0 +1,32 @@
+# node-banana on fnOS NAS
+# - Joins the existing WeKnora docker network (external) to reach the shared
+#   ParadeDB instance as host "postgres".
+# - Also keeps a default network so outbound internet (Gemini/fal.ai/KIE...)
+#   works without touching the WeKnora stack.
+# Usage: cp .env.example .env  (fill in values)  then  docker compose up -d --build
+
+services:
+  node-banana:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: node-banana:latest
+    container_name: node-banana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+    volumes:
+      # Team media directory on the NAS volume
+      - ${DATA_DIR}:/data
+    networks:
+      - weknora
+      - default
+
+networks:
+  weknora:
+    external: true
+    name: weknora_WeKnora-network
