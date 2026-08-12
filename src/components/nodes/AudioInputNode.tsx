@@ -209,10 +209,10 @@ export function AudioInputNode({ id, data, selected }: NodeProps<AudioInputNodeT
 
             {/* Progress bar / scrubber */}
             <div className="flex-1 h-1 bg-neutral-700 rounded-full overflow-hidden relative">
-              {audioRef.current?.duration && isFinite(audioRef.current.duration) && (
+              {nodeData.duration && isFinite(nodeData.duration) && (
                 <div
                   className="h-full bg-violet-500 transition-all"
-                  style={{ width: `${(currentTime / audioRef.current.duration) * 100}%` }}
+                  style={{ width: `${(currentTime / nodeData.duration) * 100}%` }}
                 />
               )}
             </div>

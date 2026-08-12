@@ -13,6 +13,7 @@ interface UseAudioPlaybackResult {
   waveformContainerRef: React.RefObject<HTMLDivElement | null>;
   isPlaying: boolean;
   currentTime: number;
+  duration: number;
   handlePlayPause: () => void;
   handleSeek: (e: React.MouseEvent<HTMLDivElement>) => void;
   formatTime: (seconds: number) => string;
@@ -28,6 +29,7 @@ export function useAudioPlayback({ audioSrc, waveformData, isLoadingWaveform }: 
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   // Setup audio element. The !audioSrc branch matches isPlaying/currentTime's
   // own useState defaults (no-op on mount); the rest of this effect creates
@@ -41,6 +43,7 @@ export function useAudioPlayback({ audioSrc, waveformData, isLoadingWaveform }: 
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsPlaying(false);
       setCurrentTime(0);
+      setDuration(0);
       return;
     }
 
@@ -51,6 +54,7 @@ export function useAudioPlayback({ audioSrc, waveformData, isLoadingWaveform }: 
 
     const audio = new Audio(audioSrc);
     audioRef.current = audio;
+    setDuration(0);
 
     const handleEnded = () => {
       setIsPlaying(false);
@@ -59,12 +63,17 @@ export function useAudioPlayback({ audioSrc, waveformData, isLoadingWaveform }: 
     const handleTimeUpdate = () => {
       setCurrentTime(audio.currentTime);
     };
+    const handleLoadedMetadata = () => {
+      if (isFinite(audio.duration)) setDuration(audio.duration);
+    };
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
 
     return () => {
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.pause();
       audioRef.current = null;
     };
@@ -207,6 +216,7 @@ export function useAudioPlayback({ audioSrc, waveformData, isLoadingWaveform }: 
     waveformContainerRef,
     isPlaying,
     currentTime,
+    duration,
     handlePlayPause,
     handleSeek,
     formatTime,

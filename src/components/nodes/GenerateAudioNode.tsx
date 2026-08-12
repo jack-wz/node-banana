@@ -77,6 +77,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
     waveformContainerRef,
     isPlaying,
     currentTime,
+    duration,
     handlePlayPause,
     handleSeek,
     formatTime,
@@ -332,10 +333,10 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
 
               {/* Progress bar */}
               <div className="flex-1 h-1 bg-neutral-700 rounded-full overflow-hidden relative">
-                {!!audioRef.current?.duration && isFinite(audioRef.current.duration) && (
+                {!!duration && isFinite(duration) && (
                   <div
                     className="h-full bg-violet-500 transition-all"
-                    style={{ width: `${(currentTime / audioRef.current.duration) * 100}%` }}
+                    style={{ width: `${(currentTime / duration) * 100}%` }}
                   />
                 )}
               </div>
