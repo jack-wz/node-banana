@@ -23,7 +23,7 @@ class MockAudioBuffer {
 
 beforeAll(() => {
   if (typeof globalThis.AudioBuffer === "undefined") {
-    (globalThis as any).AudioBuffer = MockAudioBuffer;
+    (globalThis as unknown as { AudioBuffer: typeof MockAudioBuffer }).AudioBuffer = MockAudioBuffer;
   }
 });
 
@@ -45,29 +45,29 @@ const mockBufferTargetBuffer = new ArrayBuffer(100);
 vi.mock("mediabunny", () => {
   class BlobSourceMock { constructor() {} }
   class InputMock {
-    getVideoTracks: any;
-    computeDuration: any;
-    dispose: any;
+    getVideoTracks: (...args: unknown[]) => unknown;
+    computeDuration: (...args: unknown[]) => unknown;
+    dispose: (...args: unknown[]) => unknown;
     constructor() {
-      this.getVideoTracks = (...args: any[]) => mockGetVideoTracks(...args);
+      this.getVideoTracks = (...args: unknown[]) => mockGetVideoTracks(...args);
       this.computeDuration = vi.fn().mockResolvedValue(1.0);
-      this.dispose = (...args: any[]) => mockDispose(...args);
+      this.dispose = (...args: unknown[]) => mockDispose(...args);
     }
   }
   class OutputMock {
-    addVideoTrack: any;
-    addAudioTrack: any;
-    start: any;
-    finalize: any;
+    addVideoTrack: (...args: unknown[]) => unknown;
+    addAudioTrack: (...args: unknown[]) => unknown;
+    start: (...args: unknown[]) => unknown;
+    finalize: (...args: unknown[]) => unknown;
     constructor() {
-      this.addVideoTrack = (...args: any[]) => mockAddVideoTrack(...args);
-      this.addAudioTrack = (...args: any[]) => mockAddAudioTrack(...args);
-      this.start = (...args: any[]) => mockOutputStart(...args);
-      this.finalize = (...args: any[]) => mockOutputFinalize(...args);
+      this.addVideoTrack = (...args: unknown[]) => mockAddVideoTrack(...args);
+      this.addAudioTrack = (...args: unknown[]) => mockAddAudioTrack(...args);
+      this.start = (...args: unknown[]) => mockOutputStart(...args);
+      this.finalize = (...args: unknown[]) => mockOutputFinalize(...args);
     }
   }
   class VideoSampleSinkMock {
-    samples: any;
+    samples: (...args: unknown[]) => unknown;
     constructor() {
       this.samples = vi.fn().mockReturnValue({
         [Symbol.asyncIterator]: async function* () {
@@ -77,19 +77,19 @@ vi.mock("mediabunny", () => {
     }
   }
   class VideoSampleSourceMock {
-    add: any;
-    close: any;
+    add: (...args: unknown[]) => unknown;
+    close: (...args: unknown[]) => unknown;
     constructor() {
-      this.add = (...args: any[]) => mockVideoSourceAdd(...args);
-      this.close = (...args: any[]) => mockVideoSourceClose(...args);
+      this.add = (...args: unknown[]) => mockVideoSourceAdd(...args);
+      this.close = (...args: unknown[]) => mockVideoSourceClose(...args);
     }
   }
   class AudioBufferSourceMock {
-    add: any;
-    close: any;
+    add: (...args: unknown[]) => unknown;
+    close: (...args: unknown[]) => unknown;
     constructor() {
-      this.add = (...args: any[]) => mockAudioSourceAdd(...args);
-      this.close = (...args: any[]) => mockAudioSourceClose(...args);
+      this.add = (...args: unknown[]) => mockAudioSourceAdd(...args);
+      this.close = (...args: unknown[]) => mockAudioSourceClose(...args);
     }
   }
   class BufferTargetMock {
@@ -178,7 +178,7 @@ describe("useStitchVideos", () => {
       await stitchVideosAsync([blob], null, onProgress);
 
       expect(onProgress).toHaveBeenCalled();
-      const statuses = onProgress.mock.calls.map((c: any[]) => c[0].status);
+      const statuses = onProgress.mock.calls.map((c: unknown[]) => (c[0] as { status: string }).status);
       expect(statuses).toContain("processing");
       expect(statuses).toContain("complete");
     });

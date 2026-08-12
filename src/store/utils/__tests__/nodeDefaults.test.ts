@@ -109,7 +109,7 @@ describe("nodeDefaults utilities", () => {
 
       expect(data).toHaveProperty("sourceImage", null);
       expect(data).toHaveProperty("annotations");
-      expect(Array.isArray((data as any).annotations)).toBe(true);
+      expect(Array.isArray((data as Record<string, unknown>).annotations)).toBe(true);
       expect(data).toHaveProperty("outputImage", null);
     });
 
@@ -130,7 +130,7 @@ describe("nodeDefaults utilities", () => {
       expect(data).toHaveProperty("removeEmpty", true);
       expect(data).toHaveProperty("selectedOutputIndex", null);
       expect(data).toHaveProperty("outputItems");
-      expect(Array.isArray((data as any).outputItems)).toBe(true);
+      expect(Array.isArray((data as Record<string, unknown>).outputItems)).toBe(true);
       expect(data).toHaveProperty("outputText", "[]");
       expect(data).toHaveProperty("error", null);
     });
@@ -222,10 +222,10 @@ describe("nodeDefaults utilities", () => {
 
       const data = createDefaultNodeData("nanoBanana");
 
-      expect((data as any).aspectRatio).toBe("16:9");
-      expect((data as any).resolution).toBe("2K");
-      expect((data as any).model).toBe("nano-banana");
-      expect((data as any).useGoogleSearch).toBe(true);
+      expect((data as Record<string, unknown>).aspectRatio).toBe("16:9");
+      expect((data as Record<string, unknown>).resolution).toBe("2K");
+      expect((data as Record<string, unknown>).model).toBe("nano-banana");
+      expect((data as Record<string, unknown>).useGoogleSearch).toBe(true);
     });
 
     it("uses node defaults selectedModel for nanoBanana when set", () => {
@@ -243,13 +243,13 @@ describe("nodeDefaults utilities", () => {
 
       const data = createDefaultNodeData("nanoBanana");
 
-      expect((data as any).selectedModel).toEqual({
+      expect((data as Record<string, unknown>).selectedModel).toEqual({
         provider: "fal",
         modelId: "flux-pro",
         displayName: "Flux Pro",
       });
-      expect((data as any).aspectRatio).toBe("4:3");
-      expect((data as any).useGoogleSearch).toBe(true);
+      expect((data as Record<string, unknown>).aspectRatio).toBe("4:3");
+      expect((data as Record<string, unknown>).useGoogleSearch).toBe(true);
     });
 
     it("uses node defaults selectedModel for generateVideo when set", () => {
@@ -265,7 +265,7 @@ describe("nodeDefaults utilities", () => {
 
       const data = createDefaultNodeData("generateVideo");
 
-      expect((data as any).selectedModel).toEqual({
+      expect((data as Record<string, unknown>).selectedModel).toEqual({
         provider: "replicate",
         modelId: "kling-video",
         displayName: "Kling Video",
@@ -275,7 +275,7 @@ describe("nodeDefaults utilities", () => {
     it("returns undefined selectedModel for generateVideo when not set", () => {
       const data = createDefaultNodeData("generateVideo");
 
-      expect((data as any).selectedModel).toBeUndefined();
+      expect((data as Record<string, unknown>).selectedModel).toBeUndefined();
     });
 
     it("uses node defaults for llmGenerate when set", () => {
@@ -294,19 +294,19 @@ describe("nodeDefaults utilities", () => {
 
       const data = createDefaultNodeData("llmGenerate");
 
-      expect((data as any).provider).toBe("openai");
-      expect((data as any).model).toBe("gpt-4.1-mini");
-      expect((data as any).temperature).toBe(0.3);
-      expect((data as any).maxTokens).toBe(4096);
+      expect((data as Record<string, unknown>).provider).toBe("openai");
+      expect((data as Record<string, unknown>).model).toBe("gpt-4.1-mini");
+      expect((data as Record<string, unknown>).temperature).toBe(0.3);
+      expect((data as Record<string, unknown>).maxTokens).toBe(4096);
     });
 
     it("falls back to hardcoded llmGenerate defaults when not set", () => {
       const data = createDefaultNodeData("llmGenerate");
 
-      expect((data as any).provider).toBe("google");
-      expect((data as any).model).toBe("gemini-3-flash-preview");
-      expect((data as any).temperature).toBe(0.7);
-      expect((data as any).maxTokens).toBe(8192);
+      expect((data as Record<string, unknown>).provider).toBe("google");
+      expect((data as Record<string, unknown>).model).toBe("gemini-3-flash-preview");
+      expect((data as Record<string, unknown>).temperature).toBe(0.7);
+      expect((data as Record<string, unknown>).maxTokens).toBe(8192);
     });
 
     it("partially overrides llmGenerate defaults with node defaults", () => {
@@ -323,11 +323,11 @@ describe("nodeDefaults utilities", () => {
       const data = createDefaultNodeData("llmGenerate");
 
       // Should use node default for temperature
-      expect((data as any).temperature).toBe(0.9);
+      expect((data as Record<string, unknown>).temperature).toBe(0.9);
       // Should fall back to hardcoded for others
-      expect((data as any).provider).toBe("google");
-      expect((data as any).model).toBe("gemini-3-flash-preview");
-      expect((data as any).maxTokens).toBe(8192);
+      expect((data as Record<string, unknown>).provider).toBe("google");
+      expect((data as Record<string, unknown>).model).toBe("gemini-3-flash-preview");
+      expect((data as Record<string, unknown>).maxTokens).toBe(8192);
     });
   });
 });
