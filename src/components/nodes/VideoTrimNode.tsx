@@ -37,7 +37,9 @@ export function VideoTrimNode({ id, data, selected }: NodeProps<VideoTrimNodeTyp
 
   // Keep a ref to endTime so the metadata callback reads fresh state
   const endTimeRef = useRef(nodeData.endTime);
-  endTimeRef.current = nodeData.endTime;
+  useEffect(() => {
+    endTimeRef.current = nodeData.endTime;
+  }, [nodeData.endTime]);
 
   // Check encoder support on mount
   useEffect(() => {

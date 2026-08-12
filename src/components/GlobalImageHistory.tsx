@@ -219,6 +219,7 @@ function HistorySidebar({
 export function GlobalImageHistory() {
   const [isOpen, setIsOpen] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -287,6 +288,7 @@ export function GlobalImageHistory() {
   );
 
   const handleShowAll = useCallback(() => {
+    setTriggerRect(triggerRef.current?.getBoundingClientRect() || null);
     setIsOpen(false);
     setShowSidebar(true);
   }, []);
@@ -382,7 +384,7 @@ export function GlobalImageHistory() {
           onClear={handleClear}
           onClose={handleCloseSidebar}
           onDragStart={handleDragStart}
-          triggerRect={triggerRef.current?.getBoundingClientRect() || null}
+          triggerRect={triggerRect}
         />
       )}
     </div>

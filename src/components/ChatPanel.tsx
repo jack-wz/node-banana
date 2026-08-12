@@ -26,11 +26,15 @@ export function ChatPanel({ isOpen, onClose, onBuildWorkflow, isBuildingWorkflow
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Use a ref so the fetch closure always reads the latest workflowState and selectedNodeIds
-  // without needing to re-create the transport
+  // without needing to re-create the transport. customFetch only reads these
+  // refs when a message is actually sent, well after this effect has run, so
+  // updating them post-commit rather than during render is safe.
   const workflowStateRef = useRef(workflowState);
-  workflowStateRef.current = workflowState;
   const selectedNodeIdsRef = useRef(selectedNodeIds);
-  selectedNodeIdsRef.current = selectedNodeIds;
+  useEffect(() => {
+    workflowStateRef.current = workflowState;
+    selectedNodeIdsRef.current = selectedNodeIds;
+  }, [workflowState, selectedNodeIds]);
 
   // Stable fetch function that reads workflowState and selectedNodeIds from ref
   const customFetch = useCallback(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -51,6 +55,9 @@ export function ChatPanel({ isOpen, onClose, onBuildWorkflow, isBuildingWorkflow
     });
   }, []);
 
+  // customFetch never reads the refs synchronously during render — it's only
+  // invoked asynchronously by the SDK when a message is sent.
+  // eslint-disable-next-line react-hooks/refs -- customFetch only runs async, never during this render
   const [transport] = useState(() => new DefaultChatTransport({ api: "/api/chat", fetch: customFetch }));
 
   const { messages, sendMessage, setMessages, status } = useChat({

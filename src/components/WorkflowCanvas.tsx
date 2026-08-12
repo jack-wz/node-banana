@@ -1299,7 +1299,9 @@ export function WorkflowCanvas() {
   // actually read (at chat send time, when ChatPanel serializes it) rather than
   // on every drag frame or execution-status tick.
   const chatWorkflowRawRef = useRef({ nodes, edges });
-  chatWorkflowRawRef.current = { nodes, edges };
+  useEffect(() => {
+    chatWorkflowRawRef.current = { nodes, edges };
+  }, [nodes, edges]);
   const chatWorkflowState = useMemo(() => ({
     get nodes() {
       const strippedNodes = stripBinaryData(chatWorkflowRawRef.current.nodes);

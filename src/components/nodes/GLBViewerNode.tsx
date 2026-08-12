@@ -21,18 +21,17 @@ type GLBViewerNodeType = Node<GLBViewerNodeData, "glbViewer">;
  * Renders a loaded GLB model using the raw GLTFLoader (avoids drei caching issues with blob URLs).
  */
 function Model({ url, onError }: { url: string; onError?: () => void }) {
-  const groupRef = useRef<THREE.Group>(null);
-  const sceneRef = useRef<THREE.Group | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const [scene, setScene] = useState<THREE.Group | null>(null);
   const { camera } = useThree();
 
   useEffect(() => {
     let cancelled = false;
-    // Matches the `loaded` useState default, so this is a no-op on mount;
+    let loadedScene: THREE.Group | null = null;
+    // Matches the `scene` useState default, so this is a no-op on mount;
     // genuinely resets it on later url changes while a GLTFLoader load is
     // already underway below, which is why this stays an effect.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoaded(false);
+    setScene(null);
 
     const loader = new GLTFLoader();
     try {
@@ -41,7 +40,7 @@ function Model({ url, onError }: { url: string; onError?: () => void }) {
         (gltf) => {
           if (cancelled) return;
 
-          const loadedScene = gltf.scene;
+          loadedScene = gltf.scene;
 
           // Compute bounding box and normalize
           const box = new THREE.Box3().setFromObject(loadedScene);
@@ -62,8 +61,7 @@ function Model({ url, onError }: { url: string; onError?: () => void }) {
             );
           }
 
-          sceneRef.current = loadedScene;
-          setLoaded(true);
+          setScene(loadedScene);
 
           // Fit camera to model
           const dist = 3.5;
@@ -83,9 +81,9 @@ function Model({ url, onError }: { url: string; onError?: () => void }) {
 
     return () => {
       cancelled = true;
-      // Cleanup previous scene
-      if (sceneRef.current) {
-        sceneRef.current.traverse((obj) => {
+      // Cleanup the scene loaded by this effect run
+      if (loadedScene) {
+        loadedScene.traverse((obj) => {
           if (obj instanceof THREE.Mesh) {
             try { obj.geometry?.dispose(); } catch (e) { console.warn("GLB geometry dispose failed:", e); }
             try {
@@ -97,16 +95,15 @@ function Model({ url, onError }: { url: string; onError?: () => void }) {
             } catch (e) { console.warn("GLB material dispose failed:", e); }
           }
         });
-        sceneRef.current = null;
       }
     };
   }, [url, camera, onError]);
 
-  if (!loaded || !sceneRef.current) return null;
+  if (!scene) return null;
 
   return (
-    <group ref={groupRef}>
-      <primitive object={sceneRef.current} />
+    <group>
+      <primitive object={scene} />
     </group>
   );
 }
