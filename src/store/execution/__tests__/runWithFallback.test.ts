@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { runWithFallback } from "../runWithFallback";
-import type { SelectedModel } from "@/types";
+import type { SelectedModel, WorkflowNodeData } from "@/types";
 
 const primary: SelectedModel = {
   provider: "gemini",
@@ -19,7 +19,7 @@ function makeAbortError(): DOMException {
 }
 
 describe("runWithFallback", () => {
-  let updateNodeData: ReturnType<typeof vi.fn>;
+  let updateNodeData: ReturnType<typeof vi.fn<(id: string, data: Partial<WorkflowNodeData>) => void>>;
 
   beforeEach(() => {
     updateNodeData = vi.fn();

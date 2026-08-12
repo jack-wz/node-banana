@@ -62,6 +62,8 @@ function makeCtx(
     saveDirectoryPath: null,
     trackSaveGeneration: vi.fn(),
     appendOutputGalleryImage: vi.fn(),
+    appendOutputGalleryVideo: vi.fn(),
+    materializeSplitGridCells: vi.fn().mockReturnValue(false),
     get: vi.fn(),
     ...overrides,
   };
