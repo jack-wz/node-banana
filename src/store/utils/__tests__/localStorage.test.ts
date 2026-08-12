@@ -24,7 +24,7 @@ import {
   getCanvasNavigationSettings,
   saveCanvasNavigationSettings,
 } from "../localStorage";
-import { defaultCanvasNavigationSettings, ProviderSettings } from "@/types";
+import { defaultCanvasNavigationSettings, ProviderSettings, NodeDefaultsConfig } from "@/types";
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -81,8 +81,9 @@ describe("localStorage utilities", () => {
       const config = {
         workflowId: "wf_456",
         name: "New Workflow",
-        path: "/path/to/new",
-        lastSaved: Date.now(),
+        directoryPath: "/path/to/new",
+        generationsPath: "/path/to/new/generations",
+        lastSavedAt: Date.now(),
       };
 
       saveSaveConfig(config);
@@ -95,8 +96,9 @@ describe("localStorage utilities", () => {
       const existingConfig = {
         workflowId: "wf_existing",
         name: "Existing",
-        path: "/existing",
-        lastSaved: Date.now(),
+        directoryPath: "/existing",
+        generationsPath: "/existing/generations",
+        lastSavedAt: Date.now(),
       };
       localStorageMock.setItem(
         STORAGE_KEY,
@@ -106,8 +108,9 @@ describe("localStorage utilities", () => {
       const newConfig = {
         workflowId: "wf_new",
         name: "New",
-        path: "/new",
-        lastSaved: Date.now(),
+        directoryPath: "/new",
+        generationsPath: "/new/generations",
+        lastSavedAt: Date.now(),
       };
       saveSaveConfig(newConfig);
 
@@ -154,7 +157,7 @@ describe("localStorage utilities", () => {
 
   describe("saveWorkflowCostData", () => {
     it("stores cost data", () => {
-      const costData = { workflowId: "wf_789", totalCost: 2.5 };
+      const costData = { workflowId: "wf_789", incurredCost: 2.5, lastUpdated: Date.now() };
 
       saveWorkflowCostData(costData);
 
@@ -325,7 +328,7 @@ describe("localStorage utilities", () => {
 
   describe("saveNodeDefaults", () => {
     it("stores config to localStorage", () => {
-      const config = {
+      const config: NodeDefaultsConfig = {
         generateVideo: {
           selectedModel: { provider: "replicate", modelId: "video-model", displayName: "Video Model" },
         },

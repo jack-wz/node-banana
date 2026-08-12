@@ -23,7 +23,7 @@ describe("createViewportPanBatcher", () => {
     expect(requestFrame).toHaveBeenCalledTimes(1);
     expect(setViewport).not.toHaveBeenCalled();
 
-    frameCallback?.(0);
+    (frameCallback as FrameRequestCallback | null)?.(0);
 
     expect(setViewport).toHaveBeenCalledTimes(1);
     expect(setViewport).toHaveBeenCalledWith({ x: 97, y: 191, zoom: 0.5 });
@@ -56,7 +56,7 @@ describe("createPanActivityTracker", () => {
       setActive,
       scheduleEnd: (callback) => {
         endCallback = callback;
-        return 9 as ReturnType<typeof setTimeout>;
+        return 9 as unknown as ReturnType<typeof setTimeout>;
       },
       cancelEnd,
     });
@@ -68,7 +68,7 @@ describe("createPanActivityTracker", () => {
     expect(setActive).toHaveBeenCalledWith(true);
     expect(cancelEnd).toHaveBeenCalledWith(9);
 
-    endCallback?.();
+    (endCallback as (() => void) | null)?.();
     expect(setActive).toHaveBeenLastCalledWith(false);
   });
 
@@ -77,7 +77,7 @@ describe("createPanActivityTracker", () => {
     const cancelEnd = vi.fn();
     const tracker = createPanActivityTracker({
       setActive,
-      scheduleEnd: () => 11 as ReturnType<typeof setTimeout>,
+      scheduleEnd: () => 11 as unknown as ReturnType<typeof setTimeout>,
       cancelEnd,
     });
 
