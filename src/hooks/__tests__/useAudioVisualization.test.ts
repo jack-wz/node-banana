@@ -35,7 +35,7 @@ const { mockDecodeAudioData, MockAudioBuffer } = vi.hoisted(() => {
 
   // Install polyfills on globalThis (which is window in jsdom)
   if (typeof globalThis.AudioBuffer === "undefined") {
-    (globalThis as any).AudioBuffer = _MockAudioBuffer;
+    (globalThis as unknown as { AudioBuffer: typeof _MockAudioBuffer }).AudioBuffer = _MockAudioBuffer;
   }
   // The hook's decodeAudioBuffer checks context.decodeAudioData.length === 1
   // to decide between promise-based and callback-based calling. Set length to 1
@@ -50,7 +50,7 @@ const { mockDecodeAudioData, MockAudioBuffer } = vi.hoisted(() => {
       state: "running",
     };
   }
-  (globalThis as any).AudioContext = MockAudioContext;
+  (globalThis as unknown as { AudioContext: unknown }).AudioContext = MockAudioContext;
 
   return { mockDecodeAudioData: _mockDecodeAudioData, MockAudioBuffer: _MockAudioBuffer };
 });
@@ -64,7 +64,7 @@ import { useAudioVisualization } from "../useAudioVisualization";
 function createAudioBlob(content: string, type = "audio/mp3"): Blob {
   const blob = new Blob([content], { type });
   if (!blob.arrayBuffer) {
-    (blob as any).arrayBuffer = () =>
+    blob.arrayBuffer = () =>
       new Promise<ArrayBuffer>((resolve) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as ArrayBuffer);
@@ -80,7 +80,7 @@ function createAudioBlob(content: string, type = "audio/mp3"): Blob {
 function createAudioFile(content: string, name: string, type = "audio/mp3"): File {
   const file = new File([content], name, { type });
   if (!file.arrayBuffer) {
-    (file as any).arrayBuffer = () =>
+    file.arrayBuffer = () =>
       new Promise<ArrayBuffer>((resolve) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as ArrayBuffer);

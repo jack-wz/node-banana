@@ -27,10 +27,10 @@ class MockAudioBuffer implements AudioBuffer {
 
 beforeAll(() => {
   if (typeof globalThis.AudioBuffer === "undefined") {
-    (globalThis as any).AudioBuffer = MockAudioBuffer;
+    (globalThis as unknown as { AudioBuffer: typeof MockAudioBuffer }).AudioBuffer = MockAudioBuffer;
   }
   if (typeof globalThis.AudioContext === "undefined") {
-    (globalThis as any).AudioContext = vi.fn().mockImplementation(() => ({
+    (globalThis as unknown as { AudioContext: unknown }).AudioContext = vi.fn().mockImplementation(() => ({
       decodeAudioData: vi.fn(),
       close: vi.fn().mockResolvedValue(undefined),
       state: "running",
@@ -55,17 +55,17 @@ const mockBuffers = vi.fn();
 vi.mock("mediabunny", () => {
   class BlobSourceMock { constructor() {} }
   class InputMock {
-    getPrimaryAudioTrack: any;
-    computeDuration: any;
+    getPrimaryAudioTrack: (...args: unknown[]) => unknown;
+    computeDuration: (...args: unknown[]) => unknown;
     constructor() {
-      this.getPrimaryAudioTrack = (...args: any[]) => mockGetPrimaryAudioTrack(...args);
-      this.computeDuration = (...args: any[]) => mockComputeDuration(...args);
+      this.getPrimaryAudioTrack = (...args: unknown[]) => mockGetPrimaryAudioTrack(...args);
+      this.computeDuration = (...args: unknown[]) => mockComputeDuration(...args);
     }
   }
   class AudioBufferSinkMock {
-    buffers: any;
+    buffers: (...args: unknown[]) => unknown;
     constructor() {
-      this.buffers = (...args: any[]) => mockBuffers(...args);
+      this.buffers = (...args: unknown[]) => mockBuffers(...args);
     }
   }
   return {
@@ -173,7 +173,7 @@ describe("useAudioMixing", () => {
       await prepareAudioAsync(new Blob(["audio"]), 2.0, onProgress);
 
       expect(onProgress).toHaveBeenCalled();
-      const messages = onProgress.mock.calls.map((c: any[]) => c[0].message);
+      const messages = onProgress.mock.calls.map((c: unknown[]) => (c[0] as { message: string }).message);
       expect(messages.some((m: string) => m.includes("Loading"))).toBe(true);
     });
 
@@ -192,7 +192,7 @@ describe("useAudioMixing", () => {
       // jsdom Blob doesn't have arrayBuffer() — polyfill it for this test
       const blob = new Blob(["audio"], { type: "audio/mp3" });
       if (!blob.arrayBuffer) {
-        (blob as any).arrayBuffer = () =>
+        blob.arrayBuffer = () =>
           new Promise<ArrayBuffer>((resolve) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result as ArrayBuffer);
