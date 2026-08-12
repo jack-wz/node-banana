@@ -24,7 +24,7 @@ import {
   getCanvasNavigationSettings,
   saveCanvasNavigationSettings,
 } from "../localStorage";
-import { defaultCanvasNavigationSettings } from "@/types";
+import { defaultCanvasNavigationSettings, ProviderSettings } from "@/types";
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -270,7 +270,7 @@ describe("localStorage utilities", () => {
         },
       };
 
-      saveProviderSettings(settings as any);
+      saveProviderSettings(settings as unknown as ProviderSettings);
 
       const stored = JSON.parse(localStorageMock.getItem(PROVIDER_SETTINGS_KEY)!);
       expect(stored).toEqual(settings);

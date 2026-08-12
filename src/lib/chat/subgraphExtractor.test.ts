@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import type { WorkflowNode } from "@/types/nodes";
+import type { WorkflowNode, NodeType } from "@/types/nodes";
 import type { WorkflowEdge } from "@/types/workflow";
 import { extractSubgraph } from "./subgraphExtractor";
 
@@ -13,7 +13,7 @@ import { extractSubgraph } from "./subgraphExtractor";
 function createNode(id: string, type: string, selected = false): WorkflowNode {
   return {
     id,
-    type: type as any,
+    type: type as NodeType,
     position: { x: 0, y: 0 },
     data: {},
     selected,

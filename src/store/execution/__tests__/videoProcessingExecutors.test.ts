@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { executeVideoStitch, executeEaseCurve } from "../videoProcessingExecutors";
 import type { NodeExecutionContext } from "../types";
-import type { WorkflowNode } from "@/types";
+import type { WorkflowNode, ProviderSettings } from "@/types";
 import { stitchVideosAsync } from "@/hooks/useStitchVideos";
 
 // Mock the stitch helper so the executor's cancellation wiring can be asserted
@@ -31,7 +31,7 @@ const defaultProviderSettings = {
     wavespeed: { apiKey: "" },
     openai: { apiKey: "" },
   },
-} as any;
+} as unknown as ProviderSettings;
 
 function makeCtx(
   node: WorkflowNode,

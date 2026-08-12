@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { executeGenerateVideo } from "../generateVideoExecutor";
 import type { NodeExecutionContext } from "../types";
-import type { WorkflowNode } from "@/types";
+import type { WorkflowNode, ProviderSettings } from "@/types";
 
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
@@ -15,7 +15,7 @@ const defaultProviderSettings = {
     wavespeed: { apiKey: "" },
     openai: { apiKey: "" },
   },
-} as any;
+} as unknown as ProviderSettings;
 
 function makeNode(data: Record<string, unknown> = {}): WorkflowNode {
   return {

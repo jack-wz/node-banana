@@ -126,7 +126,7 @@ describe("Skip propagation", () => {
       // We verify by checking that its status was reset to idle (skip → cleanup → idle)
       const nbNode = useWorkflowStore.getState().nodes.find(n => n.id === "nb-1");
       expect(nbNode?.data).toBeDefined();
-      expect((nbNode?.data as any).status).toBe("idle");
+      expect((nbNode?.data as Record<string, unknown>).status).toBe("idle");
     });
 
     it("should skip optional audioInput with no audio", async () => {
@@ -423,7 +423,7 @@ describe("Skip propagation", () => {
 
       // nanoBanana status should be "idle" (was set to "skipped" during execution, then reset)
       const nbNode = useWorkflowStore.getState().nodes.find(n => n.id === "nb-1");
-      expect((nbNode?.data as any).status).toBe("idle");
+      expect((nbNode?.data as Record<string, unknown>).status).toBe("idle");
     });
 
     it("should clear skippedNodeIds on stopWorkflow", () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { executeLlmGenerate } from "../llmGenerateExecutor";
 import type { NodeExecutionContext } from "../types";
-import type { WorkflowNode } from "@/types";
+import type { WorkflowNode, ProviderSettings } from "@/types";
 
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
@@ -16,7 +16,7 @@ const defaultProviderSettings = {
     openai: { apiKey: "okey" },
     anthropic: { apiKey: "" },
   },
-} as any;
+} as unknown as ProviderSettings;
 
 function makeNode(data: Record<string, unknown> = {}): WorkflowNode {
   return {

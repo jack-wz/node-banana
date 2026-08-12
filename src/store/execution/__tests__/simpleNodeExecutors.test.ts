@@ -9,7 +9,7 @@ import {
   executeGlbViewer,
 } from "../simpleNodeExecutors";
 import type { NodeExecutionContext } from "../types";
-import type { WorkflowNode, WorkflowEdge } from "@/types";
+import type { WorkflowNode, WorkflowEdge, ProviderSettings } from "@/types";
 
 function makeCtx(
   node: WorkflowNode,
@@ -29,7 +29,7 @@ function makeCtx(
     getFreshNode: vi.fn().mockReturnValue(node),
     getEdges: vi.fn().mockReturnValue([]),
     getNodes: vi.fn().mockReturnValue([]),
-    providerSettings: {} as any,
+    providerSettings: {} as unknown as ProviderSettings,
     addIncurredCost: vi.fn(),
     addToGlobalHistory: vi.fn(),
     generationsPath: null,

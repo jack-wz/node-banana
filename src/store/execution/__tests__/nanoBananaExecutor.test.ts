@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { executeNanoBanana } from "../nanoBananaExecutor";
 import type { NodeExecutionContext } from "../types";
-import type { WorkflowNode } from "@/types";
+import type { WorkflowNode, ProviderSettings } from "@/types";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -46,7 +46,7 @@ const defaultProviderSettings = {
     wavespeed: { apiKey: "" },
     openai: { apiKey: "" },
   },
-} as any;
+} as unknown as ProviderSettings;
 
 function makeCtx(
   node: WorkflowNode,

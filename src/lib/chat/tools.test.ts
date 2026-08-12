@@ -280,7 +280,7 @@ describe("createChatTools", () => {
 
       const result = await tools.answerQuestion.execute(
         { answer: "Use the Resolution dropdown on the Generate node." },
-        { toolCallId: "test", messages: [], abortSignal: undefined as any }
+        { toolCallId: "test", messages: [] }
       );
 
       expect(result).toEqual({
@@ -301,7 +301,7 @@ describe("createChatTools", () => {
 
       const result = await tools.createWorkflow.execute(
         { description: "A workflow for batch image processing" },
-        { toolCallId: "test", messages: [], abortSignal: undefined as any }
+        { toolCallId: "test", messages: [] }
       );
 
       expect(result).toEqual({
@@ -330,7 +330,7 @@ describe("createChatTools", () => {
           operations: testOps,
           explanation: "Added prompt and removed output",
         },
-        { toolCallId: "test", messages: [], abortSignal: undefined as any }
+        { toolCallId: "test", messages: [] }
       );
 
       expect(result).toHaveProperty("operations");
