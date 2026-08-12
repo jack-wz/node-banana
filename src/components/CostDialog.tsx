@@ -24,6 +24,7 @@ function ProviderIcon({ provider }: { provider: ProviderType }) {
     anthropic: { bg: "bg-amber-500/20", text: "text-amber-300" },
     kie: { bg: "bg-orange-500/20", text: "text-orange-300" },
     wavespeed: { bg: "bg-purple-500/20", text: "text-purple-300" },
+    deepseek: { bg: "bg-indigo-500/20", text: "text-indigo-300" },
   };
 
   const labels: Record<ProviderType, string> = {
@@ -34,6 +35,7 @@ function ProviderIcon({ provider }: { provider: ProviderType }) {
     anthropic: "A",
     kie: "K",
     wavespeed: "W",
+    deepseek: "D",
   };
 
   const color = colors[provider] || colors.gemini;
@@ -57,6 +59,7 @@ function getProviderDisplayName(provider: ProviderType): string {
     anthropic: "Anthropic",
     kie: "Kie.ai",
     wavespeed: "WaveSpeed",
+    deepseek: "DeepSeek",
   };
   return names[provider] || provider;
 }

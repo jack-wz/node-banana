@@ -144,12 +144,12 @@ export function PromptNode({ id, data, selected }: NodeProps<PromptNodeType>) {
       {showVarDialog && createPortal(
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999]">
           <div className="bg-neutral-800 border border-neutral-600 rounded-lg shadow-xl p-4 w-96">
-            <h3 className="text-sm font-semibold text-neutral-100 mb-3">Set Variable Name</h3>
+            <h3 className="text-sm font-semibold text-neutral-100 mb-3">{t("node.setVariableName")}</h3>
             <p className="text-xs text-neutral-400 mb-3">
               Use this prompt as a variable in PromptConstructor nodes
             </p>
             <div className="mb-4">
-              <label className="block text-xs text-neutral-300 mb-1">Variable name</label>
+              <label className="block text-xs text-neutral-300 mb-1">{t("node.variableName")}</label>
               <input
                 type="text"
                 value={varNameInput}

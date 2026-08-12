@@ -4,6 +4,7 @@ import { useCallback, useState, useRef, useEffect } from "react";
 import { useViewport, ViewportPortal } from "@xyflow/react";
 import { useWorkflowStore, GROUP_COLORS } from "@/store/workflowStore";
 import { GroupColor } from "@/types";
+import { useT } from "@/i18n";
 
 const COLOR_OPTIONS: { color: GroupColor; label: string }[] = [
   { color: "neutral", label: "Gray" },
@@ -60,6 +61,7 @@ interface GroupControlsProps {
 
 // Renders the group header and resize handles - displayed above nodes (z-index 5)
 function GroupControls({ groupId, zoom }: GroupControlsProps) {
+  const t = useT();
   const { groups, updateGroup, deleteGroup, moveGroupNodes, toggleGroupLock } = useWorkflowStore();
   const group = groups[groupId];
 
@@ -349,7 +351,7 @@ function GroupControls({ groupId, zoom }: GroupControlsProps) {
               <button
                 onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
                 className="w-6 h-6 rounded-md flex flex-col items-center justify-center gap-[2px] hover:bg-white/20 transition-colors"
-                title="Group options"
+                title={t("groups.options")}
               >
                 <div className="w-[3px] h-[3px] rounded-full bg-white/70" />
                 <div className="w-[3px] h-[3px] rounded-full bg-white/70" />
@@ -431,7 +433,7 @@ function GroupControls({ groupId, zoom }: GroupControlsProps) {
                       className="w-3 h-3 rounded-full border border-white/30"
                       style={{ backgroundColor: bgColor }}
                     />
-                    <span>Background</span>
+                    <span>{t("groups.background")}</span>
                   </button>
 
                   {/* Lock/Unlock row */}
@@ -459,7 +461,7 @@ function GroupControls({ groupId, zoom }: GroupControlsProps) {
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                     </svg>
-                    <span>NBP Input</span>
+                    <span>{t("groups.nbpInput")}</span>
                     {group.isNbpInput && (
                       <svg className="w-3 h-3 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -475,7 +477,7 @@ function GroupControls({ groupId, zoom }: GroupControlsProps) {
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    <span>Delete</span>
+                    <span>{t("common.delete")}</span>
                   </button>
                 </div>
               )}

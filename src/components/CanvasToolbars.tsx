@@ -84,7 +84,12 @@ export function CanvasLeftToolbar() {
   const updateCanvasNavigationSettings = useWorkflowStore((state) => state.updateCanvasNavigationSettings);
   const { screenToFlowPosition } = useReactFlow();
 
-  const panActive = canvasNavigationSettings.panMode === "always";
+  // Defer localStorage-derived state to avoid SSR/client hydration mismatch.
+  // On the server (and first client render), panActive defaults to false so
+  // the rendered HTML matches. After mount, useEffect reads the real value.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const panActive = mounted && canvasNavigationSettings.panMode === "always";
 
   const handleSelectNavigate = useCallback(() => {
     updateCanvasNavigationSettings({

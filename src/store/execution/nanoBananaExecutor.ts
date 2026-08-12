@@ -215,11 +215,13 @@ export async function executeNanoBanana(
           });
 
         // Track cost
+        let incurredCost: number | null = null;
         if (modelToUse.provider === "fal" && modelToUse.pricing) {
+          incurredCost = modelToUse.pricing.amount;
           addIncurredCost(modelToUse.pricing.amount);
         } else if (modelToUse.provider === "gemini") {
-          const generationCost = calculateGenerationCost(nodeData.model, nodeData.resolution);
-          addIncurredCost(generationCost);
+          incurredCost = calculateGenerationCost(nodeData.model, nodeData.resolution);
+          addIncurredCost(incurredCost);
         }
 
         // Auto-save to generations folder if configured
@@ -232,6 +234,9 @@ export async function executeNanoBanana(
               image: result.image,
               prompt: finalPrompt,
               imageId,
+              provider: modelToUse.provider,
+              model: modelToUse.modelId,
+              cost: incurredCost,
             }),
           })
             .then((res) => res.json())

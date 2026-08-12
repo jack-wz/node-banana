@@ -718,7 +718,7 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
             {nodeData.__usedFallback && (
               <div
                 className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-900/70 text-emerald-300 text-[9px] font-medium pointer-events-auto z-10"
-                title={`Primary failed: ${nodeData.__primaryError ?? "unknown"}\nUsed fallback: ${nodeData.__fallbackModelUsed ?? ""}`}
+                title={t("node.primaryFailed", { error: nodeData.__primaryError ?? "unknown", model: nodeData.__fallbackModelUsed ?? "" })}
               >
                 Fallback used
               </div>
@@ -759,8 +759,8 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-white text-xs font-medium">Generation failed</span>
-                <span className="text-white/70 text-[10px]">See toast for details</span>
+                <span className="text-white text-xs font-medium">{t("node.generationFailed")}</span>
+                <span className="text-white/70 text-[10px]">{t("node.seeToast")}</span>
               </div>
             )}
             {/* Loading overlay for carousel navigation */}

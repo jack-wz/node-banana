@@ -142,7 +142,9 @@ export async function executeGenerate3D(
         });
 
         // Track cost if applicable
+        let incurredCost: number | null = null;
         if (modelToUse.pricing) {
+          incurredCost = modelToUse.pricing.amount;
           addIncurredCost(modelToUse.pricing.amount);
         }
 
@@ -155,6 +157,9 @@ export async function executeGenerate3D(
               directoryPath: generationsPath,
               model3d: result.model3dUrl,
               prompt: promptText,
+              provider: modelToUse.provider,
+              model: modelToUse.modelId,
+              cost: incurredCost,
             }),
           })
             .then((res) => res.json())

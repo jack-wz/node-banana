@@ -27,6 +27,12 @@ export default function Home() {
   const tutorialActive = useFTUXStore((state) => state.tutorialActive);
   const [ftuxCompleted, setFtuxCompleted] = useState<boolean | null>(null);
 
+  // Prevent React Flow SSR — its internal <Pane> component renders different
+  // classNames on server vs client ("draggable" vs "selection"), causing
+  // hydration mismatches that React cannot patch up.
+  const [clientReady, setClientReady] = useState(false);
+  useEffect(() => setClientReady(true), []);
+
   // Weavy parity: the centered FloatingActionBar is FTUX-only chrome.
   // It renders for first-run users and whenever the tutorial is active
   // (tutorial anchors target its buttons), and stays hidden afterwards.
@@ -94,16 +100,22 @@ export default function Home() {
   return (
     <ReactFlowProvider>
       <div className="h-screen relative overflow-hidden">
-        {/* Full-bleed canvas (Weavy parity): header/panels float above it */}
-        <WorkflowCanvas />
-        <IconRail />
-        <Header />
-        <LibraryPanel />
-        <NodeSettingsPanel />
-        <CanvasLeftToolbar />
-        <CanvasRightToolbar />
-        {(tutorialActive || ftuxCompleted === false) && <FloatingActionBar />}
-        <AnnotationModal />
+        {clientReady ? (
+          <>
+            {/* Full-bleed canvas (Weavy parity): header/panels float above it */}
+            <WorkflowCanvas />
+            <IconRail />
+            <Header />
+            <LibraryPanel />
+            <NodeSettingsPanel />
+            <CanvasLeftToolbar />
+            <CanvasRightToolbar />
+            {(tutorialActive || ftuxCompleted === false) && <FloatingActionBar />}
+            <AnnotationModal />
+          </>
+        ) : (
+          <div className="h-full w-full bg-[#0e0e13]" />
+        )}
         {showFTUX && (
           <FTUXModal
             onComplete={handleFTUXComplete}

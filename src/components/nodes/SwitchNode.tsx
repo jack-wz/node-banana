@@ -6,6 +6,7 @@ import { BaseNode } from "./BaseNode";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { WorkflowNode, SwitchNodeData, HandleType } from "@/types";
 import { HANDLE_COLORS as SHARED_HANDLE_COLORS } from "@/utils/handleColors";
+import { useT } from "@/i18n";
 
 const HANDLE_COLORS: Record<HandleType, string> = {
   image: SHARED_HANDLE_COLORS.image,
@@ -17,6 +18,7 @@ const HANDLE_COLORS: Record<HandleType, string> = {
 };
 
 export const SwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>) => {
+  const t = useT();
   const nodeData = data as SwitchNodeData;
   const edges = useWorkflowStore((state) => state.edges);
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
@@ -229,7 +231,7 @@ export const SwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>)
                   <button
                     className="opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-red-400 transition-opacity"
                     onClick={() => handleDelete(sw.id)}
-                    title="Delete switch"
+                    title={t("node.deleteSwitch")}
                   >
                     <svg
                       className="w-3 h-3"

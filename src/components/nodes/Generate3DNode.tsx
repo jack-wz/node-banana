@@ -17,6 +17,7 @@ import { SettingsTabBar } from "./SettingsTabBar";
 import { browseRegistry } from "@/utils/browseRegistry";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 // 3D generation capabilities
 const THREE_D_CAPABILITIES: ModelCapability[] = ["text-to-3d", "image-to-3d"];
@@ -24,6 +25,7 @@ const THREE_D_CAPABILITIES: ModelCapability[] = ["text-to-3d", "image-to-3d"];
 type Generate3DNodeType = Node<Generate3DNodeData, "generate3d">;
 
 export function Generate3DNode({ id, data, selected }: NodeProps<Generate3DNodeType>) {
+  const t = useT();
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const { replicateApiKey, falApiKey, kieApiKey } = useProviderApiKeys();
@@ -359,7 +361,7 @@ export function Generate3DNode({ id, data, selected }: NodeProps<Generate3DNodeT
             {nodeData.__usedFallback && (
               <div
                 className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-900/70 text-emerald-300 text-[9px] font-medium pointer-events-auto z-10"
-                title={`Primary failed: ${nodeData.__primaryError ?? "unknown"}\nUsed fallback: ${nodeData.__fallbackModelUsed ?? ""}`}
+                title={t("node.primaryFailed", { error: nodeData.__primaryError ?? "unknown", model: nodeData.__fallbackModelUsed ?? "" })}
               >
                 Fallback used
               </div>
@@ -392,7 +394,7 @@ export function Generate3DNode({ id, data, selected }: NodeProps<Generate3DNodeT
                   }
                 }}
                 className="nodrag nopan text-[10px] text-neutral-400 hover:text-orange-300 truncate max-w-full cursor-pointer transition-colors flex items-center gap-1"
-                title={`Open in explorer: ${nodeData.savedFilePath}`}
+                title={t("node.openInExplorer", { path: nodeData.savedFilePath ?? "" })}
               >
                 <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -421,15 +423,15 @@ export function Generate3DNode({ id, data, selected }: NodeProps<Generate3DNodeT
                 <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-white text-xs font-medium">Generation failed</span>
-                <span className="text-white/70 text-[10px]">See toast for details</span>
+                <span className="text-white text-xs font-medium">{t("node.generationFailed")}</span>
+                <span className="text-white/70 text-[10px]">{t("node.seeToast")}</span>
               </div>
             )}
             <div className="absolute top-1 right-1">
               <button
                 onClick={handleClear3D}
                 className="w-5 h-5 bg-neutral-900/80 hover:bg-red-600/80 rounded flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
-                title="Clear 3D model"
+                title={t("node.clear3D")}
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

@@ -2,16 +2,18 @@
  * CanvasContextMenu — right-click menus for the canvas (Weavy parity).
  *
  * - Pane mode: quick-add node list (same category data as NodePickerMenu).
- * - Node mode: Duplicate (⌘D) / Rename / Lock / Delete.
+ * - Node mode: Save as preset / Duplicate (⌘D) / Rename / Lock / Delete.
  */
 
 "use client";
 
 import { useEffect, useRef } from "react";
 import { NodeType } from "@/types";
+import type { RecentModel } from "@/types";
 import { ALL_NODES_CATEGORIES } from "./FloatingActionBar";
 import { useT, nodeCategoryKey } from "@/i18n";
 import { HandleTypeIcon, nodeTypeToIconType } from "./nodes/HandleTypeIcon";
+import { loadRecentModels } from "@/store/utils/localStorage";
 
 export interface CanvasContextMenuState {
   x: number;
@@ -24,6 +26,8 @@ interface CanvasContextMenuProps {
   menu: CanvasContextMenuState;
   nodeLocked?: boolean;
   onAddNode: (type: NodeType, screenX: number, screenY: number) => void;
+  onAddModelNode?: (model: RecentModel, screenX: number, screenY: number) => void;
+  onSavePreset?: (nodeId: string) => void;
   onDuplicate: (nodeId: string) => void;
   onRename: (nodeId: string) => void;
   onToggleLock: (nodeId: string) => void;
@@ -64,6 +68,8 @@ export function CanvasContextMenu({
   menu,
   nodeLocked,
   onAddNode,
+  onAddModelNode,
+  onSavePreset,
   onDuplicate,
   onRename,
   onToggleLock,
@@ -72,6 +78,7 @@ export function CanvasContextMenu({
 }: CanvasContextMenuProps) {
   const t = useT();
   const menuRef = useRef<HTMLDivElement>(null);
+  const recentModels = menu.mode === "pane" ? loadRecentModels().slice(0, 4) : [];
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
@@ -104,6 +111,35 @@ export function CanvasContextMenu({
     >
       {menu.mode === "pane" ? (
         <div className="max-h-[340px] overflow-y-auto">
+          {/* Quick Access — recently used models */}
+          {recentModels.length > 0 && onAddModelNode && (
+            <>
+              <div className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
+                {t("contextMenu.quickAccess")}
+              </div>
+              {recentModels.map((model) => {
+                const capType = model.modelId.includes("video") || model.modelId.includes("seedance") || model.modelId.includes("kling") || model.modelId.includes("veo") || model.modelId.includes("pixverse") || model.modelId.includes("minimax") || model.modelId.includes("happyhorse") || model.modelId.includes("hailuo")
+                  ? "video"
+                  : model.modelId.includes("3d") || model.modelId.includes("tripo") || model.modelId.includes("meshy")
+                  ? "3d"
+                  : model.modelId.includes("audio") || model.modelId.includes("elevenlabs") || model.modelId.includes("tts")
+                  ? "audio"
+                  : "image";
+                return (
+                  <MenuItem
+                    key={`${model.provider}-${model.modelId}`}
+                    label={model.displayName}
+                    icon={<HandleTypeIcon type={capType} size={12} />}
+                    onClick={() => {
+                      onAddModelNode(model, menu.x, menu.y);
+                      onClose();
+                    }}
+                  />
+                );
+              })}
+              <div className="my-1 border-t border-neutral-700/60" />
+            </>
+          )}
           <div className="px-3 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
             {t("contextMenu.addNode")}
           </div>
@@ -129,6 +165,15 @@ export function CanvasContextMenu({
       ) : (
         nodeId && (
           <>
+            {onSavePreset && (
+              <MenuItem
+                label={t("contextMenu.savePreset")}
+                onClick={() => {
+                  onSavePreset(nodeId);
+                  onClose();
+                }}
+              />
+            )}
             <MenuItem
               label={t("contextMenu.duplicate")}
               shortcut="⌘D"

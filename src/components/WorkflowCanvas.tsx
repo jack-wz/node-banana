@@ -86,6 +86,8 @@ import { createPortal } from "react-dom";
 import { useAnnotationStore } from "@/store/annotationStore";
 import { TutorialOverlay } from "./onboarding/TutorialOverlay";
 import { useFTUXStore } from "@/store/ftuxStore";
+import { useT } from "@/i18n";
+import { savePreset, type WorkflowPreset } from "@/utils/presets";
 
 const nodeTypes: NodeTypes = {
   imageInput: ImageInputNode,
@@ -292,6 +294,7 @@ export const isPanningRef = { current: false };
 export const isDraggingNodeRef = { current: false };
 
 export function WorkflowCanvas() {
+  const t = useT();
   const { nodes, edges, groups, isModalOpen, showQuickstart, navigationTarget, canvasNavigationSettings, dimmedNodeIds, skippedNodeIds } =
     useWorkflowStore(useShallow((state) => ({
       nodes: state.nodes,
@@ -463,34 +466,34 @@ export function WorkflowCanvas() {
   }, [nodes, dimmedNodeIds, skippedNodeIds]);
 
   // Node title mapping for FloatingNodeHeaders
-  const NODE_TITLES: Record<string, string> = {
-    imageInput: 'Image Input',
-    audioInput: 'Audio Input',
-    videoInput: 'Video Input',
-    annotation: 'Annotation',
-    prompt: 'Prompt',
-    array: 'Array',
-    promptConstructor: 'Prompt Constructor',
-    nanoBanana: 'Generate Image',
-    generateVideo: 'Generate Video',
-    generate3d: 'Generate 3D',
-    generateAudio: 'Generate Audio',
-    llmGenerate: 'LLM Generate',
-    splitGrid: 'Split Grid',
-    output: 'Output',
-    outputGallery: 'Output Gallery',
-    imageCompare: 'Image Compare',
-    videoStitch: 'Video Stitch',
-    easeCurve: 'Ease Curve',
-    videoTrim: 'Video Trim',
-    videoFrameGrab: 'Frame Grab',
-    removeBackground: 'Remove Background',
-    router: 'Router',
-    switch: 'Switch',
-    conditionalSwitch: 'Conditional Switch',
-    glbViewer: '3D Viewer',
-    stickyNote: 'Note',
-  };
+  const NODE_TITLES: Record<string, string> = useMemo(() => ({
+    imageInput: t("nodeType.imageInput"),
+    audioInput: t("nodeType.audioInput"),
+    videoInput: t("nodeType.videoInput"),
+    annotation: t("nodeType.annotation"),
+    prompt: t("nodeType.prompt"),
+    array: t("nodeType.array"),
+    promptConstructor: t("nodeType.promptConstructor"),
+    nanoBanana: t("nodeType.nanoBanana"),
+    generateVideo: t("nodeType.generateVideo"),
+    generate3d: t("nodeType.generate3d"),
+    generateAudio: t("nodeType.generateAudio"),
+    llmGenerate: t("nodeType.llmGenerate"),
+    splitGrid: t("nodeType.splitGrid"),
+    output: t("nodeType.output"),
+    outputGallery: t("nodeType.outputGallery"),
+    imageCompare: t("nodeType.imageCompare"),
+    videoStitch: t("nodeType.videoStitch"),
+    easeCurve: t("nodeType.easeCurve"),
+    videoTrim: t("nodeType.videoTrim"),
+    videoFrameGrab: t("nodeType.videoFrameGrab"),
+    removeBackground: t("nodeType.removeBackground"),
+    router: t("nodeType.router"),
+    switch: t("nodeType.switch"),
+    conditionalSwitch: t("nodeType.conditionalSwitch"),
+    glbViewer: t("nodeType.glbViewer"),
+    stickyNote: t("nodeType.stickyNote"),
+  }), [t]);
 
   // Helper to get node title (used for FloatingNodeHeader)
   const getNodeTitle = useCallback((node: Node) => {
@@ -544,7 +547,7 @@ export function WorkflowCanvas() {
 
   // Check if a node was dropped into a group and add it to that group
   const handleNodeDragStop = useCallback(
-    (_event: React.MouseEvent, node: Node) => {
+    (_event: MouseEvent | TouchEvent, node: Node) => {
       // Skip if it's a group node
       if (node.id.startsWith("group-")) return;
 
@@ -2145,7 +2148,7 @@ export function WorkflowCanvas() {
         <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="bg-neutral-800 border border-neutral-600 rounded-lg px-6 py-4 shadow-xl flex items-center gap-3">
             <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-neutral-200 text-sm font-medium">Splitting image grid...</p>
+            <p className="text-neutral-200 text-sm font-medium">{t("canvas.splittingGrid")}</p>
           </div>
         </div>
       )}
@@ -2202,6 +2205,40 @@ export function WorkflowCanvas() {
           }
           onAddNode={(type, screenX, screenY) => {
             addNode(type, screenToFlowPosition({ x: screenX, y: screenY }));
+          }}
+          onAddModelNode={(model, screenX, screenY) => {
+            // Determine node type from model capabilities
+            const mid = model.modelId.toLowerCase();
+            const isVideo = mid.includes("video") || mid.includes("seedance") || mid.includes("kling") || mid.includes("veo") || mid.includes("pixverse") || mid.includes("minimax") || mid.includes("happyhorse") || mid.includes("hailuo") || mid.includes("wan/2-") || mid.includes("grok-imagine/text-to-video") || mid.includes("grok-imagine/image-to-video");
+            const is3D = mid.includes("3d") || mid.includes("tripo") || mid.includes("meshy");
+            const isAudio = mid.includes("audio") || mid.includes("elevenlabs") || mid.includes("tts") || mid.includes("speech");
+            const nodeType = isVideo ? "generateVideo" : is3D ? "generate3d" : isAudio ? "generateAudio" : "nanoBanana";
+            const pos = screenToFlowPosition({ x: screenX, y: screenY });
+            const newNodeId = addNode(nodeType as NodeType, pos);
+            if (newNodeId) {
+              updateNodeData(newNodeId, {
+                selectedModel: {
+                  provider: model.provider,
+                  modelId: model.modelId,
+                  displayName: model.displayName,
+                },
+              });
+            }
+          }}
+          onSavePreset={(nodeId) => {
+            const node = nodes.find((n) => n.id === nodeId);
+            if (!node) return;
+
+            const preset: WorkflowPreset = {
+              id: `preset-${Date.now()}`,
+              name: (node.data as { customTitle?: string }).customTitle || node.type || "Untitled",
+              version: 1,
+              nodes: [node],
+              edges: [],
+              createdAt: Date.now(),
+            };
+            savePreset(preset);
+            showToast("Preset saved successfully", "success");
           }}
           onDuplicate={(nodeId) => {
             onNodesChange(
@@ -2651,7 +2688,7 @@ export function WorkflowCanvas() {
         <ModelSearchDialog
           isOpen
           onClose={() => setFallbackDialogState(null)}
-          title="Select fallback model"
+          title={t("canvas.selectFallback")}
           initialCapabilityFilter={fallbackDialogState.capability}
           showClearOption
           onClearSelection={() => {

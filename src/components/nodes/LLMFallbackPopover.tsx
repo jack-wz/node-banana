@@ -12,6 +12,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useWorkflowStore } from "@/store/workflowStore";
+import { useT } from "@/i18n";
 import type {
   LLMGenerateNodeData,
   LLMProvider,
@@ -24,6 +25,7 @@ const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
   { value: "google", label: "Google" },
   { value: "openai", label: "OpenAI" },
   { value: "anthropic", label: "Anthropic" },
+  { value: "deepseek", label: "DeepSeek" },
 ];
 
 const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> = {
@@ -42,6 +44,10 @@ const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> 
     { value: "claude-haiku-4.5", label: "Claude Haiku 4.5" },
     { value: "claude-opus-4.6", label: "Claude Opus 4.6" },
   ],
+  deepseek: [
+    { value: "deepseek-chat", label: "DeepSeek Chat" },
+    { value: "deepseek-reasoner", label: "DeepSeek Reasoner" },
+  ],
 };
 
 const mapLlmToProviderType = (p: LLMProvider): ProviderType =>
@@ -56,6 +62,7 @@ interface LLMFallbackPopoverProps {
 }
 
 export function LLMFallbackPopover({ nodeId, onClose }: LLMFallbackPopoverProps) {
+  const t = useT();
   const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
   const node = useWorkflowStore((s) => s.nodes.find((n) => n.id === nodeId));
   const data = node?.data as LLMGenerateNodeData | undefined;
@@ -105,7 +112,7 @@ export function LLMFallbackPopover({ nodeId, onClose }: LLMFallbackPopoverProps)
           Select fallback LLM
         </h2>
 
-        <label className="block text-xs text-neutral-400 mb-1">Provider</label>
+        <label className="block text-xs text-neutral-400 mb-1">{t("setup.provider")}</label>
         <select
           value={provider}
           onChange={(e) => setProvider(e.target.value as LLMProvider)}
@@ -118,7 +125,7 @@ export function LLMFallbackPopover({ nodeId, onClose }: LLMFallbackPopoverProps)
           ))}
         </select>
 
-        <label className="block text-xs text-neutral-400 mb-1">Model</label>
+        <label className="block text-xs text-neutral-400 mb-1">{t("settingsPanel.model")}</label>
         <select
           value={model}
           onChange={(e) => setModel(e.target.value as LLMModelType)}

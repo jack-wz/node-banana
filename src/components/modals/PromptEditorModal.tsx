@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useT } from "@/i18n";
 
 const FONT_SIZE_STORAGE_KEY = 'prompt-editor-font-size';
 const DEFAULT_FONT_SIZE = 14;
@@ -20,6 +21,7 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
   onClose,
 }) => {
   const [prompt, setPrompt] = useState(initialPrompt);
+  const t = useT();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [fontSize, setFontSize] = useState(() => {
     // Load font size from localStorage on mount
@@ -146,7 +148,7 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Describe what to generate..."
+            placeholder={t("node.promptDescribe")}
             className="nodrag nopan nowheel flex-1 w-full p-6 leading-relaxed text-neutral-100 bg-transparent border-0 resize-none focus:outline-none placeholder:text-neutral-500"
             style={{ fontSize: `${fontSize}px` }}
             autoFocus
@@ -159,13 +161,13 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
             onClick={handleAttemptClose}
             className="px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-700 hover:bg-neutral-600 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-neutral-500"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             onClick={handleSubmit}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-blue-400"
           >
-            Submit
+            {t("common.submit")}
           </button>
         </div>
 
@@ -198,14 +200,14 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
               </button>
 
               <p className="text-neutral-100 text-center mb-6">
-                You have unsaved changes
+                {t("editor.unsavedChanges")}
               </p>
               <div className="flex justify-center gap-3">
                 <button
                   onClick={onClose}
                   className="px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-700 hover:bg-neutral-600 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-neutral-500"
                 >
-                  Discard
+                  {t("editor.discard")}
                 </button>
                 <button
                   onClick={handleSubmit}

@@ -11,6 +11,7 @@ import { useShallow } from "zustand/shallow";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { HandleTypeIcon, nodeTypeToIconType } from "./nodes/HandleTypeIcon";
 import { useT } from "@/i18n";
+import { useToast } from "./Toast";
 
 export function TasksPanel() {
   const t = useT();
@@ -25,6 +26,10 @@ export function TasksPanel() {
   // `?? []` keeps the panel safe in tests that mock the store with partial state
   const nodes = useWorkflowStore(useShallow((state) => state.nodes)) ?? [];
   const isRunning = useWorkflowStore((state) => state.isRunning);
+
+  // Track previous task statuses to detect completion transitions
+  const prevStatusRef = useRef<Map<string, string>>(new Map());
+  const toast = useToast((s) => s.show);
 
   const tasks = useMemo(() => {
     const interesting = nodes.filter((n) => {
@@ -49,6 +54,25 @@ export function TasksPanel() {
   }, [nodes]);
 
   const runningCount = tasks.filter((t) => t.status === "loading").length;
+
+  // Show toast when a task transitions from "loading" to "complete" or "error"
+  useEffect(() => {
+    const prev = prevStatusRef.current;
+    for (const task of tasks) {
+      const oldStatus = prev.get(task.id);
+      if (oldStatus === "loading" && task.status === "complete") {
+        toast(`${task.title} — ${t("tasks.complete")}`, "success");
+      } else if (oldStatus === "loading" && task.status === "error") {
+        toast(`${task.title} — ${t("tasks.error")}`, "error");
+      }
+    }
+    // Update refs for next render
+    const next = new Map<string, string>();
+    for (const task of tasks) {
+      next.set(task.id, task.status);
+    }
+    prevStatusRef.current = next;
+  }, [tasks, toast, t]);
 
   useEffect(() => {
     if (!open) return;

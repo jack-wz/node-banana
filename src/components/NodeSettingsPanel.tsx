@@ -7,21 +7,26 @@
 
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type {
   AspectRatio,
   Resolution,
   NanoBananaNodeData,
+  GenerateVideoNodeData,
+  Generate3DNodeData,
+  GenerateAudioNodeData,
   LLMGenerateNodeData,
   WorkflowNode,
 } from "@/types";
 import { HandleTypeIcon, nodeTypeToIconType } from "./nodes/HandleTypeIcon";
+import { ModelParameters } from "./nodes/ModelParameters";
 import { useT } from "@/i18n";
 import { calculateGenerationCost, formatCost } from "@/utils/costCalculator";
+import { useInlineParameters } from "@/hooks/useInlineParameters";
 
-const SUPPORTED_TYPES = new Set(["nanoBanana", "llmGenerate"]);
+const SUPPORTED_TYPES = new Set(["nanoBanana", "llmGenerate", "generateVideo", "generate3d", "generateAudio"]);
 
 const BASE_ASPECT_RATIOS: AspectRatio[] = ["1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9"];
 const EXTENDED_ASPECT_RATIOS: AspectRatio[] = ["1:1", "1:4", "1:8", "2:3", "3:2", "3:4", "4:1", "4:3", "4:5", "5:4", "8:1", "9:16", "16:9", "21:9"];
@@ -188,27 +193,103 @@ function LLMSettings({ node }: { node: WorkflowNode }) {
   );
 }
 
+type ExternalGenerationNodeData = GenerateVideoNodeData | Generate3DNodeData | GenerateAudioNodeData;
+
+function ExternalGenerationSettings({ node }: { node: WorkflowNode }) {
+  const t = useT();
+  const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
+  const data = node.data as ExternalGenerationNodeData;
+
+  // Stabilize callback to prevent infinite re-render with ModelParameters useEffect deps
+  const handleParametersChange = useCallback(
+    (parameters: Record<string, unknown>) => updateNodeData(node.id, { parameters }),
+    [node.id, updateNodeData]
+  );
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <SectionLabel>{t("settingsPanel.model")}</SectionLabel>
+        <div className="text-sm text-neutral-200 truncate">
+          {data.selectedModel?.displayName || "—"}
+        </div>
+      </div>
+
+      {data.selectedModel?.modelId && (
+        <ModelParameters
+          modelId={data.selectedModel.modelId}
+          provider={data.selectedModel.provider}
+          parameters={data.parameters || {}}
+          onParametersChange={handleParametersChange}
+        />
+      )}
+    </div>
+  );
+}
+
+function GenerateVideoSettings({ node }: { node: WorkflowNode }) {
+  return <ExternalGenerationSettings node={node} />;
+}
+
+function Generate3DSettings({ node }: { node: WorkflowNode }) {
+  return <ExternalGenerationSettings node={node} />;
+}
+
+function GenerateAudioSettings({ node }: { node: WorkflowNode }) {
+  return <ExternalGenerationSettings node={node} />;
+}
+
+function getNodeTitle(type: string | undefined, t: ReturnType<typeof useT>) {
+  switch (type) {
+    case "nanoBanana":
+      return t("settingsPanel.generateImage");
+    case "generateVideo":
+      return t("settingsPanel.generateVideo");
+    case "generate3d":
+      return t("settingsPanel.generate3d");
+    case "generateAudio":
+      return t("settingsPanel.generateAudio");
+    default:
+      return t("settingsPanel.llmGenerate");
+  }
+}
+
 export function NodeSettingsPanel() {
   const t = useT();
   const nodes = useWorkflowStore(useShallow((state) => state.nodes));
   const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
   const isRunning = useWorkflowStore((state) => state.isRunning);
+  const { inlineParametersEnabled } = useInlineParameters();
 
   const selectedNode = useMemo(() => {
+    // When inline parameters are enabled (shown inside nodes), the right
+    // settings panel should NOT appear — they serve the same purpose and
+    // would visually overlap.
+    if (inlineParametersEnabled) return null;
     const selected = nodes.filter((n) => n.selected);
     if (selected.length !== 1) return null;
     const node = selected[0];
     return node.type && SUPPORTED_TYPES.has(node.type) ? node : null;
-  }, [nodes]);
+  }, [nodes, inlineParametersEnabled]);
 
-  // Cost summary for the run section (Generate Image only — LLM cost varies)
+  // Cost summary for the run section. External generation nodes use their
+  // selected model; unavailable provider pricing is intentionally omitted.
   const runSummary = useMemo(() => {
-    if (!selectedNode || selectedNode.type !== "nanoBanana") return null;
-    const data = selectedNode.data as NanoBananaNodeData;
-    const runs = data.runs ?? 1;
-    const model = (data.selectedModel?.modelId || data.model) as NanoBananaNodeData["model"];
+    if (!selectedNode || !["nanoBanana", "generateVideo", "generate3d", "generateAudio"].includes(selectedNode.type ?? "")) return null;
+    const data = selectedNode.data as NanoBananaNodeData | ExternalGenerationNodeData;
+    const runs = selectedNode.type === "nanoBanana" ? (data as NanoBananaNodeData).runs ?? 1 : 1;
+    const model = selectedNode.type === "nanoBanana"
+      ? ((data as NanoBananaNodeData).selectedModel?.modelId || (data as NanoBananaNodeData).model)
+      : (data as ExternalGenerationNodeData).selectedModel?.modelId;
+
+    if (!model) return null;
+
     try {
-      const perRun = calculateGenerationCost(model, data.resolution);
+      // The current local price table has image-generation prices only. Calling
+      // it for an external model is safe, and returns no summary when pricing is
+      // not yet available for that provider/model.
+      const resolution = selectedNode.type === "nanoBanana" ? (data as NanoBananaNodeData).resolution : "1K";
+      const perRun = calculateGenerationCost(model as NanoBananaNodeData["model"], resolution);
       return { runs, perRun, total: perRun * runs };
     } catch {
       return null;
@@ -229,7 +310,7 @@ export function NodeSettingsPanel() {
             <div className="min-w-0">
               <div className="text-sm font-medium text-neutral-100 truncate">
                 {(selectedNode.data as { customTitle?: string }).customTitle ||
-                  (selectedNode.type === "nanoBanana" ? t("settingsPanel.generateImage") : t("settingsPanel.llmGenerate"))}
+                  getNodeTitle(selectedNode.type, t)}
               </div>
               <div className="text-[10px] text-neutral-500">{t("settingsPanel.nodeSettings")}</div>
             </div>
@@ -237,6 +318,12 @@ export function NodeSettingsPanel() {
           <div className="flex-1 overflow-y-auto p-3">
               {selectedNode.type === "nanoBanana" ? (
                 <GenerateImageSettings node={selectedNode} />
+              ) : selectedNode.type === "generateVideo" ? (
+                <GenerateVideoSettings node={selectedNode} />
+              ) : selectedNode.type === "generate3d" ? (
+                <Generate3DSettings node={selectedNode} />
+              ) : selectedNode.type === "generateAudio" ? (
+                <GenerateAudioSettings node={selectedNode} />
               ) : (
                 <LLMSettings node={selectedNode} />
               )}

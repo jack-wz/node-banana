@@ -712,7 +712,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
             {nodeData.__usedFallback && (
               <div
                 className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-900/70 text-emerald-300 text-[9px] font-medium pointer-events-auto z-10"
-                title={`Primary failed: ${nodeData.__primaryError ?? "unknown"}\nUsed fallback: ${nodeData.__fallbackModelUsed ?? ""}`}
+                title={t("node.primaryFailed", { error: nodeData.__primaryError ?? "unknown", model: nodeData.__fallbackModelUsed ?? "" })}
               >
                 Fallback used
               </div>

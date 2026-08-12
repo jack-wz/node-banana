@@ -225,6 +225,283 @@ export function getKieModelDefaults(modelId: string): Record<string, unknown> {
         prompt_influence: 0.3,
       };
 
+    // ---- Existing models missing defaults (2026-08 fix) ----
+
+    // Qwen image models
+    case "qwen/text-to-image":
+    case "qwen2/text-to-image":
+      return {
+        aspect_ratio: "1:1",
+      };
+
+    case "qwen/image-edit":
+    case "qwen2/image-edit":
+      return {
+        strength: 0.8,
+      };
+
+    case "qwen/image-to-image":
+      return {
+        strength: 0.8,
+        acceleration: "none",
+      };
+
+    // Seedream 5.0 Pro models
+    case "seedream/5-pro-text-to-image":
+    case "seedream/5-pro-image-to-image":
+      return {
+        aspect_ratio: "1:1",
+        quality: "basic",
+      };
+
+    // GPT Image 2 models
+    case "gpt-image-2-text-to-image":
+    case "gpt-image-2-image-to-image":
+      return {
+        aspect_ratio: "3:2",
+        quality: "medium",
+      };
+
+    // Ideogram V3 text-to-image
+    case "ideogram/v3-text-to-image":
+      return {
+        aspect_ratio: "1:1",
+      };
+
+    // Nano Banana 2 Lite
+    case "nano-banana-2-lite":
+      return {
+        aspect_ratio: "1:1",
+      };
+
+    // Topaz Image Upscale
+    case "topaz/image-upscale":
+      return {
+        upscale_factor: "2",
+      };
+
+    // Wan 2.5 video models
+    case "wan/2-5-text-to-video":
+    case "wan/2-5-image-to-video":
+      return {
+        duration: "5",
+        resolution: "1080p",
+      };
+
+    // Seedance 1.5 Pro
+    case "bytedance/seedance-1.5-pro":
+      return {
+        aspect_ratio: "16:9",
+        duration: "5",
+      };
+
+    // Kling V3 Turbo
+    case "kling/v3-turbo-text-to-video":
+    case "kling/v3-turbo-image-to-video":
+      return {
+        duration: "5",
+        aspect_ratio: "16:9",
+        resolution: "1080p",
+      };
+
+    // Hailuo 2.3 Pro I2V
+    case "hailuo/2-3-image-to-video-pro":
+      return {
+        resolution: "1080P",
+      };
+
+    // ---- New models (2026-08 sync) ----
+
+    // Google Nano Banana (basic via Kie)
+    case "google/nano-banana":
+      return {
+        aspect_ratio: "1:1",
+      };
+
+    // Google Nano Banana Edit
+    case "google/nano-banana-edit":
+      return {
+        aspect_ratio: "1:1",
+      };
+
+    // Wan 2.7 Image Pro
+    case "wan/2-7-image-pro":
+      return {
+        resolution: "2K",
+        n: 4,
+      };
+
+    // Recraft Crisp Upscale (no params needed)
+    case "recraft/crisp-upscale":
+    case "recraft/remove-background":
+      return {};
+
+    // Ideogram V3 Edit/Remix
+    case "ideogram/v3-edit":
+    case "ideogram/v3-remix":
+      return {
+        rendering_speed: "BALANCED",
+        expand_prompt: true,
+      };
+
+    // Ideogram Character models
+    case "ideogram/character":
+      return {
+        rendering_speed: "BALANCED",
+        style: "AUTO",
+        expand_prompt: true,
+        num_images: "1",
+      };
+
+    case "ideogram/character-edit":
+    case "ideogram/character-remix":
+      return {
+        rendering_speed: "BALANCED",
+        expand_prompt: true,
+      };
+
+    // PixVerse V6 models
+    case "pixverse-v6/text-to-video":
+      return {
+        aspect_ratio: "16:9",
+        quality: "720p",
+        duration: 5,
+        generate_audio_switch: false,
+      };
+
+    case "pixverse-v6/image-to-video":
+      return {
+        quality: "720p",
+        duration: 5,
+        generate_audio_switch: false,
+      };
+
+    case "pixverse-v6/transition":
+      return {
+        quality: "720p",
+        duration: 5,
+      };
+
+    case "pixverse-v6/extend":
+      return {
+        duration: 5,
+      };
+
+    case "pixverse-v6/reference-to-video":
+      return {
+        aspect_ratio: "16:9",
+        quality: "720p",
+        duration: 5,
+      };
+
+    // MiniMax H3 models
+    case "minimax-h3/text-to-video":
+      return {
+        aspect_ratio: "16:9",
+        duration: 6,
+      };
+
+    case "minimax-h3/image-to-video":
+    case "minimax-h3/reference-to-video":
+      return {
+        duration: 6,
+      };
+
+    // HappyHorse models
+    case "happyhorse/text-to-video":
+    case "happyhorse-1-1/text-to-video":
+      return {
+        resolution: "1080p",
+        aspect_ratio: "16:9",
+      };
+
+    case "happyhorse/image-to-video":
+    case "happyhorse-1-1/image-to-video":
+      return {
+        resolution: "1080p",
+        duration: 5,
+      };
+
+    case "happyhorse/reference-to-video":
+    case "happyhorse-1-1/reference-to-video":
+      return {
+        resolution: "1080p",
+        aspect_ratio: "16:9",
+      };
+
+    case "happyhorse/video-edit":
+      return {
+        resolution: "1080p",
+      };
+
+    // Seedance 2.0 Mini
+    case "bytedance/seedance-2-mini/text-to-video":
+    case "bytedance/seedance-2-mini/image-to-video":
+      return {
+        aspect_ratio: "16:9",
+        resolution: "720p",
+        duration: 5,
+        generate_audio: true,
+      };
+
+    // Gemini Omni models
+    case "gemini-omni-video":
+    case "gemini-omni-audio":
+    case "gemini-omni-character":
+      return {};
+
+    // OmniHuman 1.5
+    case "omnihuman-1-5":
+      return {
+        output_resolution: "1080",
+        pe_fast_mode: false,
+        seed: -1,
+      };
+
+    // Wan 2.7 Video Edit
+    case "wan/2-7-videoedit":
+      return {};
+
+    // Wan 2.7 Reference to Video
+    case "wan/2-7-r2v":
+      return {
+        duration: 5,
+        resolution: "1080p",
+      };
+
+    // Wan 2.6 Flash models
+    case "wan/2-6-flash-image-to-video":
+    case "wan/2-6-flash-video-to-video":
+      return {
+        duration: "5",
+        resolution: "1080p",
+      };
+
+    // Grok Imagine 1.5 Preview
+    case "grok-imagine/1-5-preview":
+      return {
+        aspect_ratio: "auto",
+        resolution: "720p",
+      };
+
+    // Volcengine Lip Sync
+    case "volcengine/video-to-video-lip-sync":
+      return {};
+
+    // Infinitalk
+    case "infinitalk/from-audio":
+      return {};
+
+    // Hailuo models
+    case "hailuo/2-3-image-to-video-standard":
+    case "hailuo/02-text-to-video-pro":
+    case "hailuo/02-image-to-video-pro":
+    case "hailuo/02-text-to-video-standard":
+    case "hailuo/02-image-to-video-standard":
+      return {
+        resolution: "1080P",
+      };
+
     default:
       return {};
   }
@@ -257,6 +534,46 @@ export function getKieImageInputKey(modelId: string): string {
   if (modelId === "topaz/video-upscale") return "video_url";
   // Veo 3 models use imageUrls
   if (modelId.startsWith("veo3")) return "imageUrls";
+  // Google Nano Banana Edit uses image_urls
+  if (modelId === "google/nano-banana-edit") return "image_urls";
+  // Wan 2.7 Image Pro uses input_urls
+  if (modelId === "wan/2-7-image-pro") return "input_urls";
+  // Qwen I2I uses singular image_url
+  if (modelId === "qwen/image-to-image") return "image_url";
+  // Ideogram models
+  if (modelId === "ideogram/v3-edit" || modelId === "ideogram/character-edit") return "image_url";
+  if (modelId === "ideogram/v3-remix" || modelId === "ideogram/character-remix") return "image_url";
+  if (modelId === "ideogram/character") return "reference_image_urls";
+  // Recraft Crisp Upscale uses singular image
+  if (modelId === "recraft/crisp-upscale") return "image";
+  // PixVerse I2V uses image_urls
+  if (modelId === "pixverse-v6/image-to-video" || modelId === "pixverse-v6/reference-to-video") return "image_urls";
+  // PixVerse transition uses first_frame_url
+  if (modelId === "pixverse-v6/transition") return "first_frame_url";
+  // PixVerse extend uses video_url
+  if (modelId === "pixverse-v6/extend") return "video_url";
+  // MiniMax H3 I2V uses first_frame_url
+  if (modelId === "minimax-h3/image-to-video") return "first_frame_url";
+  // Seedance 2.0 Mini I2V uses first_frame_url
+  if (modelId === "bytedance/seedance-2-mini/image-to-video") return "first_frame_url";
+  // OmniHuman uses singular image_url
+  if (modelId === "omnihuman-1-5") return "image_url";
+  // Wan 2.7 Video Edit uses video_url
+  if (modelId === "wan/2-7-videoedit") return "video_url";
+  // Wan 2.6 Flash V2V uses video_url
+  if (modelId === "wan/2-6-flash-video-to-video") return "video_url";
+  // Volcengine lip sync uses video_url
+  if (modelId === "volcengine/video-to-video-lip-sync") return "video_url";
+  // Infinitalk uses image_url
+  if (modelId === "infinitalk/from-audio") return "image_url";
+  // Hailuo I2V models use singular image_url
+  if (modelId === "hailuo/2-3-image-to-video-standard" || modelId === "hailuo/02-image-to-video-pro" || modelId === "hailuo/02-image-to-video-standard") return "image_url";
+  // HappyHorse I2V models use image_urls
+  if (modelId === "happyhorse/image-to-video" || modelId === "happyhorse-1-1/image-to-video") return "image_urls";
+  // HappyHorse video edit uses video_url (via dynamicInputs)
+  if (modelId === "happyhorse/video-edit") return "video_url";
+  // Grok Imagine 1.5 Preview uses image_urls
+  if (modelId === "grok-imagine/1-5-preview") return "image_urls";
   // Default for most models
   return "image_urls";
 }
@@ -497,6 +814,7 @@ export async function pollKieTaskCompletion(
 function getKieApiModelId(modelId: string): string {
   if (modelId.startsWith("bytedance/seedance-2/")) return "bytedance/seedance-2";
   if (modelId.startsWith("bytedance/seedance-2-fast/")) return "bytedance/seedance-2-fast";
+  if (modelId.startsWith("bytedance/seedance-2-mini/")) return "bytedance/seedance-2-mini";
   return modelId;
 }
 

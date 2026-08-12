@@ -189,7 +189,8 @@ body {
 /* Fallback edge styling — EditableEdge renders per-edge gradients via inline */
 /* styles, so this only applies to edges without an explicit inline stroke. */
 .react-flow__edge-path {
-  stroke: #6b7280;
+  /* Subtle fallback — per-edge type gradients from SharedEdgeGradients dominate */
+  stroke: rgba(156, 163, 175, 0.3);
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;

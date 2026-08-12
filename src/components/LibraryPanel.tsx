@@ -11,7 +11,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useReactFlow } from "@xyflow/react";
-import { NodeType } from "@/types";
+import { NodeType, ProviderType } from "@/types";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { usePanelStore } from "@/store/panelStore";
 import { ALL_NODES_CATEGORIES } from "./FloatingActionBar";
@@ -20,7 +20,30 @@ import { loadPresets, applyPreset, deletePreset, WorkflowPreset } from "@/utils/
 import { loadHistory, restoreSnapshot, deleteSnapshot, VersionSnapshot } from "@/utils/versionHistory";
 import { useT, nodeCategoryKey } from "@/i18n";
 
-type Tab = "nodes" | "presets" | "history";
+type Tab = "nodes" | "presets" | "history" | "models";
+
+type LibraryModel = {
+  id: string;
+  name: string;
+  provider: ProviderType;
+  capabilities: string[];
+  coverImage?: string;
+  description?: string;
+};
+
+type ModelCategory = {
+  label: "Image" | "Video" | "3D" | "Audio";
+  iconType: "image" | "video" | "3d" | "audio";
+  nodeType: Extract<NodeType, "nanoBanana" | "generateVideo" | "generate3d" | "generateAudio">;
+  capabilities: string[];
+};
+
+const MODEL_CATEGORIES: ModelCategory[] = [
+  { label: "Image", iconType: "image", nodeType: "nanoBanana", capabilities: ["text-to-image", "image-to-image"] },
+  { label: "Video", iconType: "video", nodeType: "generateVideo", capabilities: ["text-to-video", "image-to-video"] },
+  { label: "3D", iconType: "3d", nodeType: "generate3d", capabilities: ["text-to-3d", "image-to-3d"] },
+  { label: "Audio", iconType: "audio", nodeType: "generateAudio", capabilities: ["text-to-audio", "audio-to-video"] },
+];
 
 export function LibraryPanel() {
   const t = useT();
@@ -33,6 +56,8 @@ export function LibraryPanel() {
   const searchRef = useRef<HTMLInputElement>(null);
   const [presets, setPresets] = useState<WorkflowPreset[]>([]);
   const [history, setHistory] = useState<VersionSnapshot[]>([]);
+  const [models, setModels] = useState<LibraryModel[] | null>(null);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
   const addNode = useWorkflowStore((state) => state.addNode);
   const { screenToFlowPosition } = useReactFlow();
 
@@ -51,6 +76,46 @@ export function LibraryPanel() {
     if (tab === "history") setHistory(loadHistory());
   }, [libraryOpen, tab]);
 
+  // Load the provider catalogue only when the Models tab is first opened.
+  useEffect(() => {
+    if (!libraryOpen || tab !== "models" || models !== null) return;
+
+    let cancelled = false;
+    const fetchModels = async () => {
+      setIsLoadingModels(true);
+      try {
+        let settings: { providers?: Record<string, { apiKey?: string | null }> } | null = null;
+        const settingsJson = localStorage.getItem("node-banana-provider-settings");
+        if (settingsJson) {
+          try {
+            settings = JSON.parse(settingsJson);
+          } catch {
+            // A malformed saved settings value should not prevent the Gemini catalogue loading.
+          }
+        }
+
+        const headers: Record<string, string> = {};
+        if (settings?.providers?.kie?.apiKey) headers["X-Kie-Key"] = settings.providers.kie.apiKey;
+        if (settings?.providers?.fal?.apiKey) headers["X-Fal-Key"] = settings.providers.fal.apiKey;
+        if (settings?.providers?.replicate?.apiKey) headers["X-Replicate-Key"] = settings.providers.replicate.apiKey;
+        if (settings?.providers?.wavespeed?.apiKey) headers["X-WaveSpeed-Key"] = settings.providers.wavespeed.apiKey;
+
+        const response = await fetch("/api/models", { headers });
+        const data: { success?: boolean; models?: LibraryModel[] } = await response.json();
+        if (!cancelled) setModels(response.ok && data.success && Array.isArray(data.models) ? data.models : []);
+      } catch {
+        if (!cancelled) setModels([]);
+      } finally {
+        if (!cancelled) setIsLoadingModels(false);
+      }
+    };
+
+    fetchModels();
+    return () => {
+      cancelled = true;
+    };
+  }, [libraryOpen, models, tab]);
+
   const handleAddNode = useCallback(
     (type: NodeType) => {
       const pane = document.querySelector(".react-flow");
@@ -68,6 +133,25 @@ export function LibraryPanel() {
     event.dataTransfer.effectAllowed = "copy";
   }, []);
 
+  const handleAddModel = useCallback(
+    (model: LibraryModel, category: ModelCategory) => {
+      const pane = document.querySelector(".react-flow");
+      const rect = pane?.getBoundingClientRect();
+      const center = rect
+        ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+        : { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+
+      addNode(category.nodeType, screenToFlowPosition(center), {
+        selectedModel: {
+          provider: model.provider,
+          modelId: model.id,
+          displayName: model.name,
+        },
+      });
+    },
+    [addNode, screenToFlowPosition]
+  );
+
   // Visible categories after icon-rail filter + search query
   const visibleCategories = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -80,6 +164,18 @@ export function LibraryPanel() {
       }),
     })).filter((category) => category.nodes.length > 0);
   }, [libraryFilter, search]);
+
+  const visibleModelCategories = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return MODEL_CATEGORIES.map((category) => ({
+      ...category,
+      models: (models ?? []).filter((model) => {
+        if (libraryFilter && category.iconType !== libraryFilter) return false;
+        if (!model.capabilities.some((capability) => category.capabilities.includes(capability))) return false;
+        return !query || model.name.toLowerCase().includes(query);
+      }),
+    })).filter((category) => category.models.length > 0);
+  }, [libraryFilter, models, search]);
 
   return (
     <aside
@@ -116,7 +212,7 @@ export function LibraryPanel() {
 
       {/* Tabs */}
       <div className="flex items-center gap-1 px-3 pt-3 pb-2 border-b border-neutral-800">
-        {(["nodes", "presets", "history"] as Tab[]).map((tabId) => (
+        {(["nodes", "models", "presets", "history"] as Tab[]).map((tabId) => (
           <button
             key={tabId}
             onClick={() => setTab(tabId)}
@@ -126,7 +222,13 @@ export function LibraryPanel() {
                 : "text-neutral-400 hover:text-neutral-200"
             }`}
           >
-            {tabId === "nodes" ? t("library.tabNodes") : tabId === "presets" ? t("library.tabPresets") : t("library.tabHistory")}
+            {tabId === "nodes"
+              ? t("library.tabNodes")
+              : tabId === "models"
+                ? t("library.tabModels")
+                : tabId === "presets"
+                  ? t("library.tabPresets")
+                  : t("library.tabHistory")}
           </button>
         ))}
       </div>
@@ -162,6 +264,51 @@ export function LibraryPanel() {
               </div>
             </div>
           ))}
+        </div>
+      ) : tab === "models" ? (
+        <div className="flex-1 overflow-y-auto py-2">
+          {isLoadingModels || models === null ? (
+            <div className="px-4 py-8 flex flex-col items-center gap-2 text-xs text-neutral-500">
+              <span className="w-4 h-4 border-2 border-neutral-600 border-t-neutral-200 rounded-full animate-spin" />
+              {t("library.loadingModels")}
+            </div>
+          ) : models?.length === 0 ? (
+            <div className="px-4 py-8 text-xs text-neutral-500 text-center leading-relaxed">
+              {t("library.noModelsConfigured")}
+            </div>
+          ) : (
+            <>
+              <div className="px-3 pt-1 pb-2 text-[10px] text-neutral-500">
+                {t("library.modelCount", { count: models?.length ?? 0 })}
+              </div>
+              {visibleModelCategories.length === 0 && (
+                <div className="px-4 py-8 text-xs text-neutral-500 text-center">{t("library.noMatches")}</div>
+              )}
+              {visibleModelCategories.map((category) => (
+                <div key={category.label} className="mb-1">
+                  <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
+                    {category.label}
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5 px-3 pb-2">
+                    {category.models.map((model) => (
+                      <button
+                        key={`${category.label}-${model.provider}-${model.id}`}
+                        onClick={() => handleAddModel(model, category)}
+                        title={model.description || model.name}
+                        className="flex flex-col items-center justify-center gap-1 aspect-square bg-[#212126] hover:bg-[#2a2a31] rounded-lg border border-neutral-700/40 hover:border-neutral-600 transition-colors"
+                      >
+                        <HandleTypeIcon type={category.iconType} color="#e5e5e5" size={18} />
+                        <span className="text-[9px] leading-tight text-neutral-300 text-center px-1 line-clamp-2">
+                          {model.name}
+                        </span>
+                        <span className="text-[8px] leading-none uppercase text-neutral-500">{model.provider}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
         </div>
       ) : tab === "presets" ? (
         <div className="flex-1 overflow-y-auto py-2">

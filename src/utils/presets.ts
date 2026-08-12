@@ -43,6 +43,11 @@ export function deletePreset(id: string): void {
   persistPresets(loadPresets().filter((p) => p.id !== id));
 }
 
+/** Save a workflow preset. */
+export function savePreset(preset: WorkflowPreset): void {
+  persistPresets([...loadPresets(), preset]);
+}
+
 /**
  * Save the currently selected nodes (and edges between them) as a preset.
  * Returns the created preset, or null when nothing is selected.
@@ -66,7 +71,7 @@ export function savePresetFromSelection(name: string): WorkflowPreset | null {
     edges: JSON.parse(JSON.stringify(presetEdges)),
   };
 
-  persistPresets([...loadPresets(), preset]);
+  savePreset(preset);
   return preset;
 }
 
