@@ -770,6 +770,7 @@ function EaseCurveControls({ node }: { node: Node }) {
   const edges = useWorkflowStore((state) => state.edges);
   const removeEdge = useWorkflowStore((state) => state.removeEdge);
   const [showPresets, setShowPresets] = useState(false);
+  const [presetsAnchor, setPresetsAnchor] = useState<{ top: number; left: number } | null>(null);
   const presetsButtonRef = useRef<HTMLButtonElement>(null);
   const presetsPopupRef = useRef<HTMLDivElement>(null);
 
@@ -864,7 +865,13 @@ function EaseCurveControls({ node }: { node: Node }) {
           <label className="block text-xs font-medium text-neutral-300">Easing Function</label>
           <button
             ref={presetsButtonRef}
-            onClick={() => setShowPresets(!showPresets)}
+            onClick={() => {
+              if (!showPresets) {
+                const rect = presetsButtonRef.current?.getBoundingClientRect();
+                setPresetsAnchor(rect ? { top: rect.bottom, left: rect.left } : null);
+              }
+              setShowPresets(!showPresets);
+            }}
             className="nodrag nopan text-xs px-2 py-0.5 bg-neutral-700 hover:bg-neutral-600 border border-neutral-600 rounded text-neutral-300 transition-colors"
           >
             Presets
@@ -914,8 +921,8 @@ function EaseCurveControls({ node }: { node: Node }) {
           ref={presetsPopupRef}
           className="fixed z-[100] bg-neutral-800 border border-neutral-600 rounded-lg shadow-xl p-2 max-h-[60vh] overflow-y-auto nowheel"
           style={{
-            top: presetsButtonRef.current?.getBoundingClientRect().bottom || 0,
-            right: window.innerWidth - (presetsButtonRef.current?.getBoundingClientRect().left || 0),
+            top: presetsAnchor?.top || 0,
+            right: window.innerWidth - (presetsAnchor?.left || 0),
             width: 280,
           }}
         >
