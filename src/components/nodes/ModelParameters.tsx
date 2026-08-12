@@ -87,9 +87,14 @@ function ModelParametersInner({
   // Use stable selector for API keys to prevent unnecessary re-fetches
   const { replicateApiKey, falApiKey, kieApiKey, wavespeedApiKey } = useProviderApiKeys();
 
-  // Fetch schema when modelId changes
+  // Fetch schema when modelId changes. The !modelId branch matches
+  // schema/schemaKey's own useState defaults (no-op on mount); the rest of
+  // this effect does real async fetch work with cache checks and a
+  // cancellation guard, so it stays an effect rather than a render-time
+  // adjustment.
   useEffect(() => {
     if (!modelId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSchema([]);
       setSchemaKey("");
       onInputsLoaded?.([]);

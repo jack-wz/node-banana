@@ -108,11 +108,14 @@ export function SplitGridNode({ id, data, selected }: NodeProps<SplitGridNodeTyp
   const [imageAspect, setImageAspect] = useState<number | null>(null);
   const [fittedSize, setFittedSize] = useState<{ width: number; height: number } | null>(null);
 
-  // A new source image invalidates the measured aspect until it re-loads.
-  useEffect(() => {
+  // A new source image invalidates the measured aspect until it re-loads —
+  // adjusted during render rather than in an effect.
+  const [prevAdaptiveSourceImage, setPrevAdaptiveSourceImage] = useState(adaptiveSourceImage);
+  if (adaptiveSourceImage !== prevAdaptiveSourceImage) {
+    setPrevAdaptiveSourceImage(adaptiveSourceImage);
     setImageAspect(null);
     setFittedSize(null);
-  }, [adaptiveSourceImage]);
+  }
 
   useEffect(() => {
     const el = previewRef.current;

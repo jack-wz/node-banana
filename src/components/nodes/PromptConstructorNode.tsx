@@ -23,12 +23,15 @@ export function PromptConstructorNode({ id, data, selected }: NodeProps<PromptCo
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Sync from props when not actively editing
-  useEffect(() => {
+  // Sync from props when not actively editing — adjusted during render
+  // rather than in an effect.
+  const [prevTemplateSync, setPrevTemplateSync] = useState({ template: nodeData.template, isEditing });
+  if (nodeData.template !== prevTemplateSync.template || isEditing !== prevTemplateSync.isEditing) {
+    setPrevTemplateSync({ template: nodeData.template, isEditing });
     if (!isEditing) {
       setLocalTemplate(nodeData.template);
     }
-  }, [nodeData.template, isEditing]);
+  }
 
   // Get available variables from connected prompt nodes (named variables + inline <var> tags)
   const availableVariables = useMemo((): AvailableVariable[] => {

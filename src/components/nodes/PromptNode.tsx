@@ -49,12 +49,15 @@ export function PromptNode({ id, data, selected }: NodeProps<PromptNodeType>) {
     }
   }, [hasIncomingTextConnection, id, getConnectedInputs, updateNodeData]);
 
-  // Sync from props when not actively editing
-  useEffect(() => {
+  // Sync from props when not actively editing — adjusted during render
+  // rather than in an effect.
+  const [prevPromptSync, setPrevPromptSync] = useState({ prompt: nodeData.prompt, isEditing });
+  if (nodeData.prompt !== prevPromptSync.prompt || isEditing !== prevPromptSync.isEditing) {
+    setPrevPromptSync({ prompt: nodeData.prompt, isEditing });
     if (!isEditing) {
       setLocalPrompt(nodeData.prompt);
     }
-  }, [nodeData.prompt, isEditing]);
+  }
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {

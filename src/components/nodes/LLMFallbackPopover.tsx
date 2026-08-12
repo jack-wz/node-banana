@@ -9,7 +9,7 @@
  * provider info so JSON round-trips cleanly).
  */
 
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type {
@@ -70,11 +70,23 @@ export function LLMFallbackPopover({ nodeId, onClose }: LLMFallbackPopoverProps)
   const [provider, setProvider] = useState<LLMProvider>(initialProvider);
   const [model, setModel] = useState<LLMModelType>(initialModel);
 
-  // Ensure model is valid whenever provider changes
-  useEffect(() => {
+  // Ensure model is valid whenever provider changes — adjusted during
+  // render rather than in an effect. initialModel/initialProvider are
+  // derived together from the same saved fallbackModel, but that derivation
+  // isn't obviously guaranteed consistent, so this also needs to run on the
+  // very first render, not just later transitions.
+  const isFirstModelValidityRenderRef = useRef(true);
+  const [prevModelValidityCheck, setPrevModelValidityCheck] = useState({ provider, model });
+  if (
+    isFirstModelValidityRenderRef.current ||
+    provider !== prevModelValidityCheck.provider ||
+    model !== prevModelValidityCheck.model
+  ) {
+    isFirstModelValidityRenderRef.current = false;
+    setPrevModelValidityCheck({ provider, model });
     const valid = LLM_MODELS[provider].some((m) => m.value === model);
     if (!valid) setModel(LLM_MODELS[provider][0].value);
-  }, [provider, model]);
+  }
 
   const handleSave = () => {
     const label = LLM_MODELS[provider].find((m) => m.value === model)?.label || model;

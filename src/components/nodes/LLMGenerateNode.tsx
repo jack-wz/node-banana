@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Handle, Position, NodeProps, Node } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { useWorkflowStore } from "@/store/workflowStore";
@@ -60,11 +60,14 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
   const [copied, setCopied] = useState(false);
   const [settingsTab, setSettingsTab] = useState<"primary" | "fallback">("primary");
 
-  useEffect(() => {
+  // Adjusted during render rather than in an effect.
+  const [prevFallbackModelCheck, setPrevFallbackModelCheck] = useState({ fallbackModel: nodeData.fallbackModel, settingsTab });
+  if (nodeData.fallbackModel !== prevFallbackModelCheck.fallbackModel || settingsTab !== prevFallbackModelCheck.settingsTab) {
+    setPrevFallbackModelCheck({ fallbackModel: nodeData.fallbackModel, settingsTab });
     if (!nodeData.fallbackModel && settingsTab === "fallback") {
       setSettingsTab("primary");
     }
-  }, [nodeData.fallbackModel, settingsTab]);
+  }
 
   const handleCopyOutput = useCallback(async () => {
     if (nodeData.outputText) {
