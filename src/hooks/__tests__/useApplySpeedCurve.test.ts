@@ -15,27 +15,27 @@ const mockBufferTargetBuffer = new ArrayBuffer(100);
 vi.mock("mediabunny", () => {
   class BlobSourceMock { constructor() {} }
   class InputMock {
-    getVideoTracks: any;
-    computeDuration: any;
-    dispose: any;
+    getVideoTracks: (...args: unknown[]) => unknown;
+    computeDuration: (...args: unknown[]) => unknown;
+    dispose: (...args: unknown[]) => unknown;
     constructor() {
-      this.getVideoTracks = (...args: any[]) => mockGetVideoTracks(...args);
+      this.getVideoTracks = (...args: unknown[]) => mockGetVideoTracks(...args);
       this.computeDuration = vi.fn().mockResolvedValue(5.0);
-      this.dispose = (...args: any[]) => mockDispose(...args);
+      this.dispose = (...args: unknown[]) => mockDispose(...args);
     }
   }
   class OutputMock {
-    addVideoTrack: any;
-    start: any;
-    finalize: any;
+    addVideoTrack: (...args: unknown[]) => unknown;
+    start: (...args: unknown[]) => unknown;
+    finalize: (...args: unknown[]) => unknown;
     constructor() {
-      this.addVideoTrack = (...args: any[]) => mockAddVideoTrack(...args);
-      this.start = (...args: any[]) => mockOutputStart(...args);
-      this.finalize = (...args: any[]) => mockOutputFinalize(...args);
+      this.addVideoTrack = (...args: unknown[]) => mockAddVideoTrack(...args);
+      this.start = (...args: unknown[]) => mockOutputStart(...args);
+      this.finalize = (...args: unknown[]) => mockOutputFinalize(...args);
     }
   }
   class VideoSampleSinkMock {
-    samplesAtTimestamps: any;
+    samplesAtTimestamps: (...args: unknown[]) => unknown;
     constructor() {
       this.samplesAtTimestamps = vi.fn().mockReturnValue({
         [Symbol.asyncIterator]: async function* () {
@@ -55,11 +55,11 @@ vi.mock("mediabunny", () => {
     }
   }
   class VideoSampleSourceMock {
-    add: any;
-    close: any;
+    add: (...args: unknown[]) => unknown;
+    close: (...args: unknown[]) => unknown;
     constructor() {
-      this.add = (...args: any[]) => mockVideoSourceAdd(...args);
-      this.close = (...args: any[]) => mockVideoSourceClose(...args);
+      this.add = (...args: unknown[]) => mockVideoSourceAdd(...args);
+      this.close = (...args: unknown[]) => mockVideoSourceClose(...args);
     }
   }
   class BufferTargetMock {
@@ -145,7 +145,7 @@ describe("useApplySpeedCurve", () => {
     await applySpeedCurveAsync(new Blob(["video"], { type: "video/mp4" }), 5, 1.5, onProgress);
 
     expect(onProgress).toHaveBeenCalled();
-    const messages = onProgress.mock.calls.map((c: any[]) => c[0].message);
+    const messages = onProgress.mock.calls.map((c: unknown[]) => (c[0] as { message: string }).message);
     expect(messages.some((m: string) => m.includes("Creating input"))).toBe(true);
   });
 
