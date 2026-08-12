@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 interface ElementHighlightProps {
   selector: string | string[]; // Support single or multiple selectors
@@ -22,7 +22,7 @@ export function ElementHighlight({ selector }: ElementHighlightProps) {
   const [rects, setRects] = useState<ElementRect[]>([]);
   const observersRef = useRef<ResizeObserver[]>([]);
 
-  const updateRects = () => {
+  const updateRects = useCallback(() => {
     const selectors = Array.isArray(selector) ? selector : [selector];
     const newRects: ElementRect[] = [];
 
@@ -40,7 +40,7 @@ export function ElementHighlight({ selector }: ElementHighlightProps) {
     });
 
     setRects(newRects);
-  };
+  }, [selector]);
 
   useEffect(() => {
     // Initial measurement — needs the DOM committed (querySelector +
@@ -84,7 +84,7 @@ export function ElementHighlight({ selector }: ElementHighlightProps) {
       observersRef.current = [];
       clearInterval(intervalId);
     };
-  }, [selector]);
+  }, [selector, updateRects]);
 
   if (rects.length === 0) {
     return null;

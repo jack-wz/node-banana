@@ -251,7 +251,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
         activeBlobUrl = null;
       }
     };
-  }, [clipKey]); // eslint-disable-line react-hooks/exhaustive-deps — orderedClips accessed via closure, clipKey is the stable dep
+  }, [clipKey]); // eslint-disable-line react-hooks/exhaustive-deps -- orderedClips accessed via closure, clipKey is the stable dep
 
   // Pointer-based drag reorder (HTML5 drag doesn't work inside React Flow nodes)
   const [draggedClipId, setDraggedClipId] = useState<string | null>(null);

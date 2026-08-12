@@ -17,7 +17,11 @@ function CommentsNavigationIcon() {
   const markCommentViewed = useWorkflowStore((state) => state.markCommentViewed);
   const setNavigationTarget = useWorkflowStore((state) => state.setNavigationTarget);
 
-  // Recalculate when nodes change (nodes in dependency triggers re-render)
+  // Recalculate when nodes change (nodes in dependency triggers re-render).
+  // getNodesWithComments is a stable Zustand action that reads current nodes
+  // via get() internally — its own reference never changes, so `nodes` here
+  // is the actual recompute signal, not a genuinely unnecessary dependency.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const nodesWithComments = useMemo(() => getNodesWithComments(), [getNodesWithComments, nodes]);
   const unviewedCount = useMemo(() => {
     return nodesWithComments.filter((node) => !viewedCommentNodeIds.has(node.id)).length;

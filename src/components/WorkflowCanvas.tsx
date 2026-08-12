@@ -350,6 +350,39 @@ export const isPanningRef = { current: false };
 /** Shared ref so child components (BaseNode) can skip hover updates during node drags */
 export const isDraggingNodeRef = { current: false };
 
+// Node title mapping for FloatingNodeHeaders — static, so it lives at module
+// scope instead of being reallocated every render.
+const NODE_TITLES: Record<string, string> = {
+  imageInput: 'Image Input',
+  audioInput: 'Audio Input',
+  videoInput: 'Video Input',
+  annotation: 'Annotation',
+  prompt: 'Prompt',
+  array: 'Array',
+  promptConstructor: 'Prompt Constructor',
+  nanoBanana: 'Generate Image',
+  generateVideo: 'Generate Video',
+  generate3d: 'Generate 3D',
+  generateAudio: 'Generate Audio',
+  llmGenerate: 'LLM Generate',
+  splitGrid: 'Split Grid',
+  output: 'Output',
+  outputGallery: 'Output Gallery',
+  imageCompare: 'Image Compare',
+  videoStitch: 'Video Stitch',
+  easeCurve: 'Ease Curve',
+  videoTrim: 'Video Trim',
+  videoFrameGrab: 'Frame Grab',
+  removeBackground: 'Remove Background',
+  imageResize: 'Image Resize',
+  gifEncoder: 'GIF Encoder',
+  router: 'Router',
+  switch: 'Switch',
+  conditionalSwitch: 'Conditional Switch',
+  glbViewer: '3D Viewer',
+  comfyApp: 'ComfyUI App',
+};
+
 export function WorkflowCanvas() {
   const { nodes, edges, groups, isModalOpen, showQuickstart, navigationTarget, canvasNavigationSettings, dimmedNodeIds, skippedNodeIds } =
     useWorkflowStore(useShallow((state) => ({
@@ -513,38 +546,6 @@ export function WorkflowCanvas() {
       return { ...node, className: newClass };
     });
   }, [nodes, dimmedNodeIds, skippedNodeIds]);
-
-  // Node title mapping for FloatingNodeHeaders
-  const NODE_TITLES: Record<string, string> = {
-    imageInput: 'Image Input',
-    audioInput: 'Audio Input',
-    videoInput: 'Video Input',
-    annotation: 'Annotation',
-    prompt: 'Prompt',
-    array: 'Array',
-    promptConstructor: 'Prompt Constructor',
-    nanoBanana: 'Generate Image',
-    generateVideo: 'Generate Video',
-    generate3d: 'Generate 3D',
-    generateAudio: 'Generate Audio',
-    llmGenerate: 'LLM Generate',
-    splitGrid: 'Split Grid',
-    output: 'Output',
-    outputGallery: 'Output Gallery',
-    imageCompare: 'Image Compare',
-    videoStitch: 'Video Stitch',
-    easeCurve: 'Ease Curve',
-    videoTrim: 'Video Trim',
-    videoFrameGrab: 'Frame Grab',
-    removeBackground: 'Remove Background',
-    imageResize: 'Image Resize',
-    gifEncoder: 'GIF Encoder',
-    router: 'Router',
-    switch: 'Switch',
-    conditionalSwitch: 'Conditional Switch',
-    glbViewer: '3D Viewer',
-    comfyApp: 'ComfyUI App',
-  };
 
   // Helper to get node title (used for FloatingNodeHeader)
   const getNodeTitle = useCallback((node: Node) => {
@@ -904,7 +905,7 @@ export function WorkflowCanvas() {
         }
       }
     },
-    [onConnect, nodes, edges]
+    [onConnect, nodes, edges, isValidConnection, updateNodeData]
   );
 
   // Handle connection dropped on empty space or on a node
@@ -1156,7 +1157,7 @@ export function WorkflowCanvas() {
         useFTUXStore.getState().setConnectionMenuShown(true);
       }
     },
-    [screenToFlowPosition, nodes, edges, handleConnect, tutorialActive]
+    [screenToFlowPosition, nodes, edges, handleConnect, tutorialActive, isValidConnection]
   );
 
   // Handle the splitGrid action - uses automated grid detection
@@ -1592,7 +1593,7 @@ export function WorkflowCanvas() {
 
       setConnectionDrop(null);
     },
-    [connectionDrop, addNode, onConnect, nodes, handleSplitGridAction, getImageFromNode, updateNodeData, tutorialActive]
+    [connectionDrop, addNode, onConnect, nodes, handleSplitGridAction, getImageFromNode, updateNodeData, tutorialActive, isValidConnection]
   );
 
   const handleCloseDropMenu = useCallback(() => {

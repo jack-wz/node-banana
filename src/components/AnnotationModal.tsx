@@ -215,7 +215,7 @@ export function AnnotationModal() {
 
       if (newShape) setCurrentShape(newShape);
     },
-    [currentTool, toolOptions, getRelativePointerPosition, selectShape, addAnnotation, scale, position]
+    [currentTool, toolOptions, getRelativePointerPosition, selectShape, scale, position]
   );
 
   const handleMouseMove = useCallback(() => {
