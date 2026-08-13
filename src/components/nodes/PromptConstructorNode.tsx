@@ -8,10 +8,12 @@ import { useWorkflowStore } from "@/store/workflowStore";
 import { PromptConstructorNodeData, PromptNodeData, LLMGenerateNodeData, AvailableVariable } from "@/types";
 import { resolveTextSourcesThroughRouters } from "@/store/utils/connectedInputs";
 import { parseVarTags } from "@/utils/parseVarTags";
+import { useT } from "@/i18n";
 
 type PromptConstructorNodeType = Node<PromptConstructorNodeData, "promptConstructor">;
 
 export function PromptConstructorNode({ id, data, selected }: NodeProps<PromptConstructorNodeType>) {
+  const t = useT();
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const edges = useWorkflowStore((state) => state.edges);
@@ -223,9 +225,9 @@ export function PromptConstructorNode({ id, data, selected }: NodeProps<PromptCo
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             onScroll={handleScroll}
-            placeholder="Type @ to insert variables..."
+            placeholder={t("node.insertVariables")}
             className={`nodrag nopan nowheel relative w-full h-full p-3 text-xs leading-relaxed text-neutral-100 rounded-lg resize-none focus:outline-none placeholder:text-neutral-500 ${highlightedContent.length > 0 ? "bg-transparent" : "bg-neutral-800"} ${availableVariables.length > 0 || unresolvedVars.length > 0 ? "pb-7" : ""}`}
-            title={resolvedPreview ? `Preview: ${resolvedPreview}` : undefined}
+            title={resolvedPreview ? t("node.previewTitle", { preview: resolvedPreview }) : undefined}
           />
 
           {/* Autocomplete dropdown */}

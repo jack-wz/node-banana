@@ -1,0 +1,13 @@
+.git
+.next
+node_modules
+outputs
+docs
+*.log
+.env
+.env.*
+!.env.example
+deploy/.env
+deploy/.env.*
+coverage
+.DS_Store

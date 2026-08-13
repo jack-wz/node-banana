@@ -8,8 +8,12 @@ import { ProjectSetupModal } from "./ProjectSetupModal";
 import { CostIndicator } from "./CostIndicator";
 import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog";
 import { WorkflowBrowserModal } from "./WorkflowBrowserModal";
+import { TasksPanel } from "./TasksPanel";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useT } from "@/i18n";
 
 function CommentsNavigationIcon() {
+  const t = useT();
   // Subscribe to nodes so we re-render when comments change
   const nodes = useWorkflowStore((state) => state.nodes);
   const getNodesWithComments = useWorkflowStore((state) => state.getNodesWithComments);
@@ -50,7 +54,7 @@ function CommentsNavigationIcon() {
     <button
       onClick={handleClick}
       className="relative p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded transition-colors"
-      title={`${unviewedCount} unviewed comment${unviewedCount !== 1 ? 's' : ''} (${totalCount} total)`}
+      title={t("header.commentsTitle", { unviewed: unviewedCount, total: totalCount })}
     >
       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
         <path fillRule="evenodd" d="M4.848 2.771A49.144 49.144 0 0112 2.25c2.43 0 4.817.178 7.152.52 1.978.292 3.348 2.024 3.348 3.97v6.02c0 1.946-1.37 3.678-3.348 3.97a48.901 48.901 0 01-3.476.383.39.39 0 00-.297.17l-2.755 4.133a.75.75 0 01-1.248 0l-2.755-4.133a.39.39 0 00-.297-.17 48.9 48.9 0 01-3.476-.384c-1.978-.29-3.348-2.024-3.348-3.97V6.741c0-1.946 1.37-3.68 3.348-3.97z" clipRule="evenodd" />
@@ -65,6 +69,7 @@ function CommentsNavigationIcon() {
 }
 
 export function Header() {
+  const t = useT();
   const {
     workflowName,
     workflowId,
@@ -130,9 +135,9 @@ export function Header() {
     setShowProjectModal(false);
     // Small delay to let state update
     setTimeout(() => {
-      saveToFile().catch((error) => {
+    saveToFile().catch((error) => {
         console.error("Failed to save project:", error);
-        alert("Failed to save project. Please try again.");
+        alert(t("header.saveFailed"));
       });
     }, 50);
   };
@@ -153,31 +158,29 @@ export function Header() {
 
       if (!response.ok || !result.success) {
         console.error("Failed to open directory:", result.error);
-        alert(`Failed to open project folder: ${result.error || "Unknown error"}`);
+        alert(t("header.openFolderError", { error: result.error || "Unknown error" }));
         return;
       }
     } catch (error) {
       console.error("Failed to open directory:", error);
-      alert("Failed to open project folder. Please try again.");
+      alert(t("header.openFolderFailed"));
     }
   };
 
 
   const handleRevertAIChanges = useCallback(() => {
-    const confirmed = window.confirm(
-      "Are you sure? This will restore your previous workflow."
-    );
+    const confirmed = window.confirm(t("header.revertConfirm"));
     if (confirmed) {
       revertToSnapshot();
     }
-  }, [revertToSnapshot]);
+  }, [revertToSnapshot, t]);
 
   const settingsButtons = (
     <div className="flex items-center gap-0.5 ml-1 pl-1 border-l border-neutral-700/50">
       <button
         onClick={handleOpenSettings}
         className="p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded transition-colors"
-        title="Project settings"
+        title={t("header.projectSettings")}
       >
         <svg
           className="w-4 h-4"
@@ -217,33 +220,52 @@ export function Header() {
           await loadWorkflow(workflow, dirPath);
         }}
       />
-      <header className="h-11 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between px-4 shrink-0">
-        <div className="flex items-center gap-2">
+      <header className="absolute top-0 inset-x-0 z-40 pointer-events-none flex items-start justify-between pl-[68px] pr-3 pt-3">
+        {/* Left pill — logo + workflow name (Weavy top-left chrome) */}
+        <div className="pointer-events-auto flex items-center gap-2 bg-[#1b1b1f]/90 backdrop-blur-md border border-neutral-700/50 rounded-xl shadow-lg px-2.5 py-1.5">
           <button
             onClick={() => setShowQuickstart(true)}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-            title="Open welcome screen"
+            className="flex items-center hover:opacity-80 transition-opacity"
+            title={t("header.openWelcome")}
           >
             <Image src="/banana_icon.png" alt="Banana" width={24} height={24} className="w-6 h-6" />
             <h1 className="text-2xl font-semibold text-neutral-100 tracking-tight">
               Node Banana
             </h1>
           </button>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className={`text-sm truncate max-w-[180px] ${isProjectConfigured ? "text-neutral-200" : "text-neutral-500 italic"}`}>
+              {isProjectConfigured ? workflowName : t("header.untitled")}
+            </span>
+            {hasUnsavedChanges && !isSaving && (
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" title={t("header.unsavedChanges")} />
+            )}
+            <button
+              onClick={() => setShowWorkflowBrowser(true)}
+              className="p-0.5 text-neutral-500 hover:text-neutral-200 transition-colors shrink-0"
+              title={t("header.browseWorkflows")}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+          </div>
+        </div>
 
-          <div className="flex items-center gap-2 ml-4 pl-4 border-l border-neutral-700">
+        {/* Right pill — file ops / cost / status / links (Weavy top-right chrome) */}
+        <div className="pointer-events-auto flex items-center gap-2 bg-[#1b1b1f]/90 backdrop-blur-md border border-neutral-700/50 rounded-xl shadow-lg px-2 py-1">
+          <div className="flex items-center gap-2">
             {isProjectConfigured ? (
               <>
-                <span className="text-sm text-neutral-300">{workflowName}</span>
-                <span className="text-neutral-600">|</span>
                 <CostIndicator />
 
                 {/* File operations group */}
-                <div className="flex items-center gap-0.5 ml-2 pl-2 border-l border-neutral-700/50">
+                <div className="flex items-center gap-0.5 ml-1 pl-2 border-l border-neutral-700/50">
                   <button
                     onClick={() => canSave ? saveToFile() : handleOpenSettings()}
                     disabled={isSaving}
                     className="relative p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded transition-colors disabled:opacity-50"
-                    title={isSaving ? "Saving..." : canSave ? "Save project" : "Configure save location"}
+                    title={isSaving ? t("header.saving") : canSave ? t("header.saveProject") : t("header.configureSave")}
                     data-tutorial="save-button"
                   >
                     <svg
@@ -267,7 +289,7 @@ export function Header() {
                     <button
                       onClick={handleOpenDirectory}
                       className="p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded transition-colors"
-                      title="Open Project Folder"
+                      title={t("header.openFolder")}
                     >
                       <svg
                         className="w-4 h-4"
@@ -287,7 +309,7 @@ export function Header() {
                   <button
                     onClick={handleOpenFile}
                     className="p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded transition-colors"
-                    title="Open project"
+                    title={t("header.openProject")}
                   >
                     <svg
                       className="w-4 h-4"
@@ -309,14 +331,12 @@ export function Header() {
               </>
             ) : (
               <>
-                <span className="text-sm text-neutral-500 italic">Untitled</span>
-
                 {/* File operations group */}
                 <div className="flex items-center gap-0.5 ml-2 pl-2 border-l border-neutral-700/50">
                   <button
                     onClick={handleNewProject}
                     className="relative p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded transition-colors"
-                    title="Save project"
+                    title={t("header.saveProject")}
                     data-tutorial="save-button"
                   >
                     <svg
@@ -337,7 +357,7 @@ export function Header() {
                   <button
                     onClick={handleOpenFile}
                     className="p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded transition-colors"
-                    title="Open project"
+                    title={t("header.openProject")}
                   >
                     <svg
                       className="w-4 h-4"
@@ -359,69 +379,39 @@ export function Header() {
               </>
             )}
           </div>
-        </div>
 
-        <div className="flex items-center gap-3 text-xs">
+          <div className="w-px h-5 bg-neutral-700/60 mx-1" />
+
+          <div className="flex items-center gap-3 text-xs">
           {previousWorkflowSnapshot && (
             <button
               onClick={handleRevertAIChanges}
               className="px-2.5 py-1.5 text-xs text-neutral-300 hover:text-neutral-100 bg-neutral-700/50 hover:bg-neutral-700 border border-neutral-600 rounded transition-colors"
-              title="Restore workflow from before AI changes"
+              title={t("header.revertAITitle")}
             >
-              Revert AI Changes
+              {t("header.revertAI")}
             </button>
           )}
+         <TasksPanel />
+          {/* CommentsNavigationIcon stays — it's contextual */}
           <CommentsNavigationIcon />
           <span className="text-neutral-400">
             {isProjectConfigured ? (
               isSaving ? (
-                "Saving..."
+                t("header.saving")
               ) : lastSavedAt ? (
-                `Saved ${formatTime(lastSavedAt)}`
+                t("header.savedAt", { time: formatTime(lastSavedAt) })
               ) : (
-                "Not saved"
+                t("header.notSaved")
               )
             ) : (
-              "Not saved"
+              t("header.notSaved")
             )}
           </span>
-          <span className="text-neutral-500">·</span>
-          <a
-            href="https://x.com/ReflctWillie"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-neutral-400 hover:text-neutral-200 transition-colors"
-          >
-            Made by Willie
-          </a>
-          <span className="text-neutral-500">·</span>
-          <button
-            onClick={() => setShortcutsDialogOpen(true)}
-            className="text-neutral-400 hover:text-neutral-200 transition-colors"
-            title="Keyboard shortcuts (?)"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75A2.25 2.25 0 014.5 4.5h15a2.25 2.25 0 012.25 2.25v10.5A2.25 2.25 0 0119.5 19.5h-15a2.25 2.25 0 01-2.25-2.25V6.75z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8" />
-            </svg>
-          </button>
-          <span className="text-neutral-500">·</span>
-          <a
-            href="https://discord.com/invite/89Nr6EKkTf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-neutral-400 hover:text-neutral-200 transition-colors"
-            title="Support"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-            </svg>
-          </a>
+          {/* Shortcuts & Discord are in IconRail; Language in settings. */}
+          {/* Keeping header clean — Weavy only shows credits + Tasks. */}
+          <LanguageSwitcher />
+          </div>
         </div>
       </header>
       <KeyboardShortcutsDialog

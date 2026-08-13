@@ -12,6 +12,7 @@ import { defaultNodeDimensions } from "@/store/utils/nodeDefaults";
 import { downloadMedia as downloadMediaUtil } from "@/utils/downloadMedia";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 type MediaItem = { type: "image" | "video"; src: string };
 
@@ -43,6 +44,7 @@ function LightboxVideo({ src }: { src: string }) {
 type OutputGalleryNodeType = Node<OutputGalleryNodeData, "outputGallery">;
 
 export function OutputGalleryNode({ id, data, selected }: NodeProps<OutputGalleryNodeType>) {
+  const t = useT();
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const addNode = useWorkflowStore((state) => state.addNode);
@@ -344,7 +346,7 @@ export function OutputGalleryNode({ id, data, selected }: NodeProps<OutputGaller
             <button
               onClick={handleExtractToInputNodes}
               className="nodrag nopan flex items-center gap-1 px-1.5 py-0.5 text-[10px] text-neutral-400 hover:text-white hover:bg-neutral-700 rounded transition-colors"
-              title="Extract each item as an input node"
+              title={t("node.extractItems")}
             >
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />

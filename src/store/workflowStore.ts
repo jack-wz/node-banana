@@ -265,6 +265,7 @@ interface WorkflowStore {
   addNode: (type: NodeType, position: XYPosition, initialData?: Partial<WorkflowNodeData>) => string;
   updateNodeData: (nodeId: string, data: Partial<WorkflowNodeData>) => void;
   removeNode: (nodeId: string) => void;
+  toggleNodeLock: (nodeId: string) => void;
   onNodesChange: (changes: NodeChange<WorkflowNode>[]) => void;
 
   // Edge operations
@@ -272,6 +273,7 @@ interface WorkflowStore {
   onConnect: (connection: Connection, edgeDataOverrides?: Record<string, unknown>) => void;
   addEdgeWithType: (connection: Connection, edgeType: string, edgeDataOverrides?: Record<string, unknown>) => void;
   removeEdge: (edgeId: string) => void;
+  reconnectEdge: (oldEdge: WorkflowEdge, newConnection: Connection) => void;
   toggleEdgePause: (edgeId: string) => void;
   setLoopCount: (edgeId: string, count: number) => void;
 
@@ -369,6 +371,9 @@ interface WorkflowStore {
 
   // Cost tracking state
   incurredCost: number;
+
+  // Last completed run cost summary (Weavy runs-panel parity)
+  lastRunCost: { cost: number; at: number } | null;
 
   // Cost tracking actions
   addIncurredCost: (cost: number) => void;
@@ -663,6 +668,7 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
 
   // Cost tracking initial state
   incurredCost: 0,
+  lastRunCost: null,
 
   // Provider settings initial state
   providerSettings: getProviderSettings(),
@@ -873,6 +879,18 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
     get().incrementManualChangeCount();
   },
 
+  toggleNodeLock: (nodeId: string) => {
+    pushUndoCheckpoint(get, set);
+    set((state) => ({
+      nodes: state.nodes.map((node) =>
+        node.id === nodeId
+          ? { ...node, draggable: node.draggable === false ? true : false }
+          : node
+      ),
+      hasUnsavedChanges: true,
+    }));
+  },
+
   onNodesChange: (changes: NodeChange<WorkflowNode>[]) => {
     // Only mark as unsaved for meaningful changes (not selection changes)
     const hasMeaningfulChange = changes.some(
@@ -1004,6 +1022,30 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
         hasUnsavedChanges: true,
       };
     });
+  },
+
+  reconnectEdge: (oldEdge: WorkflowEdge, newConnection: Connection) => {
+    pushUndoCheckpoint(get, set);
+    set((state) => {
+      const source = newConnection.source ?? oldEdge.source;
+      const target = newConnection.target ?? oldEdge.target;
+      const sourceHandle = newConnection.sourceHandle ?? oldEdge.sourceHandle;
+      const targetHandle = newConnection.targetHandle ?? oldEdge.targetHandle;
+      const newEdge: WorkflowEdge = {
+        ...oldEdge,
+        source,
+        target,
+        sourceHandle,
+        targetHandle,
+        id: `edge-${source}-${target}-${sourceHandle || "default"}-${targetHandle || "default"}`,
+      };
+      return {
+        edges: state.edges.map((e) => (e.id === oldEdge.id ? newEdge : e)),
+        hasUnsavedChanges: true,
+      };
+    });
+    get().incrementManualChangeCount();
+    get().recomputeDimmedNodes();
   },
 
   removeEdge: (edgeId: string) => {
@@ -1623,6 +1665,9 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
     };
     set({ isRunning: true, pausedAtNodeId: null, currentNodeIds: [], skippedNodeIds: new Set(), _abortController: abortController });
 
+    // Capture cost baseline so we can summarize this run's cost on completion
+    const runStartCost = get().incurredCost;
+
     // Start logging session
     await logger.startSession();
 
@@ -1976,7 +2021,13 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
       // Reset skipped nodes' status back to idle
       resetSkippedNodes();
 
-      set({ isRunning: false, currentNodeIds: [], skippedNodeIds: new Set(), _abortController: null });
+      set({
+        isRunning: false,
+        currentNodeIds: [],
+        skippedNodeIds: new Set(),
+        _abortController: null,
+        lastRunCost: { cost: Math.max(0, get().incurredCost - runStartCost), at: Date.now() },
+      });
 
       saveLogSession();
       await logger.endSession();

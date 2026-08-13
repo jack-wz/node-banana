@@ -8,10 +8,12 @@ import { useWorkflowStore } from "@/store/workflowStore";
 import { PromptNodeData } from "@/types";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 type PromptNodeType = Node<PromptNodeData, "prompt">;
 
 export function PromptNode({ id, data, selected }: NodeProps<PromptNodeType>) {
+  const t = useT();
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const getConnectedInputs = useWorkflowStore((state) => state.getConnectedInputs);
@@ -116,14 +118,14 @@ export function PromptNode({ id, data, selected }: NodeProps<PromptNodeType>) {
           onChange={handleChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          placeholder={hasIncomingTextConnection ? "Text from connected node (editable)..." : nodeData.isOptional ? "Optional prompt (leave empty to skip)..." : "Describe what to generate..."}
+          placeholder={hasIncomingTextConnection ? t("node.promptConnected") : nodeData.isOptional ? t("node.promptOptional") : t("node.promptDescribe")}
           className="nodrag nopan nowheel w-full h-full p-3 pb-7 text-xs leading-relaxed text-neutral-100 bg-neutral-800 rounded-t-lg resize-none focus:outline-none placeholder:text-neutral-500"
         />
         <div className="absolute bottom-0 left-0 right-0 z-10 px-3 py-1.5 bg-neutral-900/90 rounded-b-lg">
           <button
             onClick={() => setShowVarDialog(true)}
             className="nodrag nopan text-[10px] text-blue-400 hover:text-blue-300 transition-colors"
-            title="Set variable name"
+            title={t("node.setVariable")}
           >
             {nodeData.variableName ? `@${nodeData.variableName}` : "Add variable"}
           </button>
@@ -145,12 +147,12 @@ export function PromptNode({ id, data, selected }: NodeProps<PromptNodeType>) {
       {showVarDialog && createPortal(
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999]">
           <div className="bg-neutral-800 border border-neutral-600 rounded-lg shadow-xl p-4 w-96">
-            <h3 className="text-sm font-semibold text-neutral-100 mb-3">Set Variable Name</h3>
+            <h3 className="text-sm font-semibold text-neutral-100 mb-3">{t("node.setVariableName")}</h3>
             <p className="text-xs text-neutral-400 mb-3">
               Use this prompt as a variable in PromptConstructor nodes
             </p>
             <div className="mb-4">
-              <label className="block text-xs text-neutral-300 mb-1">Variable name</label>
+              <label className="block text-xs text-neutral-300 mb-1">{t("node.variableName")}</label>
               <input
                 type="text"
                 value={varNameInput}
@@ -160,7 +162,7 @@ export function PromptNode({ id, data, selected }: NodeProps<PromptNodeType>) {
                     handleSaveVariableName();
                   }
                 }}
-                placeholder="e.g. color, style, subject"
+                placeholder={t("node.variableExample")}
                 className="w-full px-3 py-2 text-sm text-neutral-100 bg-neutral-900 border border-neutral-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                 autoFocus
               />

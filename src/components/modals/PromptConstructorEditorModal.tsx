@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { AvailableVariable } from "@/types";
 import { usePromptAutocomplete } from "@/hooks/usePromptAutocomplete";
+import { useT } from "@/i18n";
 
 const FONT_SIZE_STORAGE_KEY = "prompt-constructor-editor-font-size";
 const DEFAULT_FONT_SIZE = 14;
@@ -23,7 +24,8 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
   onSubmit,
   onClose,
 }) => {
-  const [template, setTemplate] = useState(initialTemplate);
+
+  const t = useT();  const [template, setTemplate] = useState(initialTemplate);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [fontSize, setFontSize] = useState(() => {
@@ -184,7 +186,7 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
       <div className="relative bg-neutral-800 border border-neutral-700 rounded-lg shadow-2xl w-full max-w-3xl h-[85vh] flex flex-col mx-4">
         {/* Header */}
         <div className="px-6 pt-6 pb-4 flex items-center gap-3">
-          <h2 className="text-xl font-semibold text-neutral-100">Edit Prompt Constructor</h2>
+          <h2 className="text-xl font-semibold text-neutral-100">{t("editor.editPromptConstructor")}</h2>
           {unresolvedVars.length > 0 && (
             <span className="px-2 py-0.5 bg-amber-900/30 border border-amber-700/50 rounded text-[11px] text-amber-400">
               Unresolved: {unresolvedVars.map((v) => `@${v}`).join(", ")}
@@ -220,7 +222,7 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
                 key={v.nodeId}
                 onClick={() => handleVariablePillClick(v.name)}
                 className="px-2 py-0.5 text-[11px] text-blue-400 bg-blue-900/20 border border-blue-700/40 rounded hover:bg-blue-900/40 transition-colors"
-                title={v.value || "(empty)"}
+                title={v.value || t("editor.empty")}
               >
                 @{v.name}
               </button>
@@ -234,7 +236,7 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
               value={template}
               onChange={autocompleteHandleChange}
               onKeyDown={autocompleteHandleKeyDown}
-              placeholder="Type @ to insert variables..."
+              placeholder={t("node.insertVariables")}
               className="nodrag nopan nowheel flex-1 w-full p-6 leading-relaxed text-neutral-100 bg-transparent border-0 resize-none focus:outline-none placeholder:text-neutral-500"
               style={{ fontSize: `${fontSize}px` }}
               autoFocus
@@ -280,7 +282,7 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
               Resolved Preview
             </div>
             <div className="p-4 text-sm text-neutral-300 whitespace-pre-wrap max-h-32 overflow-y-auto leading-relaxed">
-              {resolvedPreview || <span className="text-neutral-500 italic">Empty template</span>}
+              {resolvedPreview || <span className="text-neutral-500 italic">{t("editor.emptyTemplate")}</span>}
             </div>
           </div>
         )}
@@ -291,13 +293,13 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
             onClick={handleAttemptClose}
             className="px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-700 hover:bg-neutral-600 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-neutral-500"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             onClick={handleSubmit}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-blue-400"
           >
-            Submit
+            {t("common.submit")}
           </button>
         </div>
 
@@ -323,13 +325,13 @@ export const PromptConstructorEditorModal: React.FC<PromptConstructorEditorModal
                 </svg>
               </button>
 
-              <p className="text-neutral-100 text-center mb-6">You have unsaved changes</p>
+              <p className="text-neutral-100 text-center mb-6">{t("editor.unsavedChanges")}</p>
               <div className="flex justify-center gap-3">
                 <button
                   onClick={onClose}
                   className="px-4 py-2 text-sm font-medium text-neutral-300 bg-neutral-700 hover:bg-neutral-600 rounded transition-colors focus:outline-none focus:ring-1 focus:ring-neutral-500"
                 >
-                  Discard
+                  {t("editor.discard")}
                 </button>
                 <button
                   onClick={handleSubmit}

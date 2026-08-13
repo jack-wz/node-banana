@@ -4,8 +4,10 @@ import { useState, useMemo } from "react";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { calculatePredictedCost, formatCost, hasNonGeminiProviders } from "@/utils/costCalculator";
 import { CostDialog } from "./CostDialog";
+import { useT } from "@/i18n";
 
 export function CostIndicator() {
+  const t = useT();
   const [showDialog, setShowDialog] = useState(false);
   const nodes = useWorkflowStore((state) => state.nodes);
   const incurredCost = useWorkflowStore((state) => state.incurredCost);
@@ -29,7 +31,7 @@ export function CostIndicator() {
       <button
         onClick={() => setShowDialog(true)}
         className="px-2 py-0.5 rounded text-xs text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition-colors"
-        title="View cost details"
+        title={t("cost.viewDetails")}
       >
         {displayCost}
       </button>

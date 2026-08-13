@@ -24,6 +24,7 @@ const mockViewport = vi.hoisted(() => ({ zoom: 1 }));
 const mockReactFlowProps = vi.hoisted(() => ({
   current: null as Record<string, unknown> | null,
 }));
+const mockUpdateCanvasNavigationSettings = vi.fn();
 
 vi.mock("@/store/workflowStore", () => ({
   useWorkflowStore: (selector?: (state: unknown) => unknown) => {
@@ -152,6 +153,7 @@ const createDefaultState = (overrides = {}) => ({
   getNodesWithComments: vi.fn(() => []),
   markCommentViewed: vi.fn(),
   canvasNavigationSettings: { panMode: "space", zoomMode: "altScroll", selectionMode: "click" },
+  updateCanvasNavigationSettings: mockUpdateCanvasNavigationSettings,
   dimmedNodeIds: new Set<string>(),
   skippedNodeIds: new Set<string>(),
   captureSnapshot: vi.fn(),
@@ -247,57 +249,26 @@ describe("WorkflowCanvas", () => {
       expect(document.querySelector(".react-flow__background")).toBeInTheDocument();
     });
 
-    it("should render Controls component", () => {
+    it("should not render Controls component (Weavy parity: zoom lives in bottom toolbar)", () => {
       render(
         <TestWrapper>
           <WorkflowCanvas />
         </TestWrapper>
       );
 
-      // Controls panel should be rendered
-      expect(document.querySelector(".react-flow__controls")).toBeInTheDocument();
+      // Weavy has no React Flow Controls chrome — see docs/weavy-research/01 §4
+      expect(document.querySelector(".react-flow__controls")).not.toBeInTheDocument();
     });
 
-    it("should render MiniMap component", () => {
+    it("should not render MiniMap component (Weavy parity: no minimap)", () => {
       render(
         <TestWrapper>
           <WorkflowCanvas />
         </TestWrapper>
       );
 
-      // MiniMap should be rendered
-      const minimap = document.querySelector(".react-flow__minimap");
-      expect(minimap).toBeInTheDocument();
-      expect(minimap).not.toHaveStyle({ width: "100%", height: "100%" });
-    });
-
-    it("allows the minimap to be hidden and restored", () => {
-      render(
-        <TestWrapper>
-          <WorkflowCanvas />
-        </TestWrapper>
-      );
-
-      fireEvent.click(screen.getByRole("button", { name: "Hide minimap" }));
+      // Weavy has no MiniMap — see docs/weavy-research/01 §4
       expect(document.querySelector(".react-flow__minimap")).not.toBeInTheDocument();
-
-      fireEvent.click(screen.getByRole("button", { name: "Show minimap" }));
-      expect(document.querySelector(".react-flow__minimap")).toBeInTheDocument();
-    });
-
-    it("uses shared explicit geometry for the minimap and close toggle", () => {
-      render(
-        <TestWrapper>
-          <WorkflowCanvas />
-        </TestWrapper>
-      );
-
-      const minimap = document.querySelector(".react-flow__minimap");
-      const closeButton = screen.getByRole("button", { name: "Hide minimap" });
-
-      expect(minimap).toHaveStyle({ width: "200px", height: "150px", margin: "15px" });
-      expect(minimap?.parentElement).toHaveClass("react-flow");
-      expect(closeButton).toHaveStyle({ right: "23px", bottom: "129px" });
     });
 
     it("keeps edges visible and scopes native pan state to this canvas", () => {
@@ -978,6 +949,91 @@ describe("WorkflowCanvas", () => {
       // Should NOT update or add nodes from system clipboard
       expect(mockUpdateNodeData).not.toHaveBeenCalled();
       expect(mockAddNode).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Weavy tool shortcuts", () => {
+    it("V switches to the navigate/select tool (panMode space)", () => {
+      render(
+        <TestWrapper>
+          <WorkflowCanvas />
+        </TestWrapper>
+      );
+
+      fireEvent.keyDown(window, { key: "v" });
+
+      expect(mockUpdateCanvasNavigationSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ panMode: "space" })
+      );
+    });
+
+    it("H switches to the pan tool (panMode always)", () => {
+      render(
+        <TestWrapper>
+          <WorkflowCanvas />
+        </TestWrapper>
+      );
+
+      fireEvent.keyDown(window, { key: "h" });
+
+      expect(mockUpdateCanvasNavigationSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ panMode: "always" })
+      );
+    });
+
+    it("plain V does not stack selected nodes (moved to Alt+V)", () => {
+      mockUseWorkflowStore.mockImplementation((selector) =>
+        selector(
+          createDefaultState({
+            nodes: [
+              createMockNode("n1", "prompt", { selected: true, position: { x: 300, y: 50 } }),
+              createMockNode("n2", "prompt", { selected: true, position: { x: 100, y: 400 } }),
+            ],
+          })
+        )
+      );
+
+      render(
+        <TestWrapper>
+          <WorkflowCanvas />
+        </TestWrapper>
+      );
+
+      fireEvent.keyDown(window, { key: "v" });
+
+      // Tool switch happened, no position changes issued
+      expect(mockUpdateCanvasNavigationSettings).toHaveBeenCalled();
+      expect(mockOnNodesChange).not.toHaveBeenCalled();
+    });
+
+    it("Alt+V stacks selected nodes vertically", () => {
+      mockUseWorkflowStore.mockImplementation((selector) =>
+        selector(
+          createDefaultState({
+            nodes: [
+              createMockNode("n1", "prompt", { selected: true, position: { x: 300, y: 50 } }),
+              createMockNode("n2", "prompt", { selected: true, position: { x: 100, y: 400 } }),
+            ],
+          })
+        )
+      );
+
+      render(
+        <TestWrapper>
+          <WorkflowCanvas />
+        </TestWrapper>
+      );
+
+      fireEvent.keyDown(window, { key: "√", code: "KeyV", altKey: true });
+
+      // Both nodes receive position updates aligned to the leftmost x (100)
+      const positionChanges = mockOnNodesChange.mock.calls
+        .flatMap((call) => call[0])
+        .filter((change) => change.type === "position");
+      expect(positionChanges.length).toBe(2);
+      expect(positionChanges.every((c) => c.position.x === 100)).toBe(true);
+      // And no tool switch happened
+      expect(mockUpdateCanvasNavigationSettings).not.toHaveBeenCalled();
     });
   });
 });

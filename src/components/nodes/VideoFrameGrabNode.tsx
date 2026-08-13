@@ -8,10 +8,12 @@ import { VideoFrameGrabNodeData } from "@/types";
 import { useAdaptiveImageSrc } from "@/hooks/useAdaptiveImageSrc";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 type VideoFrameGrabNodeType = Node<VideoFrameGrabNodeData, "videoFrameGrab">;
 
 export function VideoFrameGrabNode({ id, data, selected }: NodeProps<VideoFrameGrabNodeType>) {
+  const t = useT();
   const nodeData = data;
   const adaptiveOutputImage = useAdaptiveImageSrc(nodeData.outputImage, id);
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
@@ -87,7 +89,7 @@ export function VideoFrameGrabNode({ id, data, selected }: NodeProps<VideoFrameG
               <button
                 onClick={() => updateNodeData(id, { outputImage: null, status: "idle" })}
                 className="absolute top-1 right-1 w-5 h-5 bg-neutral-900/80 hover:bg-red-600/80 rounded flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
-                title="Clear extracted frame"
+                title={t("node.clearFrame")}
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -145,7 +147,7 @@ export function VideoFrameGrabNode({ id, data, selected }: NodeProps<VideoFrameG
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
-            <span className="text-white text-xs">Extracting frame...</span>
+            <span className="text-white text-xs">{t("node.extractingFrame")}</span>
           </div>
         )}
 

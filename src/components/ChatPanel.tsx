@@ -5,6 +5,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import ReactMarkdown from "react-markdown";
 import { EditOperation } from "@/lib/chat/editOperations";
+import { useT } from "@/i18n";
 
 interface ChatPanelProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ isOpen, onClose, onBuildWorkflow, isBuildingWorkflow = false, onApplyEdits, workflowState, selectedNodeIds }: ChatPanelProps) {
+  const t = useT();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
   const [chipDismissed, setChipDismissed] = useState(false);
@@ -155,14 +157,14 @@ export function ChatPanel({ isOpen, onClose, onBuildWorkflow, isBuildingWorkflow
     <div className="fixed top-16 bottom-[220px] right-5 w-[380px] bg-neutral-800 border border-neutral-700 rounded-lg shadow-xl flex flex-col overflow-hidden z-40">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-700">
-        <h3 className="text-sm font-medium text-neutral-200">Workflow Assistant <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wider bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded px-1.5 py-0.5">Beta</span></h3>
+        <h3 className="text-sm font-medium text-neutral-200">{t("chat.title")} <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wider bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded px-1.5 py-0.5">Beta</span></h3>
         <div className="flex items-center gap-1">
           {messages.length > 0 && (
             <button
               onClick={() => setMessages([])}
               className="text-neutral-400 hover:text-neutral-200 transition-colors p-1"
               aria-label="Clear chat"
-              title="Clear chat history"
+              title={t("chat.clearHistory")}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -209,7 +211,7 @@ export function ChatPanel({ isOpen, onClose, onBuildWorkflow, isBuildingWorkflow
 
         {messages.length === 0 && !errorMessage && (
           <div className="text-center text-neutral-500 text-sm py-8">
-            <p>Ask me anything about creating workflows!</p>
+            <p>{t("chat.welcome")}</p>
             <p className="text-xs mt-2">e.g., &quot;How do I create product photos with different backgrounds?&quot;</p>
           </div>
         )}
@@ -343,7 +345,7 @@ export function ChatPanel({ isOpen, onClose, onBuildWorkflow, isBuildingWorkflow
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Type a message..."
+              placeholder={t("chat.placeholder")}
               className="flex-1 bg-neutral-700 border border-neutral-600 rounded-lg px-3 py-2 text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-blue-500"
               disabled={isLoading}
             />
@@ -370,10 +372,10 @@ export function ChatPanel({ isOpen, onClose, onBuildWorkflow, isBuildingWorkflow
               {isBuildingWorkflow ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Building...</span>
+                  <span>{t("chat.building")}</span>
                 </>
               ) : (
-                <span>Build Workflow</span>
+                <span>{t("chat.buildWorkflow")}</span>
               )}
             </button>
           </div>

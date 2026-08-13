@@ -10,12 +10,14 @@ import { InlineParameterPanel } from "./InlineParameterPanel";
 import { SettingsTabBar } from "./SettingsTabBar";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 // LLM providers and models
 const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
   { value: "google", label: "Google" },
   { value: "openai", label: "OpenAI" },
   { value: "anthropic", label: "Anthropic" },
+  { value: "deepseek", label: "DeepSeek" },
 ];
 
 const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> = {
@@ -34,11 +36,16 @@ const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> 
     { value: "claude-haiku-4.5", label: "Claude Haiku 4.5" },
     { value: "claude-opus-4.6", label: "Claude Opus 4.6" },
   ],
+  deepseek: [
+    { value: "deepseek-chat", label: "DeepSeek V3 (Chat)" },
+    { value: "deepseek-reasoner", label: "DeepSeek R1 (Reasoner)" },
+  ],
 };
 
 type LLMGenerateNodeType = Node<LLMGenerateNodeData, "llmGenerate">;
 
 export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNodeType>) {
+  const t = useT();
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
 
@@ -158,7 +165,7 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
             <div className="space-y-1.5 max-w-[280px]">
               {/* Provider */}
               <div className="flex items-center gap-2">
-                <label className="text-[11px] text-neutral-400 shrink-0">Provider</label>
+                <label className="text-[11px] text-neutral-400 shrink-0">{t("setup.provider")}</label>
                 <select
                   value={provider}
                   onChange={handleProviderChange}
@@ -172,7 +179,7 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
 
               {/* Model */}
               <div className="flex items-center gap-2">
-                <label className="text-[11px] text-neutral-400 shrink-0">Model</label>
+                <label className="text-[11px] text-neutral-400 shrink-0">{t("settingsPanel.model")}</label>
                 <select
                   value={nodeData.model || availableModels[0].value}
                   onChange={handleModelChange}
@@ -230,7 +237,7 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
               <div className="space-y-1.5 max-w-[280px]">
                 {/* Read-only model display */}
                 <div className="flex items-center gap-2">
-                  <label className="text-[11px] text-neutral-400 shrink-0">Model</label>
+                  <label className="text-[11px] text-neutral-400 shrink-0">{t("settingsPanel.model")}</label>
                   <span className="text-[11px] text-neutral-200 truncate">{nodeData.fallbackModel!.displayName}</span>
                 </div>
 
@@ -332,7 +339,7 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-white text-xs font-medium">Generation failed</span>
+            <span className="text-white text-xs font-medium">{t("node.generationFailed")}</span>
             {nodeData.error && (
               <span className="text-red-200 text-[10px] text-center px-3 mt-1 line-clamp-3">{nodeData.error}</span>
             )}
@@ -342,7 +349,7 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
             {nodeData.__usedFallback && (
               <div
                 className="mb-1 inline-block px-1.5 py-0.5 rounded bg-emerald-900/70 text-emerald-300 text-[9px] font-medium"
-                title={`Primary failed: ${nodeData.__primaryError ?? "unknown"}\nUsed fallback: ${nodeData.__fallbackModelUsed ?? ""}`}
+                title={t("node.primaryFailed", { error: nodeData.__primaryError ?? "unknown", model: nodeData.__fallbackModelUsed ?? "" })}
               >
                 Fallback used
               </div>
@@ -354,7 +361,7 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
               <button
                 onClick={handleCopyOutput}
                 className={`nodrag nopan w-5 h-5 ${copied ? "bg-green-600/80" : "bg-neutral-900/80 hover:bg-neutral-700/80"} rounded flex items-center justify-center text-neutral-400 hover:text-white transition-colors`}
-                title={copied ? "Copied!" : "Copy to clipboard"}
+                title={copied ? t("node.copied") : t("node.copyClipboard")}
               >
                 {copied ? (
                   <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -370,7 +377,7 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
                 onClick={handleRegenerate}
                 disabled={isRunning}
                 className="nodrag nopan w-5 h-5 bg-neutral-900/80 hover:bg-blue-600/80 disabled:opacity-50 disabled:cursor-not-allowed rounded flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
-                title="Regenerate"
+                title={t("node.regenerate")}
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -379,7 +386,7 @@ export function LLMGenerateNode({ id, data, selected }: NodeProps<LLMGenerateNod
               <button
                 onClick={handleClearOutput}
                 className="nodrag nopan w-5 h-5 bg-neutral-900/80 hover:bg-red-600/80 rounded flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
-                title="Clear output"
+                title={t("node.clearOutput")}
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

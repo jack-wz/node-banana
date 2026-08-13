@@ -5,6 +5,7 @@ import { ProviderType, ModelInputDef } from "@/types";
 import { ModelParameter } from "@/lib/providers/types";
 import { useProviderApiKeys } from "@/store/workflowStore";
 import { deduplicatedFetch } from "@/utils/deduplicatedFetch";
+import { useT } from "@/i18n";
 
 // localStorage cache for model schemas (persists across dev server restarts)
 const SCHEMA_CACHE_KEY = "node-banana-schema-cache";
@@ -76,6 +77,7 @@ function ModelParametersInner({
   onExpandChange,
   onInputsLoaded,
 }: ModelParametersProps) {
+  const t = useT();
   const [schema, setSchema] = useState<ModelParameter[]>([]);
   // Tracks which `${provider}:${modelId}` the current `schema` belongs to.
   // Prevents the defaults effect from writing a previous model's defaults into
@@ -282,9 +284,9 @@ function ModelParametersInner({
       {error ? (
         <span className="text-[9px] text-red-400">{error}</span>
       ) : isLoading ? (
-        <span className="text-[9px] text-neutral-500">Loading parameters...</span>
+        <span className="text-[9px] text-neutral-500">{t("node.loadingParams")}</span>
       ) : schema.length === 0 ? (
-        <span className="text-[9px] text-neutral-500">No parameters available</span>
+        <span className="text-[9px] text-neutral-500">{t("node.noParams")}</span>
       ) : (
         <div
           ref={gridRef}
@@ -321,6 +323,7 @@ interface ParameterInputProps {
  * cursor-jump issues caused by React Flow re-renders on store updates.
  */
 function ParameterInputInner({ param, name, value, onChange }: ParameterInputProps) {
+  const t = useT();
   // Stable callback that passes name along with value
   const handleChange = useCallback((value: unknown) => {
     onChange(name, value);
@@ -372,7 +375,7 @@ function ParameterInputInner({ param, name, value, onChange }: ParameterInputPro
           }}
           className="nodrag nopan flex-1 min-w-0 text-[11px] py-1 px-2 rounded-md bg-[#1a1a1a] focus:outline-none focus:ring-1 focus:ring-neutral-600 text-white"
         >
-          <option value="">Default</option>
+          <option value="">{t("node.defaultOption")}</option>
           {param.enum.map((opt) => (
             <option key={String(opt)} value={String(opt)}>
               {String(opt)}

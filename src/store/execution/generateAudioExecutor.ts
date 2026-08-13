@@ -169,7 +169,9 @@ export async function executeGenerateAudio(
         });
 
         // Track cost
+        let incurredCost: number | null = null;
         if (modelToUse.provider === "fal" && modelToUse.pricing) {
+          incurredCost = modelToUse.pricing.amount;
           addIncurredCost(modelToUse.pricing.amount);
         }
 
@@ -183,6 +185,9 @@ export async function executeGenerateAudio(
               audio: audioData,
               prompt: text,
               imageId: audioId,
+              provider: modelToUse.provider,
+              model: modelToUse.modelId,
+              cost: incurredCost,
             }),
           })
             .then((res) => res.json())

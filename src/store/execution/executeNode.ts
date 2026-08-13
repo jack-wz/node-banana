@@ -7,6 +7,7 @@
  */
 
 import type { NodeExecutionContext } from "./types";
+import type { NanoBananaNodeData, SelectedModel } from "@/types";
 import {
   executeAnnotation,
   executeArray,
@@ -27,6 +28,15 @@ import { executeRemoveBackground } from "./removeBackgroundExecutor";
 import { executeImageResize, executeGifEncoder } from "./imageProcessingExecutors";
 import { executeGenerateAudio } from "./generateAudioExecutor";
 import { executeComfyApp } from "./comfyAppExecutor";
+import { addRecentModel } from "@/store/utils/localStorage";
+
+/** Track the selected model for recently-used Quick Access. */
+function trackRecentModel(data: Record<string, unknown>): void {
+  const sm = data.selectedModel as SelectedModel | undefined;
+  if (sm?.provider && sm?.modelId && sm?.displayName) {
+    addRecentModel({ provider: sm.provider, modelId: sm.modelId, displayName: sm.displayName });
+  }
+}
 
 export interface ExecuteNodeOptions {
   /** When true, executors that support it will fall back to stored inputs. */
@@ -76,14 +86,30 @@ export async function executeNode(
     case "promptConstructor":
       await executePromptConstructor(ctx);
       break;
-    case "nanoBanana":
-      await executeNanoBanana(ctx, regenOpts);
+    case "nanoBanana": {
+      trackRecentModel(ctx.node.data as Record<string, unknown>);
+      // Runs × N (Weavy parity): execute the generation N times; each result
+      // is appended to the node's imageHistory carousel by the executor.
+      const freshNanoNode = ctx.getFreshNode(ctx.node.id);
+      const requestedRuns = (freshNanoNode?.data as NanoBananaNodeData | undefined)?.runs ?? 1;
+      const runs = Math.min(4, Math.max(1, Math.floor(requestedRuns)));
+      for (let runIndex = 0; runIndex < runs; runIndex++) {
+        if (ctx.signal?.aborted) break;
+        await executeNanoBanana(ctx, regenOpts);
+      }
       break;
+    }
     case "generateVideo":
+      trackRecentModel(ctx.node.data as Record<string, unknown>);
       await executeGenerateVideo(ctx, regenOpts);
       break;
     case "generate3d":
+      trackRecentModel(ctx.node.data as Record<string, unknown>);
       await executeGenerate3D(ctx, regenOpts);
+      break;
+    case "generateAudio":
+      trackRecentModel(ctx.node.data as Record<string, unknown>);
+      await executeGenerateAudio(ctx, regenOpts);
       break;
     case "llmGenerate":
       await executeLlmGenerate(ctx, regenOpts);
@@ -111,9 +137,6 @@ export async function executeNode(
       break;
     case "glbViewer":
       await executeGlbViewer(ctx);
-      break;
-    case "generateAudio":
-      await executeGenerateAudio(ctx, regenOpts);
       break;
     case "videoFrameGrab":
       await executeVideoFrameGrab(ctx);

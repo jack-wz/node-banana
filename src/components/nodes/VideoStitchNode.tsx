@@ -10,10 +10,12 @@ import { useVideoBlobUrl } from "@/hooks/useVideoBlobUrl";
 import { useVideoAutoplay } from "@/hooks/useVideoAutoplay";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 type VideoStitchNodeType = Node<VideoStitchNodeData, "videoStitch">;
 
 export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNodeType>) {
+  const t = useT();
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const edges = useWorkflowStore((state) => state.edges);
@@ -432,7 +434,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            <span className="text-xs">Checking encoder...</span>
+            <span className="text-xs">{t("node.checkingEncoder")}</span>
           </div>
         </div>
       </BaseNode>
@@ -456,7 +458,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
         <div className="shrink-0 flex flex-col gap-2">
           {orderedClips.length === 0 ? (
             <div className="h-16 flex items-center justify-center border border-dashed border-neutral-600 rounded">
-              <span className="text-[10px] text-neutral-500">Connect videos to stitch</span>
+              <span className="text-[10px] text-neutral-500">{t("node.connectVideosStitch")}</span>
             </div>
           ) : (
             <>
@@ -522,7 +524,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
                       <button
                         onClick={() => handleRemoveClip(clip.edgeId)}
                         className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-600/80 hover:bg-red-500 rounded text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                        title="Disconnect"
+                        title={t("node.disconnect")}
                       >
                         <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -578,7 +580,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
             <button
               onClick={() => updateNodeData(id, { outputVideo: null, status: "idle" })}
               className="absolute top-1 right-1 w-5 h-5 bg-neutral-900/80 hover:bg-red-600/80 rounded flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
-              title="Clear video"
+              title={t("node.clearVideo")}
             >
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -591,7 +593,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
         {orderedClips.length > 0 && (
           <div className="shrink-0 flex items-center justify-end gap-2">
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-neutral-400">Loop</span>
+              <span className="text-[10px] text-neutral-400">{t("edge.loop")}</span>
               {([1, 2, 3] as const).map((count) => (
                 <button
                   key={count}

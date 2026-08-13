@@ -75,7 +75,9 @@ describe("Header", () => {
   describe("Basic Rendering", () => {
     it("should render the app title", () => {
       render(<Header />);
-      expect(screen.getByText("Node Banana")).toBeInTheDocument();
+      // Weavy-parity floating chrome: the wordmark is replaced by the logo
+      // button + workflow name (shown in the left pill)
+      expect(screen.getByTitle("Open welcome screen")).toBeInTheDocument();
     });
 
     it("should render the banana icon", () => {
@@ -87,17 +89,7 @@ describe("Header", () => {
       expect(icon).toHaveAttribute("src", expect.stringContaining("banana_icon.png"));
     });
 
-    it("should render 'Made by Willie' link", () => {
-      render(<Header />);
-      const link = screen.getByText("Made by Willie");
-      expect(link).toHaveAttribute("href", "https://x.com/ReflctWillie");
-    });
-
-    it("should render Discord support link", () => {
-      render(<Header />);
-      const link = screen.getByTitle("Support");
-      expect(link).toHaveAttribute("href", "https://discord.com/invite/89Nr6EKkTf");
-    });
+    // "Made by Willie" and Discord links moved to IconRail (header simplification)
   });
 
   describe("Unconfigured Project State", () => {

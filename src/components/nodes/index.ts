@@ -25,3 +25,4 @@ export { RouterNode } from "./RouterNode";
 export { SwitchNode } from "./SwitchNode";
 export { ConditionalSwitchNode } from "./ConditionalSwitchNode";
 export { ComfyAppNode } from "./ComfyAppNode";
+export { StickyNoteNode } from "./StickyNoteNode";

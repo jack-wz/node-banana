@@ -12,7 +12,7 @@ import { CubicBezierEditor } from "@/components/CubicBezierEditor";
 import { EASING_PRESETS, getEasingBezier } from "@/lib/easing-presets";
 import { getAllEasingNames, getEasingFunction } from "@/lib/easing-functions";
 import { getModelPageUrl, getProviderDisplayName } from "@/utils/providerUrls";
-import { useInlineParameters } from "@/hooks/useInlineParameters";
+import { useT } from "@/i18n";
 
 // List of node types that have configurable parameters
 const CONFIGURABLE_NODE_TYPES: NodeType[] = [
@@ -49,6 +49,7 @@ const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
   { value: "google", label: "Google" },
   { value: "openai", label: "OpenAI" },
   { value: "anthropic", label: "Anthropic" },
+  { value: "deepseek", label: "DeepSeek" },
 ];
 
 const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> = {
@@ -66,6 +67,10 @@ const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> 
     { value: "claude-sonnet-4.5", label: "Claude Sonnet 4.5" },
     { value: "claude-haiku-4.5", label: "Claude Haiku 4.5" },
     { value: "claude-opus-4.6", label: "Claude Opus 4.6" },
+  ],
+  deepseek: [
+    { value: "deepseek-chat", label: "DeepSeek Chat" },
+    { value: "deepseek-reasoner", label: "DeepSeek Reasoner" },
   ],
 };
 
@@ -97,7 +102,6 @@ export function ControlPanel() {
     const selected = state.nodes.filter((n) => n.selected);
     return selected.length === 1 ? selected[0] : null;
   });
-  const { inlineParametersEnabled } = useInlineParameters();
 
   // Check if the selected node is configurable
   const isConfigurable = selectedNode && CONFIGURABLE_NODE_TYPES.includes(selectedNode.type as NodeType);
@@ -111,8 +115,10 @@ export function ControlPanel() {
   const isGenerationNode = selectedNode &&
     GENERATION_NODE_TYPES.includes(selectedNode.type as NodeType);
 
-  // Hide for generation nodes when inline parameters enabled
-  if (isGenerationNode && inlineParametersEnabled) {
+  // Hide for generation nodes — their parameters are handled by either
+  // InlineParameterPanel (when inlineParametersEnabled) or the Weavy-parity
+  // NodeSettingsPanel (when disabled). Showing ControlPanel too causes overlap.
+  if (isGenerationNode) {
     return null;
   }
 
@@ -182,6 +188,7 @@ function getNodeTypeTitle(type: NodeType): string {
 
 // Generate Image Controls
 function GenerateImageControls({ node }: { node: Node }) {
+  const t = useT();
   const nodeData = node.data as NanoBananaNodeData;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
@@ -288,7 +295,7 @@ function GenerateImageControls({ node }: { node: Node }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-neutral-500 hover:text-neutral-300 transition-colors"
-                    title={`View on ${getProviderDisplayName(currentProvider)}`}
+                    title={t("models.viewOn", { provider: getProviderDisplayName(currentProvider) })}
                     onClick={(e) => {
                       if (!getModelPageUrl(currentProvider, nodeData.selectedModel?.modelId || "")) {
                         e.preventDefault();
@@ -315,7 +322,7 @@ function GenerateImageControls({ node }: { node: Node }) {
         {isGeminiProvider && (
           <>
             <div>
-              <label className="block text-xs font-medium text-neutral-300 mb-1">Aspect Ratio</label>
+              <label className="block text-xs font-medium text-neutral-300 mb-1">{t("settingsPanel.aspectRatio")}</label>
               <select
                 value={nodeData.aspectRatio || "1:1"}
                 onChange={handleAspectRatioChange}
@@ -329,7 +336,7 @@ function GenerateImageControls({ node }: { node: Node }) {
 
             {supportsResolution && (
               <div>
-                <label className="block text-xs font-medium text-neutral-300 mb-1">Resolution</label>
+                <label className="block text-xs font-medium text-neutral-300 mb-1">{t("settingsPanel.resolution")}</label>
                 <select
                   value={nodeData.resolution || "1K"}
                   onChange={handleResolutionChange}
@@ -410,6 +417,7 @@ function GenerateImageControls({ node }: { node: Node }) {
 
 // Generate Video Controls
 function GenerateVideoControls({ node }: { node: Node }) {
+  const t = useT();
   const nodeData = node.data as GenerateVideoNodeData;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
@@ -456,7 +464,7 @@ function GenerateVideoControls({ node }: { node: Node }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-neutral-500 hover:text-neutral-300 transition-colors"
-                    title={`View on ${getProviderDisplayName(currentProvider)}`}
+                    title={t("models.viewOn", { provider: getProviderDisplayName(currentProvider) })}
                     onClick={(e) => {
                       if (!getModelPageUrl(currentProvider, nodeData.selectedModel?.modelId || "")) {
                         e.preventDefault();
@@ -514,6 +522,7 @@ function GenerateVideoControls({ node }: { node: Node }) {
 
 // Generate 3D Controls
 function Generate3DControls({ node }: { node: Node }) {
+  const t = useT();
   const nodeData = node.data as Generate3DNodeData;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
@@ -562,7 +571,7 @@ function Generate3DControls({ node }: { node: Node }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-neutral-500 hover:text-neutral-300 transition-colors"
-                    title={`View on ${getProviderDisplayName(currentProvider)}`}
+                    title={t("models.viewOn", { provider: getProviderDisplayName(currentProvider) })}
                     onClick={(e) => {
                       if (!getModelPageUrl(currentProvider, nodeData.selectedModel?.modelId || "")) {
                         e.preventDefault();
@@ -644,6 +653,7 @@ function GenerateAudioControls({ node }: { node: Node }) {
 
 // LLM Controls
 function LLMControls({ node }: { node: Node }) {
+  const t = useT();
   const nodeData = node.data as LLMGenerateNodeData;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
@@ -692,7 +702,7 @@ function LLMControls({ node }: { node: Node }) {
   return (
     <div className="space-y-3">
       <div>
-        <label className="block text-xs font-medium text-neutral-300 mb-1">Provider</label>
+        <label className="block text-xs font-medium text-neutral-300 mb-1">{t("setup.provider")}</label>
         <select
           value={provider}
           onChange={handleProviderChange}
@@ -705,7 +715,7 @@ function LLMControls({ node }: { node: Node }) {
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-neutral-300 mb-1">Model</label>
+        <label className="block text-xs font-medium text-neutral-300 mb-1">{t("settingsPanel.model")}</label>
         <select
           value={nodeData.model || availableModels[0].value}
           onChange={handleModelChange}
@@ -763,6 +773,7 @@ function LLMControls({ node }: { node: Node }) {
 
 // Ease Curve Controls
 function EaseCurveControls({ node }: { node: Node }) {
+  const t = useT();
   const nodeData = node.data as EaseCurveNodeData;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
@@ -850,8 +861,8 @@ function EaseCurveControls({ node }: { node: Node }) {
     <div className="space-y-3 relative">
       {isInherited && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-neutral-900/90 rounded z-10">
-          <p className="text-sm text-neutral-200 font-medium">Settings inherited</p>
-          <p className="text-[11px] text-neutral-400 mt-1">Break connection to edit manually</p>
+          <p className="text-sm text-neutral-200 font-medium">{t("node.settingsInherited")}</p>
+          <p className="text-[11px] text-neutral-400 mt-1">{t("node.breakConnection")}</p>
           <button
             className="nodrag nopan mt-3 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded text-xs text-neutral-200 transition-colors"
             onClick={handleBreakInheritance}
@@ -862,7 +873,7 @@ function EaseCurveControls({ node }: { node: Node }) {
       )}
       <div>
         <div className="flex items-center justify-between mb-1">
-          <label className="block text-xs font-medium text-neutral-300">Easing Function</label>
+          <label className="block text-xs font-medium text-neutral-300">{t("node.easingFunction")}</label>
           <button
             ref={presetsButtonRef}
             onClick={() => {
@@ -957,6 +968,7 @@ function EaseCurveControls({ node }: { node: Node }) {
 
 // Conditional Switch Controls
 function ConditionalSwitchControls({ node }: { node: Node }) {
+  const t = useT();
   const nodeData = node.data as ConditionalSwitchNodeData;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
@@ -1031,7 +1043,7 @@ function ConditionalSwitchControls({ node }: { node: Node }) {
               <button
                 onClick={() => handleDelete(rule.id)}
                 className="nodrag nopan text-neutral-500 hover:text-red-400"
-                title="Delete rule"
+                title={t("node.deleteRule")}
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -1045,17 +1057,17 @@ function ConditionalSwitchControls({ node }: { node: Node }) {
             onChange={(e) => handleModeChange(rule.id, e.target.value as MatchMode)}
             className="nodrag nopan w-full px-2 py-1 text-xs bg-neutral-700 border border-neutral-600 rounded text-neutral-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
-            <option value="exact">Exact match</option>
-            <option value="contains">Contains</option>
-            <option value="starts-with">Starts with</option>
-            <option value="ends-with">Ends with</option>
+            <option value="exact">{t("node.matchExact")}</option>
+            <option value="contains">{t("node.matchContains")}</option>
+            <option value="starts-with">{t("node.matchStartsWith")}</option>
+            <option value="ends-with">{t("node.matchEndsWith")}</option>
           </select>
 
           <input
             type="text"
             value={rule.value}
             onChange={(e) => handleRuleValueChange(rule.id, e.target.value)}
-            placeholder="Enter match value"
+            placeholder={t("node.matchValuePlaceholder")}
             className="nodrag nopan w-full px-2 py-1 text-xs bg-neutral-700 border border-neutral-600 rounded text-neutral-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
 

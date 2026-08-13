@@ -9,10 +9,12 @@ import { useAdaptiveImageSrc } from "@/hooks/useAdaptiveImageSrc";
 import { downloadMedia } from "@/utils/downloadMedia";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 type ImageInputNodeType = Node<ImageInputNodeData, "imageInput">;
 
 export function ImageInputNode({ id, data, selected }: NodeProps<ImageInputNodeType>) {
+  const t = useT();
   const nodeData = data;
   const adaptiveImage = useAdaptiveImageSrc(nodeData.image, id);
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
@@ -152,7 +154,7 @@ export function ImageInputNode({ id, data, selected }: NodeProps<ImageInputNodeT
           <svg className="w-8 h-8 text-neutral-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
           </svg>
-          <span className="text-xs text-neutral-500 mt-2">{nodeData.isOptional ? "Optional" : "Drop image"}</span>
+          <span className="text-xs text-neutral-500 mt-2">{nodeData.isOptional ? t("node.optional") : t("node.dropImage")}</span>
         </div>
       )}
 

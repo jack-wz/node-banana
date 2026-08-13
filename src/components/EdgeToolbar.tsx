@@ -3,8 +3,10 @@
 import { useWorkflowStore } from "@/store/workflowStore";
 import { WorkflowEdgeData } from "@/types";
 import { useMemo, useEffect, useState, useRef } from "react";
+import { useT } from "@/i18n";
 
 export function EdgeToolbar() {
+  const t = useT();
   const { edges, toggleEdgePause, removeEdge, setLoopCount } = useWorkflowStore();
   const [clickPosition, setClickPosition] = useState<{ x: number; y: number } | null>(null);
   const previousSelectedEdgeId = useRef<string | null>(null);
@@ -113,12 +115,12 @@ export function EdgeToolbar() {
       )}
       {isLoop && (
         <>
-          <span className="text-[10px] font-medium text-fuchsia-300 px-1.5">Loop</span>
+          <span className="text-[10px] font-medium text-fuchsia-300 px-1.5">{t("edge.loop")}</span>
           <button
             onClick={() => handleLoopCountChange(-1)}
             disabled={loopCount <= 1}
             className="p-1 rounded hover:bg-neutral-700 text-fuchsia-300 hover:text-fuchsia-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Decrease loop count"
+            title={t("edge.loopDecrease")}
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" d="M5 12h14" />
@@ -129,7 +131,7 @@ export function EdgeToolbar() {
             onClick={() => handleLoopCountChange(1)}
             disabled={loopCount >= 100}
             className="p-1 rounded hover:bg-neutral-700 text-fuchsia-300 hover:text-fuchsia-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Increase loop count"
+            title={t("edge.loopIncrease")}
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" d="M12 5v14M5 12h14" />
@@ -146,7 +148,7 @@ export function EdgeToolbar() {
             ? "text-amber-400 hover:text-amber-300"
             : "text-neutral-400 hover:text-neutral-100"
         }`}
-        title={hasPause ? "Remove pause" : "Add pause"}
+        title={hasPause ? t("edge.removePause") : t("edge.addPause")}
       >
         {hasPause ? (
           // Play icon (resume)
@@ -164,7 +166,7 @@ export function EdgeToolbar() {
       <button
         onClick={handleDelete}
         className="p-1.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-red-400 transition-colors"
-        title="Delete"
+        title={t("common.delete")}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path

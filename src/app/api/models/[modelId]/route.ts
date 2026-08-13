@@ -1105,21 +1105,19 @@ function getKieSchema(modelId: string): ExtractedSchema {
     },
     "wan/2-6-text-to-video": {
       parameters: [
-        { name: "duration", type: "string", description: "Video duration in seconds", enum: ["5", "10", "15"], default: "5" },
-        { name: "resolution", type: "string", description: "Output resolution", enum: ["720p", "1080p"], default: "1080p" },
-        { name: "seed", type: "integer", description: "Random seed for reproducibility", minimum: 0 },
+        { name: "duration", type: "string", description: "Video duration in seconds", enum: ["5", "10"], default: "5" },
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" },
       ],
       inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
     },
     "wan/2-6-image-to-video": {
       parameters: [
-        { name: "duration", type: "string", description: "Video duration in seconds", enum: ["5", "10", "15"], default: "5" },
-        { name: "resolution", type: "string", description: "Output resolution", enum: ["720p", "1080p"], default: "1080p" },
-        { name: "seed", type: "integer", description: "Random seed for reproducibility", minimum: 0 },
+        { name: "duration", type: "string", description: "Video duration in seconds", enum: ["5", "10"], default: "5" },
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" },
       ],
       inputs: [
-        { name: "prompt", type: "text", required: false, label: "Prompt" },
-        { name: "image_urls", type: "image", required: true, label: "Image", isArray: true },
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_url", type: "image", required: true, label: "Image" },
       ],
     },
     "wan/2-7-text-to-video": {
@@ -1154,12 +1152,11 @@ function getKieSchema(modelId: string): ExtractedSchema {
     "wan/2-6-video-to-video": {
       parameters: [
         { name: "duration", type: "string", description: "Video duration in seconds", enum: ["5", "10"], default: "5" },
-        { name: "resolution", type: "string", description: "Output resolution", enum: ["720p", "1080p"], default: "1080p" },
-        { name: "seed", type: "integer", description: "Random seed for reproducibility", minimum: 0 },
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" },
       ],
       inputs: [
-        { name: "prompt", type: "text", required: false, label: "Prompt" },
-        { name: "video_urls", type: "image", required: true, label: "Video", isArray: true },
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "video_url", type: "video", required: true, label: "Video" },
       ],
     },
     "topaz/video-upscale": {
@@ -1202,6 +1199,525 @@ function getKieSchema(modelId: string): ExtractedSchema {
       inputs: [
         { name: "prompt", type: "text", required: true, label: "Prompt" },
         { name: "imageUrls", type: "image", required: true, label: "Image", isArray: true },
+      ],
+    },
+    // ---- Synced from docs.kie.ai/market (2026-08) ----
+    "qwen/text-to-image": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["1:1", "4:3", "3:4", "16:9", "9:16", "2:3", "3:2"], default: "1:1" },
+      ],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "qwen/image-edit": {
+      parameters: [
+        { name: "strength", type: "number", description: "Edit strength (0=preserve, 1=full remake)", minimum: 0, maximum: 1, default: 0.8 },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_url", type: "image", required: true, label: "Image" },
+      ],
+    },
+    "qwen2/text-to-image": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["1:1", "4:3", "3:4", "16:9", "9:16", "2:3", "3:2"], default: "1:1" },
+      ],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "qwen2/image-edit": {
+      parameters: [
+        { name: "strength", type: "number", description: "Edit strength (0=preserve, 1=full remake)", minimum: 0, maximum: 1, default: 0.8 },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_url", type: "image", required: true, label: "Image" },
+      ],
+    },
+    "seedream/5-pro-text-to-image": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["1:1", "4:3", "3:4", "16:9", "9:16", "2:3", "3:2", "21:9"], default: "1:1" },
+        { name: "quality", type: "string", description: "Output quality", enum: ["basic", "high"], default: "basic" },
+      ],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "seedream/5-pro-image-to-image": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["1:1", "4:3", "3:4", "16:9", "9:16", "2:3", "3:2", "21:9"], default: "1:1" },
+        { name: "quality", type: "string", description: "Output quality", enum: ["basic", "high"], default: "basic" },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_urls", type: "image", required: true, label: "Image", isArray: true },
+      ],
+    },
+    "gpt-image-2-text-to-image": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["1:1", "2:3", "3:2"], default: "3:2" },
+        { name: "quality", type: "string", description: "Output quality", enum: ["medium", "high"], default: "medium" },
+      ],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "gpt-image-2-image-to-image": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["1:1", "2:3", "3:2"], default: "3:2" },
+        { name: "quality", type: "string", description: "Output quality", enum: ["medium", "high"], default: "medium" },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "input_urls", type: "image", required: true, label: "Image", isArray: true },
+      ],
+    },
+    "ideogram/v3-text-to-image": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["1:1", "4:3", "3:4", "16:9", "9:16"], default: "1:1" },
+        { name: "seed", type: "integer", description: "Random seed for reproducibility", minimum: 0 },
+      ],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "nano-banana-2-lite": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["1:1", "1:4", "1:8", "2:3", "3:2", "3:4", "4:1", "4:3", "4:5", "5:4", "8:1", "9:16", "16:9", "21:9", "auto"], default: "1:1" },
+      ],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "topaz/image-upscale": {
+      parameters: [
+        { name: "upscale_factor", type: "string", description: "Upscale factor", enum: ["1", "2", "4"], default: "2" },
+      ],
+      inputs: [
+        { name: "image_url", type: "image", required: true, label: "Image" },
+      ],
+    },
+    "recraft/remove-background": {
+      parameters: [],
+      inputs: [
+        { name: "image", type: "image", required: true, label: "Image" },
+      ],
+    },
+    "wan/2-5-text-to-video": {
+      parameters: [
+        { name: "duration", type: "string", description: "Video duration in seconds", enum: ["5", "10"], default: "5" },
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" },
+      ],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "wan/2-5-image-to-video": {
+      parameters: [
+        { name: "duration", type: "string", description: "Video duration in seconds", enum: ["5", "10"], default: "5" },
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_url", type: "image", required: true, label: "Image" },
+      ],
+    },
+    "bytedance/seedance-1.5-pro": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["1:1", "4:3", "3:4", "16:9", "9:16", "21:9"], default: "16:9" },
+        { name: "duration", type: "string", description: "Video duration in seconds", enum: ["5", "10"], default: "5" },
+      ],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "kling/v3-turbo-text-to-video": {
+      parameters: [
+        { name: "duration", type: "string", description: "Video duration in seconds", enum: ["5", "10"], default: "5" },
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["1:1", "9:16", "16:9"], default: "16:9" },
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" },
+      ],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "kling/v3-turbo-image-to-video": {
+      parameters: [
+        { name: "duration", type: "string", description: "Video duration in seconds", enum: ["5", "10"], default: "5" },
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_urls", type: "image", required: true, label: "Image", isArray: true },
+      ],
+    },
+    "hailuo/2-3-image-to-video-pro": {
+      parameters: [
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["768P", "1080P"], default: "1080P" },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_url", type: "image", required: true, label: "Image" },
+      ],
+    },
+    "pixverse-v6/text-to-video": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["16:9", "4:3", "1:1", "3:4", "9:16", "2:3", "3:2", "21:9"], default: "16:9" },
+        { name: "quality", type: "string", description: "Video resolution", enum: ["360p", "540p", "720p", "1080p"], default: "720p" },
+        { name: "duration", type: "integer", description: "Duration in seconds (1-15)", minimum: 1, maximum: 15, default: 5 },
+        { name: "generate_audio_switch", type: "boolean", description: "Generate audio", default: false },
+        { name: "seed", type: "integer", description: "Random seed", minimum: 0 },
+      ],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "pixverse-v6/image-to-video": {
+      parameters: [
+        { name: "quality", type: "string", description: "Video resolution", enum: ["360p", "540p", "720p", "1080p"], default: "720p" },
+        { name: "duration", type: "integer", description: "Duration in seconds (1-15)", minimum: 1, maximum: 15, default: 5 },
+        { name: "generate_audio_switch", type: "boolean", description: "Generate audio", default: false },
+        { name: "seed", type: "integer", description: "Random seed", minimum: 0 },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_urls", type: "image", required: true, label: "Image", isArray: true },
+      ],
+    },
+    "pixverse-v6/transition": {
+      parameters: [
+        { name: "quality", type: "string", description: "Video resolution", enum: ["360p", "540p", "720p", "1080p"], default: "720p" },
+        { name: "duration", type: "integer", description: "Duration in seconds (1-15)", minimum: 1, maximum: 15, default: 5 },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "first_frame_url", type: "image", required: true, label: "First Frame" },
+        { name: "last_frame_url", type: "image", required: true, label: "Last Frame" },
+      ],
+    },
+    "pixverse-v6/extend": {
+      parameters: [{ name: "duration", type: "integer", description: "Extension duration in seconds", minimum: 1, maximum: 15, default: 5 }],
+      inputs: [
+        { name: "prompt", type: "text", required: false, label: "Prompt" },
+        { name: "video_url", type: "video", required: true, label: "Video" },
+      ],
+    },
+    "pixverse-v6/reference-to-video": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["16:9", "4:3", "1:1", "3:4", "9:16", "2:3", "3:2", "21:9"], default: "16:9" },
+        { name: "quality", type: "string", description: "Video resolution", enum: ["360p", "540p", "720p", "1080p"], default: "720p" },
+        { name: "duration", type: "integer", description: "Duration in seconds", minimum: 1, maximum: 15, default: 5 },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_urls", type: "image", required: true, label: "Reference Images", isArray: true },
+      ],
+    },
+    "minimax-h3/text-to-video": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["21:9", "16:9", "4:3", "1:1", "3:4", "9:16"], default: "16:9" },
+        { name: "duration", type: "integer", description: "Duration in seconds (4-15)", minimum: 4, maximum: 15, default: 6 },
+      ],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "minimax-h3/image-to-video": {
+      parameters: [{ name: "duration", type: "integer", description: "Duration in seconds (4-15)", minimum: 4, maximum: 15, default: 6 }],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "first_frame_url", type: "image", required: false, label: "First Frame" },
+        { name: "last_frame_url", type: "image", required: false, label: "Last Frame" },
+      ],
+    },
+    "minimax-h3/reference-to-video": {
+      parameters: [{ name: "duration", type: "integer", description: "Duration in seconds (4-15)", minimum: 4, maximum: 15, default: 6 }],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "reference_image_urls", type: "image", required: true, label: "Reference", isArray: true },
+        { name: "reference_video_urls", type: "video", required: false, label: "Reference Video", isArray: true },
+      ],
+    },
+    "happyhorse/text-to-video": {
+      parameters: [
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" },
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["16:9", "9:16", "1:1", "4:3", "3:4"], default: "16:9" },
+      ],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "happyhorse/image-to-video": {
+      parameters: [
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" },
+        { name: "duration", type: "integer", description: "Duration in seconds (3-15)", minimum: 3, maximum: 15, default: 5 },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_urls", type: "image", required: true, label: "Image", isArray: true },
+      ],
+    },
+    "happyhorse/reference-to-video": {
+      parameters: [
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" },
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["16:9", "9:16", "1:1", "4:3", "3:4"], default: "16:9" },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "reference_image_urls", type: "image", required: true, label: "Reference", isArray: true },
+      ],
+    },
+    "happyhorse/video-edit": {
+      parameters: [{ name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" }],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "video_url", type: "video", required: true, label: "Video" },
+      ],
+    },
+    "happyhorse-1-1/text-to-video": {
+      parameters: [
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" },
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["16:9", "9:16", "1:1", "4:3", "3:4"], default: "16:9" },
+      ],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "happyhorse-1-1/image-to-video": {
+      parameters: [
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" },
+        { name: "duration", type: "integer", description: "Duration in seconds (3-15)", minimum: 3, maximum: 15, default: 5 },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_urls", type: "image", required: true, label: "Image", isArray: true },
+      ],
+    },
+    "happyhorse-1-1/reference-to-video": {
+      parameters: [
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" },
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["16:9", "9:16", "1:1", "4:3", "3:4"], default: "16:9" },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "reference_image_urls", type: "image", required: true, label: "Reference", isArray: true },
+      ],
+    },
+    "bytedance/seedance-2-mini/text-to-video": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9"], default: "16:9" },
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p"], default: "720p" },
+        { name: "duration", type: "integer", description: "Duration in seconds", default: 5 },
+        { name: "generate_audio", type: "boolean", description: "Generate audio", default: true },
+      ],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "bytedance/seedance-2-mini/image-to-video": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9"], default: "16:9" },
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p"], default: "720p" },
+        { name: "duration", type: "integer", description: "Duration in seconds", default: 5 },
+        { name: "generate_audio", type: "boolean", description: "Generate audio", default: true },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "first_frame_url", type: "image", required: true, label: "First Frame" },
+      ],
+    },
+    "gemini-omni-video": {
+      parameters: [],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_urls", type: "image", required: false, label: "Reference Images", isArray: true },
+      ],
+    },
+    "gemini-omni-audio": {
+      parameters: [],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "gemini-omni-character": {
+      parameters: [],
+      inputs: [
+        { name: "prompt", type: "text", required: false, label: "Prompt" },
+        { name: "image_urls", type: "image", required: true, label: "Character Image", isArray: true },
+      ],
+    },
+    "omnihuman-1-5": {
+      parameters: [
+        { name: "output_resolution", type: "string", description: "Output resolution", enum: ["720", "1080"], default: "1080" },
+        { name: "pe_fast_mode", type: "boolean", description: "Fast mode (lower quality)", default: false },
+        { name: "seed", type: "integer", description: "Random seed (-1 for random)", default: -1 },
+      ],
+      inputs: [
+        { name: "image_url", type: "image", required: true, label: "Portrait" },
+        { name: "audio_url", type: "audio", required: true, label: "Audio" },
+      ],
+    },
+    "wan/2-7-videoedit": {
+      parameters: [],
+      inputs: [
+        { name: "prompt", type: "text", required: false, label: "Prompt" },
+        { name: "negative_prompt", type: "text", required: false, label: "Neg. Prompt" },
+        { name: "video_url", type: "video", required: true, label: "Video" },
+        { name: "reference_image", type: "image", required: false, label: "Reference" },
+      ],
+    },
+    "wan/2-7-r2v": {
+      parameters: [
+        { name: "duration", type: "integer", description: "Duration in seconds", default: 5 },
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["1080p"], default: "1080p" },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_urls", type: "image", required: true, label: "Reference Images", isArray: true },
+      ],
+    },
+    "wan/2-6-flash-image-to-video": {
+      parameters: [
+        { name: "duration", type: "string", description: "Video duration in seconds", enum: ["5", "10"], default: "5" },
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_url", type: "image", required: true, label: "Image" },
+      ],
+    },
+    "wan/2-6-flash-video-to-video": {
+      parameters: [
+        { name: "duration", type: "string", description: "Video duration in seconds", enum: ["5", "10"], default: "5" },
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["720p", "1080p"], default: "1080p" },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "video_url", type: "video", required: true, label: "Video" },
+      ],
+    },
+    "grok-imagine/1-5-preview": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["1:1", "16:9", "9:16", "3:2", "2:3", "auto"], default: "auto" },
+        { name: "resolution", type: "string", description: "Video resolution", enum: ["480p", "720p", "1080p"], default: "720p" },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_urls", type: "image", required: false, label: "Reference Images", isArray: true },
+      ],
+    },
+    "volcengine/video-to-video-lip-sync": {
+      parameters: [],
+      inputs: [
+        { name: "video_url", type: "video", required: true, label: "Video" },
+        { name: "audio_url", type: "audio", required: true, label: "Audio" },
+      ],
+    },
+    "infinitalk/from-audio": {
+      parameters: [],
+      inputs: [
+        { name: "image_url", type: "image", required: true, label: "Portrait" },
+        { name: "audio_url", type: "audio", required: true, label: "Audio" },
+      ],
+    },
+    "hailuo/2-3-image-to-video-standard": {
+      parameters: [{ name: "resolution", type: "string", description: "Video resolution", enum: ["768P", "1080P"], default: "1080P" }],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_url", type: "image", required: true, label: "Image" },
+      ],
+    },
+    "hailuo/02-text-to-video-pro": {
+      parameters: [{ name: "resolution", type: "string", description: "Video resolution", enum: ["768P", "1080P"], default: "1080P" }],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "hailuo/02-image-to-video-pro": {
+      parameters: [{ name: "resolution", type: "string", description: "Video resolution", enum: ["768P", "1080P"], default: "1080P" }],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_url", type: "image", required: true, label: "Image" },
+      ],
+    },
+    "hailuo/02-text-to-video-standard": {
+      parameters: [{ name: "resolution", type: "string", description: "Video resolution", enum: ["768P", "1080P"], default: "1080P" }],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "hailuo/02-image-to-video-standard": {
+      parameters: [{ name: "resolution", type: "string", description: "Video resolution", enum: ["768P", "1080P"], default: "1080P" }],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_url", type: "image", required: true, label: "Image" },
+      ],
+    },
+    "google/nano-banana": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["1:1", "9:16", "16:9", "3:4", "4:3", "3:2", "2:3", "5:4", "4:5", "21:9", "auto"], default: "1:1" },
+      ],
+      inputs: [{ name: "prompt", type: "text", required: true, label: "Prompt" }],
+    },
+    "google/nano-banana-edit": {
+      parameters: [
+        { name: "aspect_ratio", type: "string", description: "Output aspect ratio", enum: ["1:1", "9:16", "16:9", "3:4", "4:3", "3:2", "2:3", "5:4", "4:5", "21:9", "auto"], default: "1:1" },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_urls", type: "image", required: true, label: "Image", isArray: true },
+      ],
+    },
+    "wan/2-7-image-pro": {
+      parameters: [
+        { name: "resolution", type: "string", description: "Output resolution", enum: ["1K", "2K"], default: "2K" },
+        { name: "n", type: "integer", description: "Number of images to generate", enum: [1, 2, 4], default: 4 },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "input_urls", type: "image", required: false, label: "Image", isArray: true },
+      ],
+    },
+    "qwen/image-to-image": {
+      parameters: [
+        { name: "strength", type: "number", description: "Denoising strength (0=preserve, 1=full remake)", minimum: 0, maximum: 1, default: 0.8 },
+        { name: "acceleration", type: "string", description: "Acceleration level", enum: ["none", "regular", "high"], default: "none" },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_url", type: "image", required: true, label: "Image" },
+      ],
+    },
+    "recraft/crisp-upscale": {
+      parameters: [],
+      inputs: [{ name: "image", type: "image", required: true, label: "Image" }],
+    },
+    "ideogram/v3-edit": {
+      parameters: [
+        { name: "rendering_speed", type: "string", description: "Rendering speed", enum: ["TURBO", "BALANCED", "QUALITY"], default: "BALANCED" },
+        { name: "expand_prompt", type: "boolean", description: "Use MagicPrompt", default: true },
+        { name: "seed", type: "integer", description: "Random seed for reproducibility", minimum: 0 },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_url", type: "image", required: true, label: "Image" },
+        { name: "mask_url", type: "image", required: true, label: "Mask" },
+      ],
+    },
+    "ideogram/v3-remix": {
+      parameters: [
+        { name: "rendering_speed", type: "string", description: "Rendering speed", enum: ["TURBO", "BALANCED", "QUALITY"], default: "BALANCED" },
+        { name: "expand_prompt", type: "boolean", description: "Use MagicPrompt", default: true },
+        { name: "seed", type: "integer", description: "Random seed for reproducibility", minimum: 0 },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_url", type: "image", required: true, label: "Image" },
+      ],
+    },
+    "ideogram/character": {
+      parameters: [
+        { name: "rendering_speed", type: "string", description: "Rendering speed", enum: ["TURBO", "BALANCED", "QUALITY"], default: "BALANCED" },
+        { name: "style", type: "string", description: "Style type", enum: ["AUTO", "REALISTIC", "FICTION"], default: "AUTO" },
+        { name: "expand_prompt", type: "boolean", description: "Use MagicPrompt", default: true },
+        { name: "num_images", type: "string", description: "Number of images", enum: ["1", "2", "3", "4"], default: "1" },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "reference_image_urls", type: "image", required: true, label: "Reference", isArray: true },
+      ],
+    },
+    "ideogram/character-edit": {
+      parameters: [
+        { name: "rendering_speed", type: "string", description: "Rendering speed", enum: ["TURBO", "BALANCED", "QUALITY"], default: "BALANCED" },
+        { name: "expand_prompt", type: "boolean", description: "Use MagicPrompt", default: true },
+        { name: "seed", type: "integer", description: "Random seed for reproducibility", minimum: 0 },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_url", type: "image", required: true, label: "Image" },
+        { name: "mask_url", type: "image", required: true, label: "Mask" },
+        { name: "reference_image_urls", type: "image", required: true, label: "Reference", isArray: true },
+      ],
+    },
+    "ideogram/character-remix": {
+      parameters: [
+        { name: "rendering_speed", type: "string", description: "Rendering speed", enum: ["TURBO", "BALANCED", "QUALITY"], default: "BALANCED" },
+        { name: "expand_prompt", type: "boolean", description: "Use MagicPrompt", default: true },
+        { name: "seed", type: "integer", description: "Random seed for reproducibility", minimum: 0 },
+      ],
+      inputs: [
+        { name: "prompt", type: "text", required: true, label: "Prompt" },
+        { name: "image_url", type: "image", required: true, label: "Image" },
+        { name: "reference_image_urls", type: "image", required: true, label: "Reference", isArray: true },
       ],
     },
   };

@@ -9,6 +9,7 @@ import {
 import { BaseNode } from "./BaseNode";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { ImageCompareNodeData } from "@/types";
+import { useT } from "@/i18n";
 
 type ImageCompareNodeType = Node<ImageCompareNodeData, "imageCompare">;
 
@@ -17,6 +18,7 @@ export function ImageCompareNode({
   data,
   selected,
 }: NodeProps<ImageCompareNodeType>) {
+  const t = useT();
   const nodeData = data;
   const edges = useWorkflowStore((state) => state.edges);
   const nodes = useWorkflowStore((state) => state.nodes);
@@ -135,10 +137,10 @@ export function ImageCompareNode({
               : "Connect another image to compare"}
           </span>
           {imageA && !imageB && (
-            <div className="text-[9px] text-neutral-600">Image A connected</div>
+            <div className="text-[9px] text-neutral-600">{t("node.imageAConnected")}</div>
           )}
           {!imageA && imageB && (
-            <div className="text-[9px] text-neutral-600">Image B connected</div>
+            <div className="text-[9px] text-neutral-600">{t("node.imageBConnected")}</div>
           )}
         </div>
       )}

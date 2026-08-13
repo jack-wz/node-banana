@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useT } from "@/i18n";
 
 interface ShortcutItem {
   keys: string[];
@@ -15,50 +16,61 @@ interface ShortcutGroup {
 const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
 const modKey = isMac ? "⌘" : "Ctrl";
 
-const shortcutGroups: ShortcutGroup[] = [
-  {
-    title: "General",
-    shortcuts: [
-      { keys: [`${modKey}`, "Enter"], description: "Run workflow" },
-      { keys: [`${modKey}`, "C"], description: "Copy selected nodes" },
-      { keys: [`${modKey}`, "V"], description: "Paste nodes / image / text" },
-      { keys: [`${modKey}`, "Z"], description: "Undo" },
-      { keys: [`${modKey}`, "Shift", "Z"], description: "Redo" },
-      { keys: ["?"], description: "Show keyboard shortcuts" },
-    ],
-  },
-  {
-    title: "Add Nodes",
-    shortcuts: [
-      { keys: ["Shift", "P"], description: "Add Prompt node" },
-      { keys: ["Shift", "I"], description: "Add Image Input node" },
-      { keys: ["Shift", "G"], description: "Add Generate Image node" },
-      { keys: ["Shift", "V"], description: "Add Generate Video node" },
-      { keys: ["Shift", "L"], description: "Add LLM Text node" },
-      { keys: ["Shift", "A"], description: "Add Annotation node" },
-      { keys: ["Shift", "T"], description: "Add Audio node" },
-      { keys: ["Shift", "Y"], description: "Add Video Input node" },
-      { keys: ["Shift", "R"], description: "Add Array node" },
-      { keys: ["Shift", "C"], description: "Add ComfyUI App node" },
-    ],
-  },
-  {
-    title: "Layout (select 2+ nodes first)",
-    shortcuts: [
-      { keys: ["V"], description: "Stack selected vertically" },
-      { keys: ["H"], description: "Stack selected horizontally" },
-      { keys: ["G"], description: "Arrange selected as grid" },
-    ],
-  },
-  {
-    title: "Canvas",
-    shortcuts: [
-      { keys: ["Scroll"], description: "Zoom in / out" },
-      { keys: ["Trackpad"], description: "Pan (macOS)" },
-      { keys: ["Delete"], description: "Delete selected nodes" },
-    ],
-  },
-];
+function getShortcutGroups(t: (key: string) => string): ShortcutGroup[] {
+  return [
+    {
+      title: t("shortcuts.groupGeneral"),
+      shortcuts: [
+        { keys: [`${modKey}`, "Enter"], description: t("shortcuts.runWorkflow") },
+        { keys: [`${modKey}`, "C"], description: t("shortcuts.copyNodes") },
+        { keys: [`${modKey}`, "V"], description: t("shortcuts.paste") },
+        { keys: [`${modKey}`, "D"], description: t("shortcuts.duplicate") },
+        { keys: [`${modKey}`, "Z"], description: t("shortcuts.undo") },
+        { keys: [`${modKey}`, "Shift", "Z"], description: t("shortcuts.redo") },
+        { keys: [`${modKey}`, "P"], description: t("shortcuts.newPrompt") },
+        { keys: [`${modKey}`, "I"], description: t("shortcuts.importJson") },
+        { keys: ["?"], description: t("shortcuts.show") },
+      ],
+    },
+    {
+      title: t("shortcuts.groupAddNodes"),
+      shortcuts: [
+        { keys: ["Tab"], description: t("shortcuts.tabPicker") },
+        { keys: ["Shift", "P"], description: t("shortcuts.addPrompt") },
+        { keys: ["Shift", "I"], description: t("shortcuts.addImageInput") },
+        { keys: ["Shift", "G"], description: t("shortcuts.addGenerateImage") },
+        { keys: ["Shift", "V"], description: t("shortcuts.addGenerateVideo") },
+        { keys: ["Shift", "L"], description: t("shortcuts.addLlm") },
+        { keys: ["Shift", "A"], description: t("shortcuts.addAnnotation") },
+        { keys: ["Shift", "T"], description: t("shortcuts.addAudio") },
+        { keys: ["Shift", "Y"], description: t("shortcuts.addVideoInput") },
+        { keys: ["Shift", "R"], description: t("shortcuts.addArray") },
+        { keys: ["Shift", "C"], description: t("shortcuts.addComfy") },
+      ],
+    },
+    {
+      title: t("shortcuts.groupLayout"),
+      shortcuts: [
+        { keys: ["Alt", "V"], description: t("shortcuts.stackV") },
+        { keys: ["Alt", "H"], description: t("shortcuts.stackH") },
+        { keys: ["Alt", "G"], description: t("shortcuts.grid") },
+      ],
+    },
+    {
+      title: t("shortcuts.groupCanvas"),
+      shortcuts: [
+        { keys: ["V"], description: t("shortcuts.navigateTool") },
+        { keys: ["H"], description: t("shortcuts.panTool") },
+        { keys: ["Scroll"], description: t("shortcuts.zoom") },
+        { keys: ["Trackpad"], description: t("shortcuts.trackpadPan") },
+        { keys: [`${modKey}`, "0"], description: t("shortcuts.zoom100") },
+        { keys: ["Shift", "1"], description: t("shortcuts.fitView") },
+        { keys: ["Right-click"], description: t("shortcuts.rightClick") },
+        { keys: ["Delete"], description: t("shortcuts.deleteNodes") },
+      ],
+    },
+  ];
+}
 
 function Kbd({ children }: { children: string }) {
   return (
@@ -74,6 +86,8 @@ interface KeyboardShortcutsDialogProps {
 }
 
 export function KeyboardShortcutsDialog({ isOpen, onClose }: KeyboardShortcutsDialogProps) {
+  const t = useT();
+  const shortcutGroups = getShortcutGroups(t);
   useEffect(() => {
     if (!isOpen) return;
 
@@ -94,7 +108,7 @@ export function KeyboardShortcutsDialog({ isOpen, onClose }: KeyboardShortcutsDi
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-700">
           <h2 className="text-base font-semibold text-neutral-100">
-            Keyboard Shortcuts
+            {t("shortcuts.title")}
           </h2>
           <button
             onClick={onClose}
@@ -145,11 +159,10 @@ export function KeyboardShortcutsDialog({ isOpen, onClose }: KeyboardShortcutsDi
             onClick={onClose}
             className="px-3 py-1.5 text-xs font-medium text-neutral-300 hover:text-neutral-100 bg-neutral-700 hover:bg-neutral-600 rounded transition-colors"
           >
-            Close
+            {t("common.close")}
           </button>
         </div>
       </div>
     </div>
   );
 }
-

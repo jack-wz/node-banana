@@ -21,6 +21,7 @@ import { useLoadGenerationById } from "@/hooks/useLoadGenerationById";
 import { useGenerationCarousel } from "@/hooks/useGenerationCarousel";
 import { useErrorToast } from "@/hooks/useErrorToast";
 import { useAutoResizeOnMedia } from "@/hooks/useAutoResizeOnMedia";
+import { useT } from "@/i18n";
 
 /** Reorder items so they read column-first in a row-based CSS grid.
  *  e.g. [1,2,3,4,5,6,7,8] with 2 cols → [1,5,2,6,3,7,4,8] */
@@ -49,6 +50,7 @@ const RESOLUTIONS_NB2: Resolution[] = ["512", "1K", "2K", "4K"];
 type NanoBananaNodeType = Node<NanoBananaNodeData, "nanoBanana">;
 
 export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNodeType>) {
+  const t = useT();
   const nodeData = data;
   const adaptiveOutputImage = useAdaptiveImageSrc(data.outputImage, id);
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
@@ -278,7 +280,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
               {isGeminiProvider && currentModelId && (() => {
                 const controls: React.ReactNode[] = [
                   <div key="model" className="flex items-center gap-2">
-                    <label className="text-[11px] text-neutral-400 shrink-0">Model</label>
+                    <label className="text-[11px] text-neutral-400 shrink-0">{t("settingsPanel.model")}</label>
                     <select
                       value={currentModelId}
                       onChange={handleModelChange}
@@ -293,7 +295,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
                     </select>
                   </div>,
                   <div key="aspect-ratio" className="flex items-center gap-2">
-                    <label className="text-[11px] text-neutral-400 shrink-0">Aspect Ratio</label>
+                    <label className="text-[11px] text-neutral-400 shrink-0">{t("settingsPanel.aspectRatio")}</label>
                     <select
                       value={nodeData.aspectRatio || "1:1"}
                       onChange={handleAspectRatioChange}
@@ -311,7 +313,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
                 if (supportsResolution) {
                   controls.push(
                     <div key="resolution" className="flex items-center gap-2">
-                      <label className="text-[11px] text-neutral-400 shrink-0">Resolution</label>
+                      <label className="text-[11px] text-neutral-400 shrink-0">{t("settingsPanel.resolution")}</label>
                       <select
                         value={nodeData.resolution || "2K"}
                         onChange={handleResolutionChange}
@@ -447,7 +449,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
             {nodeData.__usedFallback && (
               <div
                 className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-900/70 text-emerald-300 text-[9px] font-medium pointer-events-auto z-10"
-                title={`Primary failed: ${nodeData.__primaryError ?? "unknown"}\nUsed fallback: ${nodeData.__fallbackModelUsed ?? ""}`}
+                title={t("node.primaryFailed", { error: nodeData.__primaryError ?? "unknown", model: nodeData.__fallbackModelUsed ?? "" })}
               >
                 Fallback used
               </div>
@@ -488,8 +490,8 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-white text-xs font-medium">Generation failed</span>
-                <span className="text-white/70 text-[10px]">See toast for details</span>
+                <span className="text-white text-xs font-medium">{t("node.generationFailed")}</span>
+                <span className="text-white/70 text-[10px]">{t("node.seeToast")}</span>
               </div>
             )}
             {/* Loading overlay for carousel navigation */}
@@ -521,7 +523,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
               <button
                 onClick={() => downloadMedia(nodeData.outputImage!, "image").catch(() => {})}
                 className="w-5 h-5 bg-neutral-900/80 hover:bg-neutral-700 rounded flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
-                title="Download image"
+                title={t("node.downloadImage")}
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -530,7 +532,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
               <button
                 onClick={handleClearImage}
                 className="w-5 h-5 bg-neutral-900/80 hover:bg-red-600/80 rounded flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
-                title="Clear image"
+                title={t("node.clearImage")}
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -545,7 +547,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
                   onClick={handleCarouselPrevious}
                   disabled={isLoadingCarouselImage}
                   className="w-5 h-5 rounded hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white/70 hover:text-white transition-colors"
-                  title="Previous image"
+                  title={t("node.prevImage")}
                 >
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -558,7 +560,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
                   onClick={handleCarouselNext}
                   disabled={isLoadingCarouselImage}
                   className="w-5 h-5 rounded hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white/70 hover:text-white transition-colors"
-                  title="Next image"
+                  title={t("node.nextImage")}
                 >
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -595,7 +597,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
               </span>
             ) : (
               <span className="text-neutral-500 text-[10px]">
-                Run to generate
+                {t("node.runToGenerate")}
               </span>
             )}
           </div>

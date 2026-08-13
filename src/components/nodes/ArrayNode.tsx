@@ -7,6 +7,7 @@ import { useWorkflowStore } from "@/store/workflowStore";
 import { ArrayNodeData } from "@/types";
 import { getConnectedInputsPure } from "@/store/utils/connectedInputs";
 import { parseTextToArray } from "@/utils/arrayParser";
+import { useT } from "@/i18n";
 
 type ArrayNodeType = Node<ArrayNodeData, "array">;
 
@@ -19,6 +20,7 @@ function arraysEqual(a: string[], b: string[]): boolean {
 }
 
 export function ArrayNode({ id, data, selected }: NodeProps<ArrayNodeType>) {
+  const t = useT();
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const addNode = useWorkflowStore((state) => state.addNode);
   const onConnect = useWorkflowStore((state) => state.onConnect);
@@ -228,14 +230,14 @@ export function ArrayNode({ id, data, selected }: NodeProps<ArrayNodeType>) {
 
       <div className="flex flex-col gap-2 pt-3 flex-1 min-h-0">
         <div className="flex items-center gap-2">
-          <label className="shrink-0 text-[11px] text-neutral-400">Split</label>
+          <label className="shrink-0 text-[11px] text-neutral-400">{t("node.split")}</label>
           <select
             value={nodeData.splitMode}
             onChange={handleBasicModeChange}
             className="nodrag nopan flex-1 min-w-0 text-[11px] py-1 px-2 bg-[#1a1a1a] rounded-md focus:outline-none focus:ring-1 focus:ring-neutral-600 text-white"
           >
-            <option value="delimiter">Delimiter</option>
-            <option value="newline">Newline</option>
+            <option value="delimiter">{t("node.delimiter")}</option>
+            <option value="newline">{t("node.newline")}</option>
             <option value="regex">Regex (Advanced)</option>
           </select>
           {/* Batch mode toggle */}
@@ -247,7 +249,7 @@ export function ArrayNode({ id, data, selected }: NodeProps<ArrayNodeType>) {
                 ? "bg-blue-600/80 text-blue-100"
                 : "bg-[#1a1a1a] text-neutral-500 hover:text-neutral-300"
             }`}
-            title={nodeData.batchMode ? "Batch mode: all items sent to one downstream node" : "Enable batch mode"}
+            title={nodeData.batchMode ? t("node.batchModeOn") : t("node.batchModeEnable")}
           >
             Batch
           </button>
@@ -258,7 +260,7 @@ export function ArrayNode({ id, data, selected }: NodeProps<ArrayNodeType>) {
               onClick={handleAutoRouteToPrompts}
               disabled={previewItems.length === 0}
               className="nodrag nopan shrink-0 py-1 px-1.5 bg-[#1a1a1a] rounded-md text-neutral-400 hover:text-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Auto-route to Prompts"
+              title={t("node.autoRoutePrompts")}
             >
               <svg className="w-3.5 h-3.5 rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M16 3h5v5" />
@@ -303,7 +305,7 @@ export function ArrayNode({ id, data, selected }: NodeProps<ArrayNodeType>) {
             <svg className={`w-3 h-3 transition-transform ${showAdvanced ? "rotate-90" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
-            <span>Advanced</span>
+            <span>{t("node.advanced")}</span>
           </button>
 
           {showAdvanced && (
@@ -337,7 +339,7 @@ export function ArrayNode({ id, data, selected }: NodeProps<ArrayNodeType>) {
           {nodeData.error ? (
             <div className="p-2 text-[11px] text-red-400">{nodeData.error}</div>
           ) : previewItems.length === 0 ? (
-            <div className="p-2 text-[11px] text-neutral-500">No items parsed</div>
+            <div className="p-2 text-[11px] text-neutral-500">{t("node.noItems")}</div>
           ) : (
             <div className="py-1">
               {previewItems.map((item, index) => {
@@ -356,7 +358,7 @@ export function ArrayNode({ id, data, selected }: NodeProps<ArrayNodeType>) {
                         ? "bg-blue-900/40 text-blue-200 ring-1 ring-blue-500/60"
                         : "bg-neutral-800/60 text-neutral-300 hover:bg-neutral-700/60"
                     }`}
-                    title={isSelected ? "Selected for next connection (click to unselect)" : "Click to select for next connection"}
+                    title={isSelected ? t("node.selectedForConnection") : t("node.selectForConnection")}
                   >
                     {index + 1}. {item}
                   </button>

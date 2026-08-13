@@ -20,6 +20,7 @@ import {
 import { useAdaptiveImageSrc } from "@/hooks/useAdaptiveImageSrc";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 type SplitGridNodeType = Node<SplitGridNodeData, "splitGrid">;
 
@@ -87,6 +88,7 @@ function GridDimField({ label, value, onChange, disabled }: GridDimFieldProps) {
 }
 
 export function SplitGridNode({ id, data, selected }: NodeProps<SplitGridNodeType>) {
+  const t = useT();
   const nodeData = data;
   const adaptiveSourceImage = useAdaptiveImageSrc(nodeData.sourceImage, id);
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
@@ -422,9 +424,9 @@ export function SplitGridNode({ id, data, selected }: NodeProps<SplitGridNodeTyp
             </span>
             <button
               onClick={handleSplit}
-              disabled={isRunning || !nodeData.sourceImage}
+              disabled={isRunning || !nodeData.isConfigured || !nodeData.sourceImage}
               className="nodrag nopan shrink-0 px-2.5 py-1 text-[10px] border border-white hover:bg-white hover:text-neutral-900 disabled:border-neutral-600 disabled:text-neutral-600 disabled:cursor-not-allowed text-white rounded transition-colors"
-              title={!nodeData.sourceImage ? "Connect an image first" : `Split into ${gridRows}×${gridCols}`}
+              title={!nodeData.isConfigured ? t("node.configureFirst") : !nodeData.sourceImage ? t("node.connectImageFirst") : t("node.splitGridAction")}
             >
               Split {gridRows}×{gridCols}
             </button>

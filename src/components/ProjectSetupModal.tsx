@@ -13,6 +13,7 @@ import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { ComfySettingsTab, useComfySettingsDraft } from "@/components/settings/ComfySettingsTab";
 import { saveComfySettings } from "@/lib/comfy/settings";
 import { useInlineParameters } from "@/hooks/useInlineParameters";
+import { useT, useI18nStore, LOCALES } from "@/i18n";
 
 // LLM provider and model options (mirrored from LLMGenerateNode)
 const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
@@ -36,6 +37,10 @@ const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> 
     { value: "claude-sonnet-4.5", label: "Claude Sonnet 4.5" },
     { value: "claude-haiku-4.5", label: "Claude Haiku 4.5" },
     { value: "claude-opus-4.6", label: "Claude Opus 4.6" },
+  ],
+  deepseek: [
+    { value: "deepseek-chat", label: "DeepSeek Chat" },
+    { value: "deepseek-reasoner", label: "DeepSeek Reasoner" },
   ],
 };
 
@@ -97,6 +102,9 @@ export function ProjectSetupModal({
   onSave,
   mode,
 }: ProjectSetupModalProps) {
+  const t = useT();
+  const locale = useI18nStore((state) => state.locale);
+  const setLocale = useI18nStore((state) => state.setLocale);
   const sanitizeProjectFolderName = (projectName: string): string => {
     return projectName
       .trim()
@@ -169,6 +177,7 @@ export function ProjectSetupModal({
     fal: false,
     kie: false,
     wavespeed: false,
+    deepseek: false,
   });
   const [overrideActive, setOverrideActive] = useState<Record<ProviderType, boolean>>({
     gemini: false,
@@ -178,6 +187,7 @@ export function ProjectSetupModal({
     fal: false,
     kie: false,
     wavespeed: false,
+    deepseek: false,
   });
   const [envStatus, setEnvStatus] = useState<EnvStatusResponse | null>(null);
 
@@ -232,7 +242,7 @@ export function ProjectSetupModal({
 
       // Sync local providers state
       setLocalProviders(providerSettings);
-      setShowApiKey({ gemini: false, openai: false, anthropic: false, replicate: false, fal: false, kie: false, wavespeed: false });
+      setShowApiKey({ gemini: false, openai: false, anthropic: false, deepseek: false, replicate: false, fal: false, kie: false, wavespeed: false });
       // Initialize override as active if user already has a key set
       setOverrideActive({
         gemini: !!providerSettings.providers.gemini?.apiKey,
@@ -242,6 +252,7 @@ export function ProjectSetupModal({
         fal: !!providerSettings.providers.fal?.apiKey,
         kie: !!providerSettings.providers.kie?.apiKey,
         wavespeed: !!providerSettings.providers.wavespeed?.apiKey,
+        deepseek: !!providerSettings.providers.deepseek?.apiKey,
       });
       setError(null);
 
@@ -272,7 +283,7 @@ export function ProjectSetupModal({
       const result = await response.json();
 
       if (!result.success) {
-        setError(result.error || "Failed to open directory picker");
+        setError(result.error || t("setup.errBrowseFailed"));
         return;
       }
 
@@ -285,7 +296,7 @@ export function ProjectSetupModal({
       }
     } catch (err) {
       setError(
-        `Failed to open directory picker: ${err instanceof Error ? err.message : "Unknown error"}`
+        t("setup.errBrowseError", { error: err instanceof Error ? err.message : "Unknown error" })
       );
     } finally {
       setIsBrowsing(false);
@@ -294,19 +305,19 @@ export function ProjectSetupModal({
 
   const handleSaveProject = async () => {
     if (!name.trim()) {
-      setError("Project name is required");
+      setError(t("setup.errNameRequired"));
       return;
     }
 
     if (!directoryPath.trim()) {
-      setError("Project directory is required");
+      setError(t("setup.errDirRequired"));
       return;
     }
 
     const fullProjectPath = ensureProjectSubfolderPath(directoryPath, name);
 
     if (!(fullProjectPath.startsWith("/") || /^[A-Za-z]:[\\\/]/.test(fullProjectPath) || fullProjectPath.startsWith("\\\\"))) {
-      setError("Project directory must be an absolute path (starting with /, a drive letter, or a UNC path)");
+      setError(t("setup.errDirAbsolute"));
       return;
     }
 
@@ -321,7 +332,7 @@ export function ProjectSetupModal({
       const result = await response.json();
 
       if (result.exists && !result.isDirectory) {
-        setError("Project path is not a directory");
+        setError(t("setup.errNotDirectory"));
         setIsValidating(false);
         return;
       }
@@ -335,7 +346,7 @@ export function ProjectSetupModal({
       setIsValidating(false);
     } catch (err) {
       setError(
-        `Failed to validate directory: ${err instanceof Error ? err.message : "Unknown error"}`
+        t("setup.errValidateFailed", { error: err instanceof Error ? err.message : "Unknown error" })
       );
       setIsValidating(false);
     }
@@ -343,7 +354,7 @@ export function ProjectSetupModal({
 
   const handleSaveProviders = () => {
     // Save each provider's settings
-    const providerIds: ProviderType[] = ["gemini", "openai", "anthropic", "replicate", "fal", "kie", "wavespeed"];
+    const providerIds: ProviderType[] = ["gemini", "openai", "anthropic", "deepseek", "replicate", "fal", "kie", "wavespeed"];
     for (const providerId of providerIds) {
       const local = localProviders.providers[providerId];
       const current = providerSettings.providers[providerId];
@@ -438,7 +449,7 @@ export function ProjectSetupModal({
           <div className="flex items-center gap-2 mb-5">
             <Image src="/banana_icon.png" alt="" width={24} height={24} className="w-6 h-6" />
             <h2 className="text-xl font-medium text-neutral-100">
-              {mode === "new" ? "New Project" : "Project Settings"}
+              {mode === "new" ? t("setup.newProject") : t("setup.projectSettings")}
             </h2>
           </div>
 
@@ -448,13 +459,13 @@ export function ProjectSetupModal({
             onClick={() => setActiveTab("project")}
             className={`px-3 py-1.5 text-sm rounded-md transition-all duration-150 ${activeTab === "project" ? "bg-neutral-700 text-neutral-100 font-medium" : "text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50"}`}
           >
-            Project
+            {t("setup.tabProject")}
           </button>
           <button
             onClick={() => setActiveTab("providers")}
             className={`px-3 py-1.5 text-sm rounded-md transition-all duration-150 ${activeTab === "providers" ? "bg-neutral-700 text-neutral-100 font-medium" : "text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50"}`}
           >
-            Providers
+            {t("setup.tabProviders")}
           </button>
           <button
             onClick={() => setActiveTab("comfy")}
@@ -466,13 +477,13 @@ export function ProjectSetupModal({
             onClick={() => setActiveTab("nodeDefaults")}
             className={`px-3 py-1.5 text-sm rounded-md transition-all duration-150 ${activeTab === "nodeDefaults" ? "bg-neutral-700 text-neutral-100 font-medium" : "text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50"}`}
           >
-            Node Defaults
+            {t("setup.tabNodeDefaults")}
           </button>
           <button
             onClick={() => setActiveTab("canvas")}
             className={`px-3 py-1.5 text-sm rounded-md transition-all duration-150 ${activeTab === "canvas" ? "bg-neutral-700 text-neutral-100 font-medium" : "text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50"}`}
           >
-            Canvas
+            {t("setup.tabCanvas")}
           </button>
           </div>
         </div>
@@ -485,7 +496,7 @@ export function ProjectSetupModal({
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-neutral-400 mb-1">
-                Project Name
+                {t("setup.projectName")}
               </label>
               <input
                 type="text"
@@ -499,7 +510,7 @@ export function ProjectSetupModal({
 
             <div>
               <label className="block text-sm text-neutral-400 mb-1">
-                Project Directory
+                {t("setup.projectDirectory")}
               </label>
               <div className="flex gap-2">
                 <input
@@ -515,20 +526,20 @@ export function ProjectSetupModal({
                   disabled={isBrowsing}
                   className="px-3 py-2 bg-neutral-700 hover:bg-neutral-600 disabled:bg-neutral-700 disabled:opacity-50 text-neutral-200 text-sm rounded-lg transition-colors"
                 >
-                  {isBrowsing ? "..." : "Browse"}
+                  {isBrowsing ? "..." : t("setup.browse")}
                 </button>
               </div>
               <p className="text-xs text-neutral-400 mt-1">
-                Workflow files and images will be saved here. Subfolders for inputs and generations will be auto-created.
+                {t("setup.directoryHint")}
               </p>
             </div>
 
             <div className="pt-2 border-t border-neutral-700">
               <label className="flex items-center justify-between gap-3 cursor-pointer">
                 <div>
-                  <span className="text-sm text-neutral-200">Embed images as base64</span>
+                  <span className="text-sm text-neutral-200">{t("setup.embedImages")}</span>
                   <p className="text-xs text-neutral-400">
-                    Embeds all images in workflow, larger workflow files. Can hit memory limits on very large workflows.
+                    {t("setup.embedImagesHint")}
                   </p>
                 </div>
                 <button
@@ -546,9 +557,9 @@ export function ProjectSetupModal({
             <div className="pt-2 border-t border-neutral-700">
               <label className="flex items-center justify-between gap-3 cursor-pointer">
                 <div>
-                  <span className="text-sm text-neutral-200">Show model settings on nodes</span>
+                  <span className="text-sm text-neutral-200">{t("setup.showModelSettings")}</span>
                   <p className="text-xs text-neutral-400">
-                    Show model parameters inside generation nodes instead of the side panel
+                    {t("setup.showModelSettingsHint")}
                   </p>
                 </div>
                 <button
@@ -576,13 +587,13 @@ export function ProjectSetupModal({
                 <span className="text-sm font-medium text-neutral-100">Google Gemini</span>
                 {envStatus?.gemini && !overrideActive.gemini ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-400">Configured via .env</span>
+                    <span className="text-xs text-green-400">{t("setup.configuredEnv")}</span>
                     <button
                       type="button"
                       onClick={() => setOverrideActive((prev) => ({ ...prev, gemini: true }))}
                       className="px-2 py-1 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
                     >
-                      Override
+                      {t("setup.override")}
                     </button>
                   </div>
                 ) : (
@@ -599,7 +610,7 @@ export function ProjectSetupModal({
                       onClick={() => setShowApiKey((prev) => ({ ...prev, gemini: !prev.gemini }))}
                       className="text-xs text-neutral-400 hover:text-neutral-200"
                     >
-                      {showApiKey.gemini ? "Hide" : "Show"}
+                      {showApiKey.gemini ? t("setup.hide") : t("setup.show")}
                     </button>
                     {envStatus?.gemini && (
                       <button
@@ -624,13 +635,13 @@ export function ProjectSetupModal({
                 <span className="text-sm font-medium text-neutral-100">OpenAI</span>
                 {envStatus?.openai && !overrideActive.openai ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-400">Configured via .env</span>
+                    <span className="text-xs text-green-400">{t("setup.configuredEnv")}</span>
                     <button
                       type="button"
                       onClick={() => setOverrideActive((prev) => ({ ...prev, openai: true }))}
                       className="px-2 py-1 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
                     >
-                      Override
+                      {t("setup.override")}
                     </button>
                   </div>
                 ) : (
@@ -647,7 +658,7 @@ export function ProjectSetupModal({
                       onClick={() => setShowApiKey((prev) => ({ ...prev, openai: !prev.openai }))}
                       className="text-xs text-neutral-400 hover:text-neutral-200"
                     >
-                      {showApiKey.openai ? "Hide" : "Show"}
+                      {showApiKey.openai ? t("setup.hide") : t("setup.show")}
                     </button>
                     {envStatus?.openai && (
                       <button
@@ -672,13 +683,13 @@ export function ProjectSetupModal({
                 <span className="text-sm font-medium text-neutral-100">Anthropic</span>
                 {envStatus?.anthropic && !overrideActive.anthropic ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-400">Configured via .env</span>
+                    <span className="text-xs text-green-400">{t("setup.configuredEnv")}</span>
                     <button
                       type="button"
                       onClick={() => setOverrideActive((prev) => ({ ...prev, anthropic: true }))}
                       className="px-2 py-1 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
                     >
-                      Override
+                      {t("setup.override")}
                     </button>
                   </div>
                 ) : (
@@ -695,7 +706,7 @@ export function ProjectSetupModal({
                       onClick={() => setShowApiKey((prev) => ({ ...prev, anthropic: !prev.anthropic }))}
                       className="text-xs text-neutral-400 hover:text-neutral-200"
                     >
-                      {showApiKey.anthropic ? "Hide" : "Show"}
+                      {showApiKey.anthropic ? t("setup.hide") : t("setup.show")}
                     </button>
                     {envStatus?.anthropic && (
                       <button
@@ -715,18 +726,69 @@ export function ProjectSetupModal({
             </div>
 
             {/* Replicate Provider */}
+
+            {/* DeepSeek Provider */}
             <div className="p-3 bg-neutral-900 rounded-lg border border-neutral-700">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-neutral-100">DeepSeek</span>
+                {envStatus?.deepseek && !overrideActive.deepseek ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-green-400">{t("setup.configuredEnv")}</span>
+                    <button
+                      type="button"
+                      onClick={() => setOverrideActive((prev) => ({ ...prev, deepseek: true }))}
+                      className="px-2 py-1 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
+                    >
+                      {t("setup.override")}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type={showApiKey.deepseek ? "text" : "password"}
+                     value={localProviders.providers.deepseek?.apiKey || ""}
+                     onChange={(e) => updateLocalProvider("deepseek", { apiKey: e.target.value || null })}
+                      placeholder="sk-ds-..."
+                      className="w-48 px-2 py-1 bg-neutral-800 border border-neutral-600 rounded-lg text-neutral-100 text-xs focus:outline-none focus:border-neutral-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowApiKey((prev) => ({ ...prev, deepseek: !prev.deepseek }))}
+                      className="text-xs text-neutral-400 hover:text-neutral-200"
+                    >
+                      {showApiKey.deepseek ? t("setup.hide") : t("setup.show")}
+                    </button>
+                    {envStatus?.deepseek && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOverrideActive((prev) => ({ ...prev, deepseek: false }));
+                          updateLocalProvider("deepseek", { apiKey: null });
+                        }}
+                        className="text-xs text-neutral-500 hover:text-neutral-300"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-neutral-500">{t("setup.deepseekDesc")}</p>
+            </div>
+
+            {/* Replicate Provider */}
+            <div className="p-3 bg-neutral-900 rounded-lg border border-neutral-700">  
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-neutral-100">Replicate</span>
                 {envStatus?.replicate && !overrideActive.replicate ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-400">Configured via .env</span>
+                    <span className="text-xs text-green-400">{t("setup.configuredEnv")}</span>
                     <button
                       type="button"
                       onClick={() => setOverrideActive((prev) => ({ ...prev, replicate: true }))}
                       className="px-2 py-1 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
                     >
-                      Override
+                      {t("setup.override")}
                     </button>
                   </div>
                 ) : (
@@ -743,7 +805,7 @@ export function ProjectSetupModal({
                       onClick={() => setShowApiKey((prev) => ({ ...prev, replicate: !prev.replicate }))}
                       className="text-xs text-neutral-400 hover:text-neutral-200"
                     >
-                      {showApiKey.replicate ? "Hide" : "Show"}
+                      {showApiKey.replicate ? t("setup.hide") : t("setup.show")}
                     </button>
                     {envStatus?.replicate && (
                       <button
@@ -768,13 +830,13 @@ export function ProjectSetupModal({
                 <span className="text-sm font-medium text-neutral-100">fal.ai</span>
                 {envStatus?.fal && !overrideActive.fal ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-400">Configured via .env</span>
+                    <span className="text-xs text-green-400">{t("setup.configuredEnv")}</span>
                     <button
                       type="button"
                       onClick={() => setOverrideActive((prev) => ({ ...prev, fal: true }))}
                       className="px-2 py-1 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
                     >
-                      Override
+                      {t("setup.override")}
                     </button>
                   </div>
                 ) : (
@@ -791,7 +853,7 @@ export function ProjectSetupModal({
                       onClick={() => setShowApiKey((prev) => ({ ...prev, fal: !prev.fal }))}
                       className="text-xs text-neutral-400 hover:text-neutral-200"
                     >
-                      {showApiKey.fal ? "Hide" : "Show"}
+                      {showApiKey.fal ? t("setup.hide") : t("setup.show")}
                     </button>
                     {envStatus?.fal && (
                       <button
@@ -816,13 +878,13 @@ export function ProjectSetupModal({
                 <span className="text-sm font-medium text-neutral-100">Kie.ai</span>
                 {envStatus?.kie && !overrideActive.kie ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-400">Configured via .env</span>
+                    <span className="text-xs text-green-400">{t("setup.configuredEnv")}</span>
                     <button
                       type="button"
                       onClick={() => setOverrideActive((prev) => ({ ...prev, kie: true }))}
                       className="px-2 py-1 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
                     >
-                      Override
+                      {t("setup.override")}
                     </button>
                   </div>
                 ) : (
@@ -839,7 +901,7 @@ export function ProjectSetupModal({
                       onClick={() => setShowApiKey((prev) => ({ ...prev, kie: !prev.kie }))}
                       className="text-xs text-neutral-400 hover:text-neutral-200"
                     >
-                      {showApiKey.kie ? "Hide" : "Show"}
+                      {showApiKey.kie ? t("setup.hide") : t("setup.show")}
                     </button>
                     {envStatus?.kie && (
                       <button
@@ -864,13 +926,13 @@ export function ProjectSetupModal({
                 <span className="text-sm font-medium text-neutral-100">WaveSpeed</span>
                 {envStatus?.wavespeed && !overrideActive.wavespeed ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-green-400">Configured via .env</span>
+                    <span className="text-xs text-green-400">{t("setup.configuredEnv")}</span>
                     <button
                       type="button"
                       onClick={() => setOverrideActive((prev) => ({ ...prev, wavespeed: true }))}
                       className="px-2 py-1 text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
                     >
-                      Override
+                      {t("setup.override")}
                     </button>
                   </div>
                 ) : (
@@ -887,7 +949,7 @@ export function ProjectSetupModal({
                       onClick={() => setShowApiKey((prev) => ({ ...prev, wavespeed: !prev.wavespeed }))}
                       className="text-xs text-neutral-400 hover:text-neutral-200"
                     >
-                      {showApiKey.wavespeed ? "Hide" : "Show"}
+                      {showApiKey.wavespeed ? t("setup.hide") : t("setup.show")}
                     </button>
                     {envStatus?.wavespeed && (
                       <button
@@ -907,7 +969,7 @@ export function ProjectSetupModal({
             </div>
 
             <p className="text-xs text-neutral-400 mt-2">
-              Add API keys via <code className="px-1 py-0.5 bg-neutral-800 rounded">.env.local</code> for better security. Keys added here override .env and are stored in your browser.
+              {t("setup.apiKeyHintPrefix")} <code className="px-1 py-0.5 bg-neutral-800 rounded">.env.local</code> {t("setup.apiKeyHintSuffix")}
             </p>
           </div>
         )}
@@ -918,7 +980,7 @@ export function ProjectSetupModal({
             {/* GenerateImage Section */}
             <div className="p-3 bg-neutral-900 rounded-lg border border-neutral-700">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-neutral-100">Default Image Model</span>
+                <span className="text-sm font-medium text-neutral-100">{t("setup.defaultImageModel")}</span>
                 <div className="flex items-center gap-2">
                   {localNodeDefaults.generateImage?.selectedModel ? (
                     <>
@@ -933,7 +995,7 @@ export function ProjectSetupModal({
                         onClick={() => setShowImageModelDialog(true)}
                         className="px-2 py-1 text-xs bg-neutral-700 hover:bg-neutral-600 text-neutral-200 rounded transition-colors"
                       >
-                        Change
+                        {t("setup.change")}
                       </button>
                       <button
                         type="button"
@@ -944,18 +1006,18 @@ export function ProjectSetupModal({
                         }}
                         className="text-xs text-neutral-400 hover:text-neutral-200"
                       >
-                        Clear
+                        {t("setup.clear")}
                       </button>
                     </>
                   ) : (
                     <>
-                      <span className="text-xs text-neutral-400">System default (Gemini nano-banana-pro)</span>
+                      <span className="text-xs text-neutral-400">{t("setup.systemDefaultImage")}</span>
                       <button
                         type="button"
                         onClick={() => setShowImageModelDialog(true)}
                         className="px-2 py-1 text-xs bg-neutral-700 hover:bg-neutral-600 text-neutral-200 rounded transition-colors"
                       >
-                        Select Model
+                        {t("setup.selectModel")}
                       </button>
                     </>
                   )}
@@ -966,7 +1028,7 @@ export function ProjectSetupModal({
             {/* GenerateVideo Section */}
             <div className="p-3 bg-neutral-900 rounded-lg border border-neutral-700">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-neutral-100">Default Video Model</span>
+                <span className="text-sm font-medium text-neutral-100">{t("setup.defaultVideoModel")}</span>
                 <div className="flex items-center gap-2">
                   {localNodeDefaults.generateVideo?.selectedModel ? (
                     <>
@@ -981,7 +1043,7 @@ export function ProjectSetupModal({
                         onClick={() => setShowVideoModelDialog(true)}
                         className="px-2 py-1 text-xs bg-neutral-700 hover:bg-neutral-600 text-neutral-200 rounded transition-colors"
                       >
-                        Change
+                        {t("setup.change")}
                       </button>
                       <button
                         type="button"
@@ -992,18 +1054,18 @@ export function ProjectSetupModal({
                         }}
                         className="text-xs text-neutral-400 hover:text-neutral-200"
                       >
-                        Clear
+                        {t("setup.clear")}
                       </button>
                     </>
                   ) : (
                     <>
-                      <span className="text-xs text-neutral-400">None set (select on first use)</span>
+                      <span className="text-xs text-neutral-400">{t("setup.noneSet")}</span>
                       <button
                         type="button"
                         onClick={() => setShowVideoModelDialog(true)}
                         className="px-2 py-1 text-xs bg-neutral-700 hover:bg-neutral-600 text-neutral-200 rounded transition-colors"
                       >
-                        Select Model
+                        {t("setup.selectModel")}
                       </button>
                     </>
                   )}
@@ -1015,7 +1077,7 @@ export function ProjectSetupModal({
             <div className="p-3 bg-neutral-900 rounded-lg border border-neutral-700">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-neutral-100">Default LLM Settings</span>
+                  <span className="text-sm font-medium text-neutral-100">{t("setup.defaultLLM")}</span>
                   {localNodeDefaults.llm && (
                     <button
                       type="button"
@@ -1026,18 +1088,18 @@ export function ProjectSetupModal({
                       }}
                       className="text-xs text-neutral-400 hover:text-neutral-200"
                     >
-                      Clear
+                      {t("setup.clear")}
                     </button>
                   )}
                 </div>
 
                 {!localNodeDefaults.llm ? (
-                  <p className="text-xs text-neutral-400">Using system defaults (Google Gemini 3 Flash)</p>
+                  <p className="text-xs text-neutral-400">{t("setup.usingSystemLLM")}</p>
                 ) : null}
 
                 {/* Provider dropdown */}
                 <div className="flex items-center gap-2">
-                  <label className="text-xs text-neutral-400 w-20">Provider</label>
+                  <label className="text-xs text-neutral-400 w-20">{t("setup.provider")}</label>
                   <select
                     value={localNodeDefaults.llm?.provider || "google"}
                     onChange={(e) => {
@@ -1065,7 +1127,7 @@ export function ProjectSetupModal({
 
                 {/* Model dropdown */}
                 <div className="flex items-center gap-2">
-                  <label className="text-xs text-neutral-400 w-20">Model</label>
+                  <label className="text-xs text-neutral-400 w-20">{t("setup.model")}</label>
                   <select
                     value={localNodeDefaults.llm?.model || LLM_MODELS[localNodeDefaults.llm?.provider || "google"][0].value}
                     onChange={(e) => {
@@ -1085,7 +1147,7 @@ export function ProjectSetupModal({
                 {/* Temperature slider */}
                 <div className="flex items-center gap-2">
                   <label className="text-xs text-neutral-400 w-20">
-                    Temp: {(localNodeDefaults.llm?.temperature ?? 0.7).toFixed(1)}
+                    {t("setup.temp", { value: (localNodeDefaults.llm?.temperature ?? 0.7).toFixed(1) })}
                   </label>
                   <input
                     type="range"
@@ -1106,7 +1168,7 @@ export function ProjectSetupModal({
                 {/* Max Tokens slider */}
                 <div className="flex items-center gap-2">
                   <label className="text-xs text-neutral-400 w-20">
-                    Tokens: {(localNodeDefaults.llm?.maxTokens ?? 8192).toLocaleString()}
+                    {t("setup.tokens", { value: (localNodeDefaults.llm?.maxTokens ?? 8192).toLocaleString() })}
                   </label>
                   <input
                     type="range"
@@ -1129,12 +1191,12 @@ export function ProjectSetupModal({
             {/* Execution Section */}
             <div className="p-3 bg-neutral-900 rounded-lg border border-neutral-700">
               <div className="flex flex-col gap-3">
-                <span className="text-sm font-medium text-neutral-100">Execution Settings</span>
+                <span className="text-sm font-medium text-neutral-100">{t("setup.executionSettings")}</span>
 
                 {/* Concurrency slider */}
                 <div className="flex items-center gap-2">
                   <label className="text-xs text-neutral-400 w-32">
-                    Max Parallel Calls: {maxConcurrentCalls}
+                    {t("setup.maxParallel", { count: maxConcurrentCalls })}
                   </label>
                   <input
                     type="range"
@@ -1147,14 +1209,13 @@ export function ProjectSetupModal({
                   />
                 </div>
                 <p className="text-xs text-neutral-400">
-                  Maximum number of nodes to execute in parallel during workflow execution.
-                  Higher values may improve speed but increase API rate limit risk.
+                  {t("setup.maxParallelHint")}
                 </p>
               </div>
             </div>
 
             <p className="text-xs text-neutral-400 mt-2">
-              These defaults are applied when creating nodes via keyboard shortcuts (Shift+G, Shift+L, etc).
+              {t("setup.defaultsHint")}
             </p>
           </div>
         )}
@@ -1167,23 +1228,45 @@ export function ProjectSetupModal({
         {/* Canvas Tab Content */}
         {activeTab === "canvas" && (
           <div className="space-y-3">
-            <p className="text-xs text-neutral-400">Configure how you navigate and interact with the canvas.</p>
+            <p className="text-xs text-neutral-400">{t("setup.canvasHint")}</p>
+            {/* Language */}
+            <div className="p-3 bg-neutral-900 rounded-lg border border-neutral-700">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-neutral-100">{t("setup.language")} / 语言</span>
+                <div className="flex gap-1 p-0.5 bg-neutral-800 rounded-md">
+                  {LOCALES.map((l) => (
+                    <button
+                      key={l.id}
+                      type="button"
+                      onClick={() => setLocale(l.id)}
+                      className={`px-3 py-1.5 text-xs rounded transition-all duration-150 ${
+                        locale === l.id
+                          ? "bg-neutral-700 text-neutral-100 font-medium"
+                          : "text-neutral-400 hover:text-neutral-300"
+                      }`}
+                    >
+                      {l.nativeLabel}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
             {/* Pan Mode */}
             <div className="p-3 bg-neutral-900 rounded-lg border border-neutral-700">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-neutral-100">Pan Mode</span>
+                  <span className="text-sm font-medium text-neutral-100">{t("setup.panMode")}</span>
                   <p className="text-xs text-neutral-400">
-                    {localCanvasSettings.panMode === "space" && "Hold Space and drag to pan"}
-                    {localCanvasSettings.panMode === "middleMouse" && "Click and drag with middle mouse button"}
-                    {localCanvasSettings.panMode === "always" && "Pan without holding any keys"}
+                    {localCanvasSettings.panMode === "space" && t("setup.panSpace")}
+                    {localCanvasSettings.panMode === "middleMouse" && t("setup.panMiddle")}
+                    {localCanvasSettings.panMode === "always" && t("setup.panAlways")}
                   </p>
                 </div>
                 <div className="flex gap-1 p-0.5 bg-neutral-800 rounded-md">
                   {([
-                    { value: "space" as PanMode, label: "Space + Drag" },
-                    { value: "middleMouse" as PanMode, label: "Middle Mouse" },
-                    { value: "always" as PanMode, label: "Always On" },
+                    { value: "space" as PanMode, label: t("setup.panOptSpace") },
+                    { value: "middleMouse" as PanMode, label: t("setup.panOptMiddle") },
+                    { value: "always" as PanMode, label: t("setup.panOptAlways") },
                   ] as const).map((option) => (
                     <button
                       key={option.value}
@@ -1206,18 +1289,18 @@ export function ProjectSetupModal({
             <div className="p-3 bg-neutral-900 rounded-lg border border-neutral-700">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-neutral-100">Zoom Mode</span>
+                  <span className="text-sm font-medium text-neutral-100">{t("setup.zoomMode")}</span>
                   <p className="text-xs text-neutral-400">
-                    {localCanvasSettings.zoomMode === "altScroll" && "Hold Alt and scroll to zoom"}
-                    {localCanvasSettings.zoomMode === "ctrlScroll" && "Hold Ctrl/Cmd and scroll to zoom"}
-                    {localCanvasSettings.zoomMode === "scroll" && "Scroll to zoom without modifier keys"}
+                    {localCanvasSettings.zoomMode === "altScroll" && t("setup.zoomAlt")}
+                    {localCanvasSettings.zoomMode === "ctrlScroll" && t("setup.zoomCtrl")}
+                    {localCanvasSettings.zoomMode === "scroll" && t("setup.zoomScroll")}
                   </p>
                 </div>
                 <div className="flex gap-1 p-0.5 bg-neutral-800 rounded-md">
                   {([
-                    { value: "altScroll" as ZoomMode, label: "Alt + Scroll" },
-                    { value: "ctrlScroll" as ZoomMode, label: "Ctrl + Scroll" },
-                    { value: "scroll" as ZoomMode, label: "Scroll" },
+                    { value: "altScroll" as ZoomMode, label: t("setup.zoomOptAlt") },
+                    { value: "ctrlScroll" as ZoomMode, label: t("setup.zoomOptCtrl") },
+                    { value: "scroll" as ZoomMode, label: t("setup.zoomOptScroll") },
                   ] as const).map((option) => (
                     <button
                       key={option.value}
@@ -1240,18 +1323,18 @@ export function ProjectSetupModal({
             <div className="p-3 bg-neutral-900 rounded-lg border border-neutral-700">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-neutral-100">Selection Mode</span>
+                  <span className="text-sm font-medium text-neutral-100">{t("setup.selectionMode")}</span>
                   <p className="text-xs text-neutral-400">
-                    {localCanvasSettings.selectionMode === "click" && "Click to select nodes"}
-                    {localCanvasSettings.selectionMode === "altDrag" && "Hold Alt and drag to select"}
-                    {localCanvasSettings.selectionMode === "shiftDrag" && "Hold Shift and drag to select"}
+                    {localCanvasSettings.selectionMode === "click" && t("setup.selClick")}
+                    {localCanvasSettings.selectionMode === "altDrag" && t("setup.selAlt")}
+                    {localCanvasSettings.selectionMode === "shiftDrag" && t("setup.selShift")}
                   </p>
                 </div>
                 <div className="flex gap-1 p-0.5 bg-neutral-800 rounded-md">
                   {([
-                    { value: "click" as SelectionMode, label: "Click" },
-                    { value: "altDrag" as SelectionMode, label: "Alt + Drag" },
-                    { value: "shiftDrag" as SelectionMode, label: "Shift + Drag" },
+                    { value: "click" as SelectionMode, label: t("setup.selOptClick") },
+                    { value: "altDrag" as SelectionMode, label: t("setup.selOptAlt") },
+                    { value: "shiftDrag" as SelectionMode, label: t("setup.selOptShift") },
                   ] as const).map((option) => (
                     <button
                       key={option.value}
@@ -1280,7 +1363,7 @@ export function ProjectSetupModal({
             onClick={onClose}
             className="px-4 py-2 text-sm text-neutral-400 hover:text-neutral-100 transition-colors"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             onClick={handleSave}
@@ -1288,8 +1371,8 @@ export function ProjectSetupModal({
             className="px-4 py-2 text-sm bg-white text-neutral-900 rounded-lg hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {activeTab === "project"
-              ? (isValidating ? "Validating..." : mode === "new" ? "Create" : "Save")
-              : "Save"
+              ? (isValidating ? t("setup.validating") : mode === "new" ? t("setup.create") : t("common.save"))
+              : t("common.save")
             }
           </button>
         </div>

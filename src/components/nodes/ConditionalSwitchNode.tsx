@@ -6,9 +6,12 @@ import { BaseNode } from "./BaseNode";
 import { useWorkflowStore } from "@/store/workflowStore";
 import { evaluateRule } from "@/store/utils/ruleEvaluation";
 import { getConnectedInputsPure } from "@/store/utils/connectedInputs";
+import { HANDLE_COLORS } from "@/utils/handleColors";
 import type { WorkflowNode, ConditionalSwitchNodeData, ConditionalSwitchRule, MatchMode } from "@/types";
+import { useT } from "@/i18n";
 
 export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<WorkflowNode>) => {
+  const t = useT();
   const nodeData = data as ConditionalSwitchNodeData;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const updateNodeInternals = useUpdateNodeInternals();
@@ -214,7 +217,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
           <button
             onClick={handleClear}
             className="nodrag nopan p-0.5 rounded transition-all duration-200 ease-in-out flex items-center overflow-hidden group pr-2 text-neutral-500 hover:text-neutral-200 border border-neutral-600 bg-neutral-800/90"
-            title="Clear evaluation"
+            title={t("node.clearEvaluation")}
           >
             <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -234,7 +237,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
         data-handletype="text"
         style={{
           top: 38,
-          backgroundColor: "#3b82f6", // blue for text
+          backgroundColor: HANDLE_COLORS.text, // Weavy prompt pink
           width: 12,
           height: 12,
           border: "2px solid #1e1e1e",
@@ -246,7 +249,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
         {/* Text preview — fixed height, above the handle-aligned area */}
         <div className="text-[10px] text-neutral-400 truncate h-5 flex items-center">
           {nodeData.evaluationPaused ? (
-            <span className="text-yellow-400">Evaluation paused</span>
+            <span className="text-yellow-400">{t("node.evaluationPaused")}</span>
           ) : incomingText ? (
             <>Input: &quot;{incomingText.slice(0, 50)}{incomingText.length > 50 ? "..." : ""}&quot;</>
           ) : (
@@ -281,7 +284,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
                 className="text-neutral-400 hover:text-white disabled:opacity-30 disabled:hover:text-neutral-400"
                 onClick={() => handleMoveUp(index)}
                 disabled={index === 0}
-                title="Move up"
+                title={t("node.moveUp")}
               >
                 <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M7 14l5-5 5 5z" />
@@ -291,7 +294,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
                 className="text-neutral-400 hover:text-white disabled:opacity-30 disabled:hover:text-neutral-400"
                 onClick={() => handleMoveDown(index)}
                 disabled={index === nodeData.rules.length - 1}
-                title="Move down"
+                title={t("node.moveDown")}
               >
                 <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M7 10l5 5 5-5z" />
@@ -351,7 +354,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
               <button
                 className="opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-red-400 transition-opacity flex-shrink-0"
                 onClick={() => handleDelete(rule.id)}
-                title="Delete rule"
+                title={t("node.deleteRule")}
               >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -373,7 +376,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
             )}
           </div>
 
-          <span className="text-[10px] text-neutral-300 ml-4">Fallback</span>
+          <span className="text-[10px] text-neutral-300 ml-4">{t("node.fallback")}</span>
         </div>
 
         {/* Add rule button — after Default so it doesn't displace handle alignment */}
@@ -398,7 +401,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
           data-handletype="text"
           style={{
             top: handleTops[rule.id] ?? (fallbackBase + index * handleSpacing),
-            backgroundColor: "#3b82f6", // blue for text
+            backgroundColor: HANDLE_COLORS.text, // Weavy prompt pink
             width: 12,
             height: 12,
             border: "2px solid #1e1e1e",
@@ -414,7 +417,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
         data-handletype="text"
         style={{
           top: handleTops['default'] ?? (fallbackBase + ruleCount * handleSpacing),
-          backgroundColor: "#3b82f6", // blue for text
+          backgroundColor: HANDLE_COLORS.text, // Weavy prompt pink
           width: 12,
           height: 12,
           border: "2px solid #1e1e1e",

@@ -4,6 +4,7 @@ export interface EnvStatusResponse {
   gemini: boolean;
   openai: boolean;
   anthropic: boolean;
+  deepseek: boolean;
   replicate: boolean;
   fal: boolean;
   kie: boolean;
@@ -16,6 +17,7 @@ export async function GET() {
     gemini: !!process.env.GEMINI_API_KEY,
     openai: !!process.env.OPENAI_API_KEY,
     anthropic: !!process.env.ANTHROPIC_API_KEY,
+    deepseek: !!process.env.DEEPSEEK_API_KEY,
     replicate: !!process.env.REPLICATE_API_KEY,
     fal: !!process.env.FAL_API_KEY,
     kie: !!process.env.KIE_API_KEY,

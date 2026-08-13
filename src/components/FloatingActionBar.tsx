@@ -7,9 +7,10 @@ import { NodeType } from "@/types";
 import { useReactFlow } from "@xyflow/react";
 import { ModelSearchDialog } from "./modals/ModelSearchDialog";
 import { useFTUXStore } from "@/store/ftuxStore";
+import { useT, nodeCategoryKey } from "@/i18n";
 
-// All nodes menu categories
-const ALL_NODES_CATEGORIES: { label: string; nodes: { type: NodeType; label: string }[] }[] = [
+// All nodes menu categories — shared with NodePickerMenu / CanvasContextMenu / LibraryPanel
+export const ALL_NODES_CATEGORIES: { label: string; nodes: { type: NodeType; label: string }[] }[] = [
   {
     label: "Input",
     nodes: [
@@ -25,6 +26,7 @@ const ALL_NODES_CATEGORIES: { label: string; nodes: { type: NodeType; label: str
       { type: "prompt", label: "Prompt" },
       { type: "promptConstructor", label: "Prompt Constructor" },
       { type: "array", label: "Array" },
+      { type: "stickyNote", label: "Sticky Note" },
     ],
   },
   {
@@ -120,6 +122,7 @@ function NodeButton({ type, label, dataTutorial }: NodeButtonProps) {
 }
 
 function GenerateComboButton() {
+  const t = useT();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const addNode = useWorkflowStore((state) => state.addNode);
@@ -164,7 +167,7 @@ function GenerateComboButton() {
         onClick={() => setIsOpen(!isOpen)}
         className="px-2.5 py-1.5 text-[11px] font-medium text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors flex items-center gap-1"
       >
-        Generate
+        {t("fab.generate")}
         <svg
           className={`w-3 h-3 transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"
@@ -187,7 +190,7 @@ function GenerateComboButton() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
             </svg>
-            Image
+            {t("nodeType.short.imageInput")}
           </button>
           <button
             onClick={() => handleAddNode("generateVideo")}
@@ -198,7 +201,7 @@ function GenerateComboButton() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
             </svg>
-            Video
+            {t("nodeType.short.videoInput")}
           </button>
           <button
             onClick={() => handleAddNode("generate3d")}
@@ -220,7 +223,7 @@ function GenerateComboButton() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
             </svg>
-            Text (LLM)
+            {t("fab.textLLM")}
           </button>
         </div>
       )}
@@ -230,6 +233,7 @@ function GenerateComboButton() {
 
 
 function AllNodesMenu() {
+  const t = useT();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const addNode = useWorkflowStore((state) => state.addNode);
@@ -274,7 +278,7 @@ function AllNodesMenu() {
         onClick={() => setIsOpen(!isOpen)}
         className="px-2.5 py-1.5 text-[11px] font-medium text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors flex items-center gap-1"
       >
-        All nodes
+        {t("iconRail.allNodes")}
         <svg
           className={`w-3 h-3 transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"
@@ -291,7 +295,7 @@ function AllNodesMenu() {
           {ALL_NODES_CATEGORIES.map((category, catIndex) => (
             <div key={category.label}>
               <div className={`px-3 py-1 text-[10px] text-neutral-500 uppercase tracking-wide${catIndex > 0 ? " border-t border-neutral-700" : ""}`}>
-                {category.label}
+                {t(nodeCategoryKey(category.label))}
               </div>
               {category.nodes.map((node) => (
                 <button
@@ -301,7 +305,7 @@ function AllNodesMenu() {
                   onDragStart={(e) => handleDragStart(e, node.type)}
                   className="w-full px-3 py-2 text-left text-[11px] font-medium text-neutral-300 hover:bg-neutral-700 hover:text-neutral-100 transition-colors flex items-center gap-2 cursor-grab active:cursor-grabbing"
                 >
-                  {node.label}
+                  {t(`nodeType.${node.type}`)}
                 </button>
               ))}
             </div>
@@ -313,6 +317,7 @@ function AllNodesMenu() {
 }
 
 export function FloatingActionBar() {
+  const t = useT();
   const {
     nodes,
     isRunning,
@@ -478,29 +483,29 @@ export function FloatingActionBar() {
 
   return (
     <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50">
-      <div className="flex items-center gap-0.5 bg-neutral-800/95 rounded-lg shadow-lg border border-neutral-700/80 px-1.5 py-1">
-        <NodeButton type="imageInput" label="Image" dataTutorial="image-button" />
-        <NodeButton type="videoInput" label="Video" />
-        <NodeButton type="prompt" label="Prompt" dataTutorial="prompt-button" />
+      <div className="flex items-center gap-0.5 bg-[#1b1b1f]/95 backdrop-blur-md rounded-lg shadow-lg border border-neutral-700/60 px-1.5 py-1">
+        <NodeButton type="imageInput" label={t("nodeType.short.imageInput")} dataTutorial="image-button" />
+        <NodeButton type="videoInput" label={t("nodeType.short.videoInput")} />
+        <NodeButton type="prompt" label={t("nodeType.short.prompt")} dataTutorial="prompt-button" />
         <GenerateComboButton />
-        <NodeButton type="output" label="Output" dataTutorial="output-button" />
+        <NodeButton type="output" label={t("nodeType.short.output")} dataTutorial="output-button" />
         <AllNodesMenu />
 
         {/* All models button */}
         <div className="w-px h-5 bg-neutral-600 mx-1.5" />
         <button
           onClick={() => setModelSearchOpen(true)}
-          title="Browse models"
+          title={t("fab.browseModels")}
           className="px-2.5 py-1.5 text-[11px] font-medium text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors"
         >
-          All models
+          {t("fab.allModels")}
         </button>
 
         <div className="w-px h-5 bg-neutral-600 mx-1.5" />
 
         <button
           onClick={toggleEdgeStyle}
-          title={`Switch to ${edgeStyle === "angular" ? "curved" : "angular"} connectors`}
+          title={t("fab.switchConnectors", { style: edgeStyle === "angular" ? "curved" : "angular" })}
           className="p-1.5 text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors"
         >
           {edgeStyle === "angular" ? (
@@ -520,7 +525,7 @@ export function FloatingActionBar() {
           <button
             onClick={handleRunClick}
             disabled={!valid && !isRunning}
-            title={!valid ? errors.join("\n") : isRunning ? "Stop" : "Run"}
+            title={!valid ? errors.join("\n") : isRunning ? t("fab.stop") : t("fab.run")}
             data-tutorial="floating-run-button"
             className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium transition-colors ${
               isRunning
@@ -564,7 +569,7 @@ export function FloatingActionBar() {
                 >
                   <path d="M8 5v14l11-7z" />
                 </svg>
-                <span>Run</span>
+                <span>{t("fab.run")}</span>
               </>
             )}
           </button>
@@ -575,7 +580,7 @@ export function FloatingActionBar() {
               onClick={() => setRunMenuOpen(!runMenuOpen)}
               data-tutorial="floating-run-dropdown"
               className="flex items-center self-stretch px-1.5 rounded-r bg-white text-neutral-900 hover:bg-neutral-200 border-l border-neutral-200 transition-colors"
-              title="Run options"
+              title={t("fab.runOptions")}
             >
               <svg
                 className={`w-2.5 h-2.5 transition-transform ${runMenuOpen ? "rotate-180" : ""}`}
@@ -605,7 +610,7 @@ export function FloatingActionBar() {
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
-                Run entire workflow
+                {t("fab.runEntire")}
               </button>
               <button
                 onClick={handleRunFromSelected}
@@ -615,12 +620,12 @@ export function FloatingActionBar() {
                     ? "text-neutral-300 hover:bg-neutral-700 hover:text-neutral-100"
                     : "text-neutral-500 cursor-not-allowed"
                 }`}
-                title={!selectedNode ? "Select a single node first" : undefined}
+                title={!selectedNode ? t("fab.selectSingle") : undefined}
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
                 </svg>
-                Run from selected node
+                {t("fab.runFromSelected")}
               </button>
               <button
                 onClick={handleRunSelectedOnly}
@@ -630,12 +635,12 @@ export function FloatingActionBar() {
                     ? "text-neutral-300 hover:bg-neutral-700 hover:text-neutral-100"
                     : "text-neutral-500 cursor-not-allowed"
                 }`}
-                title={!selectedNode ? "Select a single node first" : undefined}
+                title={!selectedNode ? t("fab.selectSingle") : undefined}
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
                 </svg>
-                Run selected node only
+                {t("fab.runSelectedOnly")}
               </button>
               <button
                 onClick={handleRunSelectedNodes}
@@ -645,15 +650,15 @@ export function FloatingActionBar() {
                     ? "text-neutral-300 hover:bg-neutral-700 hover:text-neutral-100"
                     : "text-neutral-500 cursor-not-allowed"
                 }`}
-                title={selectedNodes.length === 0 ? "Select one or more nodes first" : `Run ${selectedNodes.length} selected node${selectedNodes.length > 1 ? 's' : ''}`}
+                title={selectedNodes.length === 0 ? t("fab.selectSome") : t("fab.runSelectedCountTitle", { count: selectedNodes.length })}
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V9.653z" />
                 </svg>
                 {selectedNodes.length > 0
-                  ? `Run ${selectedNodes.length} selected node${selectedNodes.length !== 1 ? 's' : ''}`
-                  : 'Run selected nodes'}
+                  ? t("fab.runSelectedCount", { count: selectedNodes.length })
+                  : t("fab.runSelectedNodes")}
               </button>
             </div>
           )}

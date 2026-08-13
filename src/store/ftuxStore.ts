@@ -78,26 +78,26 @@ export function getFTUXCompleted(): boolean {
 const initialTutorialSteps: TutorialStep[] = [
   {
     id: "welcome",
-    message: "Let's go over the basics.",
+    message: "tutorial.welcome",
     completed: false,
   },
   {
     id: "add-image",
-    message: "Click the Image button to add an image node.",
+    message: "tutorial.add-image",
     highlightSelector: '[data-tutorial="image-button"]',
     requiredAction: "add-image-node",
     completed: false,
   },
   {
     id: "explain-node",
-    message: "This is a node. Each node has a specific function.\n\nThis node adds images.",
+    message: "tutorial.explain-node",
     position: "top-center",
     waitForClick: true,
     completed: false,
   },
   {
     id: "explain-node-inputs",
-    message: "Inputs always go in on the left side of the node.",
+    message: "tutorial.explain-node-inputs",
     highlightSelector: '[data-tutorial="node-input-handle"]',
     highlightDelay: 1000,
     position: "left",
@@ -106,7 +106,7 @@ const initialTutorialSteps: TutorialStep[] = [
   },
   {
     id: "explain-node-outputs",
-    message: "Outputs always come from the right side of the node.",
+    message: "tutorial.explain-node-outputs",
     highlightSelector: '[data-tutorial="node-output-handle"]',
     highlightDelay: 1000,
     position: "right",
@@ -115,7 +115,7 @@ const initialTutorialSteps: TutorialStep[] = [
   },
   {
     id: "drag-and-drop",
-    message: "Now drag from the output handle and drop into empty space.",
+    message: "tutorial.drag-and-drop",
     highlightSelector: '[data-tutorial="node-output-handle"]',
     position: "right",
     requiredAction: "show-connection-menu",
@@ -124,7 +124,7 @@ const initialTutorialSteps: TutorialStep[] = [
   },
   {
     id: "select-generate-image",
-    message: "This menu will show all available connections for the node.\n\nSelect 'Generate Image' to add an AI image generation node.",
+    message: "tutorial.select-generate-image",
     highlightSelector: '[data-tutorial="generate-image-option"]',
     position: "top-center",
     requiredAction: "add-nanoBanana-from-menu",
@@ -132,7 +132,7 @@ const initialTutorialSteps: TutorialStep[] = [
   },
   {
     id: "add-prompt-node",
-    message: "Click the Prompt button to add a prompt node.",
+    message: "tutorial.add-prompt-node",
     highlightSelector: '[data-tutorial="prompt-button"]',
     position: "top-center",
     requiredAction: "add-prompt-node",
@@ -140,7 +140,7 @@ const initialTutorialSteps: TutorialStep[] = [
   },
   {
     id: "connect-prompt-to-generate",
-    message: "Drag from the Prompt's output handle to the Generate Image's input handle.",
+    message: "tutorial.connect-prompt-to-generate",
     highlightSelector: ['[data-tutorial="prompt-output-handle"]', '[data-tutorial="generate-text-input-handle"]'],
     position: "left",
     requiredAction: "connect-prompt-node",
@@ -148,13 +148,13 @@ const initialTutorialSteps: TutorialStep[] = [
   },
   {
     id: "populate-content",
-    message: "Let me just add some stuff here 🎨",
+    message: "tutorial.populate-content",
     position: "top-center",
     completed: false,
   },
   {
     id: "explain-generate-node",
-    message: "This is the Generate Image node. It uses AI to create or modify images based on your prompt and reference image.",
+    message: "tutorial.explain-generate-node",
     highlightSelector: '[data-tutorial="generate-image-node"]',
     position: "top-center",
     waitForClick: true,
@@ -162,7 +162,7 @@ const initialTutorialSteps: TutorialStep[] = [
   },
   {
     id: "explain-run-button",
-    message: "Clicking this Run button will run your workflow. You can also press Cmd+Enter (Ctrl+Enter on Windows).",
+    message: "tutorial.explain-run-button",
     highlightSelector: '[data-tutorial="floating-run-button"]',
     position: "top-center",
     waitForClick: true,
@@ -170,7 +170,7 @@ const initialTutorialSteps: TutorialStep[] = [
   },
   {
     id: "explain-run-options",
-    message: "You can also click the dropdown to run from a specific node, or run only selected nodes.",
+    message: "tutorial.explain-run-options",
     highlightSelector: '[data-tutorial="floating-run-dropdown"]',
     position: "top-center",
     waitForClick: true,
@@ -178,7 +178,7 @@ const initialTutorialSteps: TutorialStep[] = [
   },
   {
     id: "run-workflow",
-    message: "Now let's run your workflow! Click the Run button to generate your image.",
+    message: "tutorial.run-workflow",
     highlightSelector: '[data-tutorial="floating-run-button"]',
     position: "top-center",
     requiredAction: "run-workflow",
@@ -186,20 +186,20 @@ const initialTutorialSteps: TutorialStep[] = [
   },
   {
     id: "demonstrate-downstream",
-    message: "Now let me show you the possibilities... 🎬✨",
+    message: "tutorial.demonstrate-downstream",
     position: "top-center",
     completed: false,
   },
   {
     id: "demonstrate-complete",
-    message: "Connect more nodes downstream to build generative pipelines, or just use it as an infinite creative canvas.",
+    message: "tutorial.demonstrate-complete",
     position: "top-center",
     waitForClick: true,
     completed: false,
   },
   {
     id: "save-project",
-    message: "Save your project to keep all your work and generations locally.",
+    message: "tutorial.save-project",
     highlightSelector: '[data-tutorial="save-button"]',
     position: "top-center",
     waitForClick: true,
@@ -207,17 +207,17 @@ const initialTutorialSteps: TutorialStep[] = [
   },
   {
     id: "resources",
-    message: "Check out the resources below for help and inspiration:",
+    message: "tutorial.resources",
     position: "left",
     waitForClick: true,
     links: [
-      { text: "Join our Discord community", url: "https://discord.gg/node-banana" },
+      { text: "tutorial.discordLink", url: "https://discord.gg/node-banana" },
     ],
     completed: false,
   },
   {
     id: "complete",
-    message: "You're all set! Happy creating.",
+    message: "tutorial.complete",
     position: "top-center",
     completed: false,
   },

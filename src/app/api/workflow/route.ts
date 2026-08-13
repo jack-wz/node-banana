@@ -3,6 +3,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { logger } from "@/utils/logger";
 import { validateWorkflowPath } from "@/utils/pathValidation";
+import { upsertWorkflow } from "@/lib/db";
 
 export const maxDuration = 300; // 5 minute timeout for large workflow files
 
@@ -120,6 +121,12 @@ export async function POST(request: NextRequest) {
     logger.info('file.save', 'Workflow saved successfully', {
       filePath,
       fileSize: json.length,
+    });
+
+    await upsertWorkflow({
+      name: safeName,
+      filePath,
+      content: workflow,
     });
 
     return NextResponse.json({

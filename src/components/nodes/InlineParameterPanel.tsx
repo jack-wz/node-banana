@@ -1,6 +1,7 @@
 "use client";
 
 import React, { ReactNode, useRef, useState, useEffect } from "react";
+import { useT } from "@/i18n";
 
 interface InlineParameterPanelProps {
   expanded: boolean;
@@ -19,6 +20,7 @@ function InlineParameterPanelInner({
   children,
   nodeId,
 }: InlineParameterPanelProps) {
+  const t = useT();
   const contentRef = useRef<HTMLDivElement>(null);
   const [contentHeight, setContentHeight] = useState(0);
 
@@ -39,7 +41,7 @@ function InlineParameterPanelInner({
         aria-expanded={expanded}
         aria-controls={`params-${nodeId}`}
       >
-        <span className="text-[10px]">Settings</span>
+        <span className="text-[10px]">{t("common.settings")}</span>
         <svg
           className="w-3 h-3 transition-transform duration-200"
           style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}

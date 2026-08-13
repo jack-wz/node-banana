@@ -102,6 +102,7 @@ const LLM_PROVIDERS: { value: LLMProvider; label: string }[] = [
   { value: "google", label: "Google" },
   { value: "openai", label: "OpenAI" },
   { value: "anthropic", label: "Anthropic" },
+  { value: "deepseek", label: "DeepSeek" },
 ];
 const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> = {
   google: [
@@ -118,6 +119,10 @@ const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> 
     { value: "claude-sonnet-4.5", label: "Claude Sonnet 4.5" },
     { value: "claude-haiku-4.5", label: "Claude Haiku 4.5" },
     { value: "claude-opus-4.6", label: "Claude Opus 4.6" },
+  ],
+  deepseek: [
+    { value: "deepseek-chat", label: "DeepSeek V3 (Chat)" },
+    { value: "deepseek-reasoner", label: "DeepSeek R1 (Reasoner)" },
   ],
 };
 

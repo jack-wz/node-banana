@@ -11,10 +11,12 @@ import { useAdaptiveImageSrc } from "@/hooks/useAdaptiveImageSrc";
 import { downloadMedia, MediaType } from "@/utils/downloadMedia";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 type OutputNodeType = Node<OutputNodeData, "output">;
 
 export function OutputNode({ id, data, selected }: NodeProps<OutputNodeType>) {
+  const t = useT();
   const nodeData = data;
   const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
   const connectedEdgeCount = useWorkflowStore(
@@ -158,7 +160,7 @@ export function OutputNode({ id, data, selected }: NodeProps<OutputNodeType>) {
             <button
               onClick={handleDownload}
               className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/80 text-white text-xs rounded transition-colors flex items-center gap-1"
-              title="Download"
+              title={t("node.download")}
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -170,7 +172,7 @@ export function OutputNode({ id, data, selected }: NodeProps<OutputNodeType>) {
             <svg className="w-8 h-8 text-neutral-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
             </svg>
-            <span className="text-xs text-neutral-500 mt-2">Connect input</span>
+            <span className="text-xs text-neutral-500 mt-2">{t("node.connectInput")}</span>
           </div>
         )}
         </div>

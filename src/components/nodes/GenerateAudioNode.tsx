@@ -19,10 +19,12 @@ import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
 import { useLoadGenerationById } from "@/hooks/useLoadGenerationById";
 import { useGenerationCarousel } from "@/hooks/useGenerationCarousel";
+import { useT } from "@/i18n";
 
 type GenerateAudioNodeType = Node<GenerateAudioNodeData, "generateAudio">;
 
 export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudioNodeType>) {
+  const t = useT();
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const [isBrowseDialogOpen, setIsBrowseDialogOpen] = useState(false);
@@ -289,7 +291,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
             {nodeData.__usedFallback && (
               <div
                 className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-emerald-900/70 text-emerald-300 text-[9px] font-medium pointer-events-auto z-10"
-                title={`Primary failed: ${nodeData.__primaryError ?? "unknown"}\nUsed fallback: ${nodeData.__fallbackModelUsed ?? ""}`}
+                title={t("node.primaryFailed", { error: nodeData.__primaryError ?? "unknown", model: nodeData.__fallbackModelUsed ?? "" })}
               >
                 Fallback used
               </div>
@@ -297,7 +299,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
             {/* Waveform visualization */}
             {isLoadingWaveform ? (
               <div className="flex items-center justify-center bg-neutral-900/50 rounded h-16">
-                <span className="text-xs text-neutral-500">Loading waveform...</span>
+                <span className="text-xs text-neutral-500">{t("node.loadingWaveform")}</span>
               </div>
             ) : waveformData ? (
               <div
@@ -309,7 +311,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
               </div>
             ) : (
               <div className="flex items-center justify-center bg-neutral-900/50 rounded h-16">
-                <span className="text-xs text-neutral-500">Processing...</span>
+                <span className="text-xs text-neutral-500">{t("node.processing")}</span>
               </div>
             )}
 
@@ -318,7 +320,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
               <button
                 onClick={handlePlayPause}
                 className="w-7 h-7 flex items-center justify-center bg-violet-600 hover:bg-violet-500 rounded transition-colors shrink-0"
-                title={isPlaying ? "Pause" : "Play"}
+                title={isPlaying ? t("node.pause") : t("node.play")}
               >
                 {isPlaying ? (
                   <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -353,7 +355,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
                     onClick={handleCarouselPrevious}
                     className="w-5 h-5 flex items-center justify-center bg-neutral-700 hover:bg-neutral-600 rounded transition-colors shrink-0"
                     disabled={isLoadingCarouselAudio}
-                    title="Previous"
+                    title={t("node.prev")}
                   >
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
@@ -366,7 +368,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
                     onClick={handleCarouselNext}
                     className="w-5 h-5 flex items-center justify-center bg-neutral-700 hover:bg-neutral-600 rounded transition-colors shrink-0"
                     disabled={isLoadingCarouselAudio}
-                    title="Next"
+                    title={t("node.next")}
                   >
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
@@ -380,7 +382,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
             <button
               onClick={() => downloadMedia(nodeData.outputAudio!, "audio").catch(() => {})}
               className="absolute top-1 right-7 w-5 h-5 bg-black/60 hover:bg-black/80 text-white rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-              title="Download audio"
+              title={t("node.downloadAudio")}
             >
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -390,7 +392,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
             <button
               onClick={handleClearAudio}
               className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-              title="Clear audio"
+              title={t("node.clearAudio")}
             >
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -403,7 +405,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
         {nodeData.status === "loading" && (
           <div className="flex items-center gap-2 mt-2">
             <div className="animate-spin w-3 h-3 border-2 border-violet-500 border-t-transparent rounded-full" />
-            <span className="text-xs text-neutral-400">Generating audio...</span>
+            <span className="text-xs text-neutral-400">{t("node.generatingAudio")}</span>
           </div>
         )}
 

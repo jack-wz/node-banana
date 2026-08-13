@@ -30,19 +30,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ProviderType } from "@/types";
 import { ProviderModel, ModelCapability } from "@/lib/providers";
-import {
-  getCachedModels,
-  setCachedModels,
-  getCacheKey,
-  setCachedWaveSpeedSchemas,
-  WaveSpeedApiSchema,
-} from "@/lib/providers/cache";
+import { getCachedModels, setCachedModels, getCacheKey, setCachedWaveSpeedSchemas, WaveSpeedApiSchema } from "@/lib/providers/cache";
 
 // API base URLs
 const REPLICATE_API_BASE = "https://api.replicate.com/v1";
 const FAL_API_BASE = "https://api.fal.ai/v1";
 
 const WAVESPEED_API_BASE = "https://api.wavespeed.ai/api/v3";
+
+// Below this many local cache matches, a Replicate fragment search is worth
+// the extra API call latency; above it, the cached results are enough.
+const REPLICATE_SEARCH_MIN_RESULTS = 5;
 
 // Categories we care about for image/video/3D/audio generation (fal.ai)
 const RELEVANT_CATEGORIES = [
@@ -237,6 +235,115 @@ const KIE_MODELS: ProviderModel[] = [
     coverImage: undefined,
     pageUrl: "https://kie.ai/grok-imagine",
   },
+  // ---- Synced from docs.kie.ai/market (2026-08) — standard createTask endpoint ----
+  {
+    id: "qwen/text-to-image",
+    name: "Qwen Image",
+    description: "High-quality photorealistic text-to-image generation by Alibaba Qwen via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/qwen/text-to-image",
+  },
+  {
+    id: "qwen/image-edit",
+    name: "Qwen Image Edit",
+    description: "Image editing powered by Alibaba Qwen via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/qwen/image-edit",
+  },
+  {
+    id: "qwen2/text-to-image",
+    name: "Qwen Image 2",
+    description: "Second-generation Qwen text-to-image generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/qwen2/text-to-image",
+  },
+  {
+    id: "qwen2/image-edit",
+    name: "Qwen Image 2 Edit",
+    description: "Second-generation Qwen image editing via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/qwen2/image-edit",
+  },
+  {
+    id: "seedream/5-pro-text-to-image",
+    name: "Seedream 5.0 Pro",
+    description: "ByteDance Seedream 5.0 Pro flagship text-to-image generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/seedream/5-pro-text-to-image",
+  },
+  {
+    id: "seedream/5-pro-image-to-image",
+    name: "Seedream 5.0 Pro Edit",
+    description: "ByteDance Seedream 5.0 Pro image editing via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/seedream/5-pro-image-to-image",
+  },
+  {
+    id: "gpt-image-2-text-to-image",
+    name: "GPT Image 2",
+    description: "Second-generation OpenAI-style text-to-image generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/gpt/gpt-image-2-text-to-image",
+  },
+  {
+    id: "gpt-image-2-image-to-image",
+    name: "GPT Image 2 Edit",
+    description: "Second-generation OpenAI-style image editing via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/gpt/gpt-image-2-image-to-image",
+  },
+  {
+    id: "ideogram/v3-text-to-image",
+    name: "Ideogram V3",
+    description: "Ideogram V3 text-to-image generation with strong typography via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/ideogram/v3-text-to-image",
+  },
+  {
+    id: "nano-banana-2-lite",
+    name: "Nano Banana 2 Lite",
+    description: "Lightweight Google Nano Banana 2 image generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/google/nano-banana-2-lite",
+  },
+  {
+    id: "topaz/image-upscale",
+    name: "Topaz Image Upscale",
+    description: "Topaz Labs image upscaling (1x/2x/4x) via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/topaz/image-upscale",
+  },
+  {
+    id: "recraft/remove-background",
+    name: "Recraft Remove Background",
+    description: "Recraft background removal for images via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/recraft/remove-background",
+  },
   // ============ Video Models ============
   {
     id: "bytedance/seedance-2/text-to-video",
@@ -299,7 +406,7 @@ const KIE_MODELS: ProviderModel[] = [
     provider: "kie",
     capabilities: ["text-to-video"],
     coverImage: undefined,
-    pricing: { type: "per-run", amount: 0.60, currency: "USD" },
+    pricing: { type: "per-run", amount: 0.6, currency: "USD" },
     pageUrl: "https://kie.ai/kling-2-6",
   },
   {
@@ -309,7 +416,7 @@ const KIE_MODELS: ProviderModel[] = [
     provider: "kie",
     capabilities: ["image-to-video"],
     coverImage: undefined,
-    pricing: { type: "per-run", amount: 0.60, currency: "USD" },
+    pricing: { type: "per-run", amount: 0.6, currency: "USD" },
     pageUrl: "https://kie.ai/kling-2-6",
   },
   {
@@ -373,7 +480,7 @@ const KIE_MODELS: ProviderModel[] = [
     provider: "kie",
     capabilities: ["text-to-video"],
     coverImage: undefined,
-    pricing: { type: "per-run", amount: 0.90, currency: "USD" },
+    pricing: { type: "per-run", amount: 0.9, currency: "USD" },
     pageUrl: "https://kie.ai/wan-2-6",
   },
   {
@@ -383,7 +490,7 @@ const KIE_MODELS: ProviderModel[] = [
     provider: "kie",
     capabilities: ["image-to-video"],
     coverImage: undefined,
-    pricing: { type: "per-run", amount: 0.90, currency: "USD" },
+    pricing: { type: "per-run", amount: 0.9, currency: "USD" },
     pageUrl: "https://kie.ai/wan-2-6",
   },
   {
@@ -424,7 +531,7 @@ const KIE_MODELS: ProviderModel[] = [
   },
   {
     id: "veo3/text-to-video",
-    name: "Veo 3",
+    name: "Veo 3.1",
     description: "Google Veo 3.1 high-quality text-to-video generation with audio via Kie.ai.",
     provider: "kie",
     capabilities: ["text-to-video"],
@@ -433,7 +540,7 @@ const KIE_MODELS: ProviderModel[] = [
   },
   {
     id: "veo3/image-to-video",
-    name: "Veo 3 I2V",
+    name: "Veo 3.1 I2V",
     description: "Google Veo 3.1 image-to-video generation via Kie.ai. Supports 1-2 reference images.",
     provider: "kie",
     capabilities: ["image-to-video"],
@@ -442,7 +549,7 @@ const KIE_MODELS: ProviderModel[] = [
   },
   {
     id: "veo3-fast/text-to-video",
-    name: "Veo 3 Fast",
+    name: "Veo 3.1 Fast",
     description: "Google Veo 3.1 fast text-to-video generation with audio via Kie.ai.",
     provider: "kie",
     capabilities: ["text-to-video"],
@@ -451,13 +558,459 @@ const KIE_MODELS: ProviderModel[] = [
   },
   {
     id: "veo3-fast/image-to-video",
-    name: "Veo 3 Fast I2V",
+    name: "Veo 3.1 Fast I2V",
     description: "Google Veo 3.1 fast image-to-video generation via Kie.ai. Supports 1-2 reference images.",
     provider: "kie",
     capabilities: ["image-to-video"],
     coverImage: undefined,
     pageUrl: "https://docs.kie.ai/veo3-api/quickstart",
   },
+  // ---- Synced from docs.kie.ai/market (2026-08) — standard createTask endpoint ----
+  {
+    id: "wan/2-5-text-to-video",
+    name: "Wan 2.5",
+    description: "Alibaba Wan 2.5 text-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/wan/2-5-text-to-video",
+  },
+  {
+    id: "wan/2-5-image-to-video",
+    name: "Wan 2.5 I2V",
+    description: "Alibaba Wan 2.5 image-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/wan/2-5-image-to-video",
+  },
+  {
+    id: "bytedance/seedance-1.5-pro",
+    name: "Seedance 1.5 Pro",
+    description: "ByteDance Seedance 1.5 Pro text-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/bytedance/seedance-1-5-pro",
+  },
+  {
+    id: "kling/v3-turbo-text-to-video",
+    name: "Kling V3 Turbo",
+    description: "Kling V3 Turbo fast text-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/kling/v3-turbo-text-to-video",
+  },
+  {
+    id: "kling/v3-turbo-image-to-video",
+    name: "Kling V3 Turbo I2V",
+    description: "Kling V3 Turbo fast image-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/kling/v3-turbo-image-to-video",
+  },
+  {
+    id: "hailuo/2-3-image-to-video-pro",
+    name: "Hailuo 2.3 I2V Pro",
+    description: "MiniMax Hailuo 2.3 Pro image-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/hailuo/2-3-image-to-video-pro",
+  },
+  // ============ New Image Models (2026-08 sync) ============
+  {
+    id: "google/nano-banana",
+    name: "Nano Banana (Kie)",
+    description: "Google Gemini Flash image generation via Kie.ai. Supports text-to-image with aspect ratio control.",
+    provider: "kie",
+    capabilities: ["text-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/google/nano-banana",
+  },
+  {
+    id: "google/nano-banana-edit",
+    name: "Nano Banana Edit",
+    description: "Google Gemini Flash image editing via Kie.ai. Supports up to 10 input images.",
+    provider: "kie",
+    capabilities: ["image-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/google/nano-banana-edit",
+  },
+  {
+    id: "wan/2-7-image-pro",
+    name: "Wan 2.7 Image Pro",
+    description: "Wan 2.7 Pro image generation. Higher quality text-to-image and image-to-image via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-image", "image-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/wan/2-7-image-pro",
+  },
+  {
+    id: "qwen/image-to-image",
+    name: "Qwen Image to Image",
+    description: "Qwen image-to-image transformation with strength control via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/qwen/image-to-image",
+  },
+  {
+    id: "recraft/crisp-upscale",
+    name: "Recraft Crisp Upscale",
+    description: "AI image upscaling with crisp detail enhancement via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/recraft/crisp-upscale",
+  },
+  {
+    id: "ideogram/v3-edit",
+    name: "Ideogram V3 Edit",
+    description: "Ideogram V3 inpainting/editing with mask support via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/ideogram/v3-edit",
+  },
+  {
+    id: "ideogram/v3-remix",
+    name: "Ideogram V3 Remix",
+    description: "Ideogram V3 image remixing and style transfer via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/ideogram/v3-remix",
+  },
+  {
+    id: "ideogram/character",
+    name: "Ideogram Character",
+    description: "Ideogram character-consistent image generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/ideogram/character",
+  },
+  {
+    id: "ideogram/character-edit",
+    name: "Ideogram Character Edit",
+    description: "Ideogram character-consistent image editing via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/ideogram/character-edit",
+  },
+  {
+    id: "ideogram/character-remix",
+    name: "Ideogram Character Remix",
+    description: "Ideogram character-consistent image remixing via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-image"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/ideogram/character-remix",
+  },
+
+  // ============ New Video Models (2026-08 sync) ============
+  {
+    id: "pixverse-v6/text-to-video",
+    name: "PixVerse V6",
+    description: "PixVerse V6 text-to-video generation via Kie.ai. Supports audio and multi-clip.",
+    provider: "kie",
+    capabilities: ["text-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/pixverse/text-to-video",
+  },
+  {
+    id: "pixverse-v6/image-to-video",
+    name: "PixVerse V6 I2V",
+    description: "PixVerse V6 image-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/pixverse/image-to-video",
+  },
+  {
+    id: "pixverse-v6/transition",
+    name: "PixVerse V6 Transition",
+    description: "PixVerse V6 first-to-last frame video transition via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/pixverse/transition",
+  },
+  {
+    id: "pixverse-v6/extend",
+    name: "PixVerse V6 Extend",
+    description: "PixVerse V6 video extension via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/pixverse/extend",
+  },
+  {
+    id: "pixverse-v6/reference-to-video",
+    name: "PixVerse V6 Fusion",
+    description: "PixVerse V6 multi-reference fusion video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/pixverse/reference-to-video",
+  },
+  {
+    id: "minimax-h3/text-to-video",
+    name: "MiniMax H3",
+    description: "MiniMax H3 text-to-video generation via Kie.ai. Supports 4-15 second videos.",
+    provider: "kie",
+    capabilities: ["text-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/minimax-h3/text-to-video",
+  },
+  {
+    id: "minimax-h3/image-to-video",
+    name: "MiniMax H3 I2V",
+    description: "MiniMax H3 image-to-video generation via Kie.ai. Supports first/last frame.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/minimax-h3/image-to-video",
+  },
+  {
+    id: "minimax-h3/reference-to-video",
+    name: "MiniMax H3 R2V",
+    description: "MiniMax H3 reference-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/minimax-h3/reference-to-video",
+  },
+  {
+    id: "happyhorse/text-to-video",
+    name: "HappyHorse",
+    description: "HappyHorse text-to-video generation via Kie.ai. Supports 720p/1080p.",
+    provider: "kie",
+    capabilities: ["text-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/happyhorse/text-to-video",
+  },
+  {
+    id: "happyhorse/image-to-video",
+    name: "HappyHorse I2V",
+    description: "HappyHorse image-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/happyhorse/image-to-video",
+  },
+  {
+    id: "happyhorse/reference-to-video",
+    name: "HappyHorse R2V",
+    description: "HappyHorse reference-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/happyhorse/reference-to-video",
+  },
+  {
+    id: "happyhorse/video-edit",
+    name: "HappyHorse Video Edit",
+    description: "HappyHorse video editing via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/happyhorse/video-edit",
+  },
+  {
+    id: "happyhorse-1-1/text-to-video",
+    name: "HappyHorse 1.1",
+    description: "HappyHorse 1.1 text-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/happyhorse-1-1/text-to-video",
+  },
+  {
+    id: "happyhorse-1-1/image-to-video",
+    name: "HappyHorse 1.1 I2V",
+    description: "HappyHorse 1.1 image-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/happyhorse-1-1/image-to-video",
+  },
+  {
+    id: "happyhorse-1-1/reference-to-video",
+    name: "HappyHorse 1.1 R2V",
+    description: "HappyHorse 1.1 reference-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/happyhorse-1-1/reference-to-video",
+  },
+  {
+    id: "bytedance/seedance-2-mini/text-to-video",
+    name: "Seedance 2.0 Mini",
+    description: "ByteDance Seedance 2.0 Mini text-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/bytedance/seedance-2-mini",
+  },
+  {
+    id: "bytedance/seedance-2-mini/image-to-video",
+    name: "Seedance 2.0 Mini I2V",
+    description: "ByteDance Seedance 2.0 Mini image-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/bytedance/seedance-2-mini",
+  },
+  {
+    id: "gemini-omni-video",
+    name: "Gemini Omni Video",
+    description: "Google Gemini Omni multimodal video generation via Kie.ai. Supports images, audio, and video input.",
+    provider: "kie",
+    capabilities: ["text-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/gemini-omni-video",
+  },
+  {
+    id: "gemini-omni-audio",
+    name: "Gemini Omni Audio",
+    description: "Google Gemini Omni audio generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-audio"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/gemini-omni-audio",
+  },
+  {
+    id: "gemini-omni-character",
+    name: "Gemini Omni Character",
+    description: "Google Gemini Omni character-driven video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/gemini-omni-character",
+  },
+  {
+    id: "omnihuman-1-5",
+    name: "OmniHuman 1.5",
+    description: "Audio-driven portrait animation via Kie.ai. Supports people, pets, and anime.",
+    provider: "kie",
+    capabilities: ["audio-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/omnihuman-1-5",
+  },
+  {
+    id: "wan/2-7-videoedit",
+    name: "Wan 2.7 Video Edit",
+    description: "Wan 2.7 video editing with reference image support via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/wan/2-7-videoedit",
+  },
+  {
+    id: "wan/2-7-r2v",
+    name: "Wan 2.7 R2V",
+    description: "Wan 2.7 reference-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/wan/2-7-r2v",
+  },
+  {
+    id: "wan/2-6-flash-image-to-video",
+    name: "Wan 2.6 Flash I2V",
+    description: "Wan 2.6 Flash fast image-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/wan/2-6-flash-image-to-video",
+  },
+  {
+    id: "wan/2-6-flash-video-to-video",
+    name: "Wan 2.6 Flash V2V",
+    description: "Wan 2.6 Flash fast video-to-video transformation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/wan/2-6-flash-video-to-video",
+  },
+  {
+    id: "grok-imagine/1-5-preview",
+    name: "Grok Imagine 1.5 Preview",
+    description: "Grok Imagine 1.5 Preview video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/grok-imagine/1-5-preview",
+  },
+  {
+    id: "volcengine/video-to-video-lip-sync",
+    name: "Volcengine Lip Sync",
+    description: "Volcengine video-to-video lip synchronization via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/volcengine/video-to-video-lip-sync",
+  },
+  {
+    id: "infinitalk/from-audio",
+    name: "Infinitalk From Audio",
+    description: "Infinitalk audio-driven video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["audio-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/infinitalk/from-audio",
+  },
+  {
+    id: "hailuo/2-3-image-to-video-standard",
+    name: "Hailuo 2.3 Standard I2V",
+    description: "Hailuo 2.3 Standard image-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/hailuo/2-3-image-to-video-standard",
+  },
+  {
+    id: "hailuo/02-text-to-video-pro",
+    name: "Hailuo Pro T2V",
+    description: "Hailuo Pro text-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/hailuo/02-text-to-video-pro",
+  },
+  {
+    id: "hailuo/02-image-to-video-pro",
+    name: "Hailuo Pro I2V",
+    description: "Hailuo Pro image-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/hailuo/02-image-to-video-pro",
+  },
+  {
+    id: "hailuo/02-text-to-video-standard",
+    name: "Hailuo Standard T2V",
+    description: "Hailuo Standard text-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["text-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/hailuo/02-text-to-video-standard",
+  },
+  {
+    id: "hailuo/02-image-to-video-standard",
+    name: "Hailuo Standard I2V",
+    description: "Hailuo Standard image-to-video generation via Kie.ai.",
+    provider: "kie",
+    capabilities: ["image-to-video"],
+    coverImage: undefined,
+    pageUrl: "https://docs.kie.ai/market/hailuo/02-image-to-video-standard",
+  },
+
   // ============ Audio/TTS Models (4) ============
   {
     id: "elevenlabs/turbo-v2.5",
@@ -550,7 +1103,7 @@ const GEMINI_VIDEO_MODELS: ProviderModel[] = [
     provider: "gemini",
     capabilities: ["text-to-video"],
     coverImage: undefined,
-    pricing: { type: "per-second", amount: 0.40, currency: "USD" },
+    pricing: { type: "per-second", amount: 0.4, currency: "USD" },
   },
   {
     id: "veo-3.1/image-to-video",
@@ -559,7 +1112,7 @@ const GEMINI_VIDEO_MODELS: ProviderModel[] = [
     provider: "gemini",
     capabilities: ["image-to-video"],
     coverImage: undefined,
-    pricing: { type: "per-second", amount: 0.40, currency: "USD" },
+    pricing: { type: "per-second", amount: 0.4, currency: "USD" },
   },
   {
     id: "veo-3.1-fast/text-to-video",
@@ -665,7 +1218,6 @@ interface FalModel {
   openapi?: Record<string, unknown>;
 }
 
-
 // ============ Response Types ============
 
 interface ProviderResult {
@@ -711,10 +1263,7 @@ function inferReplicateCapabilities(model: ReplicateModel): ModelCapability[] {
 
   if (is3DModel) {
     // 3D model - determine if image-to-3d or text-to-3d
-    const hasImageInput =
-      searchText.includes("image") ||
-      searchText.includes("img") ||
-      searchText.includes("photo");
+    const hasImageInput = searchText.includes("image") || searchText.includes("img") || searchText.includes("photo");
     if (hasImageInput) {
       capabilities.push("image-to-3d");
     } else {
@@ -744,14 +1293,8 @@ function inferReplicateCapabilities(model: ReplicateModel): ModelCapability[] {
   // don't say "video" in their name — gate them on a processing verb paired with
   // a video signal so they still land under the Video node instead of Image.
   const hasVideoProcessingSignal =
-    (searchText.includes("upscale") ||
-      searchText.includes("restore") ||
-      searchText.includes("interpolat")) &&
-    (searchText.includes("video") ||
-      searchText.includes("clip") ||
-      searchText.includes("footage") ||
-      searchText.includes("fps") ||
-      searchText.includes("frames"));
+    (searchText.includes("upscale") || searchText.includes("restore") || searchText.includes("interpolat")) &&
+    (searchText.includes("video") || searchText.includes("clip") || searchText.includes("footage") || searchText.includes("fps") || searchText.includes("frames"));
 
   // Check for video-related keywords
   const isVideoModel =
@@ -766,12 +1309,7 @@ function inferReplicateCapabilities(model: ReplicateModel): ModelCapability[] {
   if (isVideoModel) {
     // Video model - determine video capability type. Processing models consume a
     // media (video/frame) input, so treat them as image-to-video rather than text.
-    if (
-      searchText.includes("img2vid") ||
-      searchText.includes("image-to-video") ||
-      searchText.includes("i2v") ||
-      hasVideoProcessingSignal
-    ) {
+    if (searchText.includes("img2vid") || searchText.includes("image-to-video") || searchText.includes("i2v") || hasVideoProcessingSignal) {
       capabilities.push("image-to-video");
     } else {
       capabilities.push("text-to-video");
@@ -848,10 +1386,7 @@ async function fetchReplicateModels(apiKey: string): Promise<ProviderModel[]> {
  * an exact model id. Returns null on a malformed id or any non-OK response
  * (including 404) so a typo never fails the whole /api/models request.
  */
-async function fetchReplicateModelById(
-  apiKey: string,
-  modelId: string
-): Promise<ProviderModel | null> {
+async function fetchReplicateModelById(apiKey: string, modelId: string): Promise<ProviderModel | null> {
   const parts = modelId.split("/");
   if (parts.length !== 2 || !parts[0] || !parts[1]) {
     return null;
@@ -911,10 +1446,7 @@ function extractReplicateSearchModels(data: unknown): ProviderModel[] {
 async function searchReplicateModels(apiKey: string, query: string): Promise<ProviderModel[]> {
   // 1) GET /v1/search?query=... (searches models, collections, docs)
   try {
-    const response = await fetch(
-      `${REPLICATE_API_BASE}/search?query=${encodeURIComponent(query)}`,
-      { headers: { Authorization: `Bearer ${apiKey}` } }
-    );
+    const response = await fetch(`${REPLICATE_API_BASE}/search?query=${encodeURIComponent(query)}`, { headers: { Authorization: `Bearer ${apiKey}` } });
     if (response.ok) {
       const models = extractReplicateSearchModels(await response.json());
       if (models.length > 0) return models;
@@ -946,15 +1478,11 @@ async function searchReplicateModels(apiKey: string, query: string): Promise<Pro
 /**
  * Filter models by search query (client-side filtering for Replicate)
  */
-function filterModelsBySearch(
-  models: ProviderModel[],
-  searchQuery: string
-): ProviderModel[] {
+function filterModelsBySearch(models: ProviderModel[], searchQuery: string): ProviderModel[] {
   const searchLower = searchQuery.toLowerCase();
   return models.filter((model) => {
     const nameMatch = model.name.toLowerCase().includes(searchLower);
-    const descMatch =
-      model.description?.toLowerCase().includes(searchLower) || false;
+    const descMatch = model.description?.toLowerCase().includes(searchLower) || false;
     const idMatch = model.id.toLowerCase().includes(searchLower);
     return nameMatch || descMatch || idMatch;
   });
@@ -1000,18 +1528,10 @@ function inferWaveSpeedCapabilities(model: WaveSpeedModel): ModelCapability[] {
   const searchText = `${modelId} ${name} ${description} ${category}`;
 
   // Check for 3D-related keywords first
-  const is3DModel =
-    searchText.includes("3d") ||
-    searchText.includes("mesh") ||
-    searchText.includes("tripo") ||
-    searchText.includes("hunyuan3d") ||
-    category.includes("3d");
+  const is3DModel = searchText.includes("3d") || searchText.includes("mesh") || searchText.includes("tripo") || searchText.includes("hunyuan3d") || category.includes("3d");
 
   if (is3DModel) {
-    const hasImageInput =
-      searchText.includes("image") ||
-      searchText.includes("img") ||
-      searchText.includes("photo");
+    const hasImageInput = searchText.includes("image") || searchText.includes("img") || searchText.includes("photo");
     if (hasImageInput) {
       capabilities.push("image-to-3d");
     } else {
@@ -1052,11 +1572,7 @@ function inferWaveSpeedCapabilities(model: WaveSpeedModel): ModelCapability[] {
     category.includes("video");
 
   if (isVideoModel) {
-    if (
-      searchText.includes("img2vid") ||
-      searchText.includes("image-to-video") ||
-      searchText.includes("i2v")
-    ) {
+    if (searchText.includes("img2vid") || searchText.includes("image-to-video") || searchText.includes("i2v")) {
       capabilities.push("image-to-video");
     } else {
       capabilities.push("text-to-video");
@@ -1187,10 +1703,7 @@ function mapFalModel(model: FalModel): ProviderModel {
   };
 }
 
-async function fetchFalModels(
-  apiKey: string | null,
-  searchQuery?: string
-): Promise<ProviderModel[]> {
+async function fetchFalModels(apiKey: string | null, searchQuery?: string): Promise<ProviderModel[]> {
   const allModels: ProviderModel[] = [];
   let cursor: string | null = null;
   let hasMore = true;
@@ -1235,19 +1748,13 @@ async function fetchFalModels(
 
 // ============ Main Handler ============
 
-export async function GET(
-  request: NextRequest
-): Promise<NextResponse<ModelsResponse>> {
+export async function GET(request: NextRequest): Promise<NextResponse<ModelsResponse>> {
   // Parse query params
-  const providerFilter = request.nextUrl.searchParams.get("provider") as
-    | ProviderType
-    | null;
+  const providerFilter = request.nextUrl.searchParams.get("provider") as ProviderType | null;
   const searchQuery = request.nextUrl.searchParams.get("search") || undefined;
   const refresh = request.nextUrl.searchParams.get("refresh") === "true";
   const capabilitiesParam = request.nextUrl.searchParams.get("capabilities");
-  const capabilitiesFilter: ModelCapability[] | null = capabilitiesParam
-    ? (capabilitiesParam.split(",") as ModelCapability[])
-    : null;
+  const capabilitiesFilter: ModelCapability[] | null = capabilitiesParam ? (capabilitiesParam.split(",") as ModelCapability[]) : null;
 
   // Get API keys from headers, falling back to env variables
   const replicateKey = request.headers.get("X-Replicate-Key") || process.env.REPLICATE_API_KEY || null;
@@ -1284,7 +1791,7 @@ export async function GET(
             success: false,
             error: "Kie API key required. Add KIE_API_KEY to .env.local or configure in Settings.",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
     } else if (providerFilter === "wavespeed") {
@@ -1296,10 +1803,9 @@ export async function GET(
         return NextResponse.json<ModelsErrorResponse>(
           {
             success: false,
-            error:
-              "WaveSpeed API key required. Add WAVESPEED_API_KEY to .env.local or configure in Settings.",
+            error: "WaveSpeed API key required. Add WAVESPEED_API_KEY to .env.local or configure in Settings.",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
     } else if (providerFilter === "openai") {
@@ -1344,7 +1850,7 @@ export async function GET(
         error:
           "No providers available. Add REPLICATE_API_KEY, FAL_API_KEY, KIE_API_KEY, WAVESPEED_API_KEY, or OPENAI_API_KEY to .env.local or configure in Settings.",
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -1406,10 +1912,7 @@ export async function GET(
   for (const provider of providersToFetch) {
     // For Replicate and WaveSpeed, always use base cache key since we filter client-side
     // For fal.ai, include search in cache key since their API supports search
-    const cacheKey =
-      provider === "replicate" || provider === "wavespeed"
-        ? getCacheKey(provider)
-        : getCacheKey(provider, searchQuery);
+    const cacheKey = provider === "replicate" || provider === "wavespeed" ? getCacheKey(provider) : getCacheKey(provider, searchQuery);
     let models: ProviderModel[] | null = null;
     let fromCache = false;
 
@@ -1438,9 +1941,7 @@ export async function GET(
           // Cache the full list
           setCachedModels(cacheKey, allReplicateModels);
           // Apply search filter if needed
-          models = searchQuery
-            ? filterModelsBySearch(allReplicateModels, searchQuery)
-            : allReplicateModels;
+          models = searchQuery ? filterModelsBySearch(allReplicateModels, searchQuery) : allReplicateModels;
         } else if (provider === "fal") {
           models = await fetchFalModels(falKey, searchQuery);
           // Cache the results (fal.ai handles search server-side)
@@ -1451,15 +1952,12 @@ export async function GET(
           // Cache the full list
           setCachedModels(cacheKey, allWaveSpeedModels);
           // Apply search filter if needed (client-side filtering like Replicate)
-          models = searchQuery
-            ? filterModelsBySearch(allWaveSpeedModels, searchQuery)
-            : allWaveSpeedModels;
+          models = searchQuery ? filterModelsBySearch(allWaveSpeedModels, searchQuery) : allWaveSpeedModels;
         } else {
           models = [];
         }
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Unknown error";
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
         console.error(`[Models] ${provider}: ${errorMessage}`);
         errors.push(`${provider}: ${errorMessage}`);
         providerResults[provider] = {
@@ -1473,10 +1971,10 @@ export async function GET(
 
     // Replicate search: the cached catalogue only covers ~15 pages, so a
     // fragment search (e.g. "topaz") can't find models outside that window.
-    // Always run the comprehensive search for a query so models beyond the
-    // cached pages are discoverable even when the local list already has a few
-    // matches; results are cached per query so repeat searches stay fast.
-    if (provider === "replicate" && searchQuery) {
+    // Search against the cache first and only call Replicate's slower search API
+    // when the local matches are too few — then cache those results per query so
+    // repeat searches stay fast.
+    if (provider === "replicate" && searchQuery && models.length < REPLICATE_SEARCH_MIN_RESULTS) {
       const searchCacheKey = getCacheKey(provider, searchQuery);
       let searchModels = refresh ? null : getCachedModels(searchCacheKey);
       if (!searchModels) {
@@ -1502,21 +2000,13 @@ export async function GET(
     // Replicate fallback: if the user searched by an exact "owner/name" id that
     // isn't in the paginated catalogue, resolve it directly so any public model
     // is reachable (O(1) lookup rather than unbounded extra pagination).
-    if (
-      provider === "replicate" &&
-      searchQuery &&
-      searchQuery.includes("/") &&
-      !models.some((m) => m.id.toLowerCase() === searchQuery.toLowerCase())
-    ) {
+    if (provider === "replicate" && searchQuery && searchQuery.includes("/") && !models.some((m) => m.id.toLowerCase() === searchQuery.toLowerCase())) {
       const byId = await fetchReplicateModelById(replicateKey!, searchQuery);
       if (byId) {
         models = [...models, byId];
         // Warm the cached full list so repeat searches resolve without a refetch.
         const cachedFull = getCachedModels(cacheKey);
-        if (
-          cachedFull &&
-          !cachedFull.some((m) => m.id.toLowerCase() === byId.id.toLowerCase())
-        ) {
+        if (cachedFull && !cachedFull.some((m) => m.id.toLowerCase() === byId.id.toLowerCase())) {
           setCachedModels(cacheKey, [...cachedFull, byId]);
         }
       }
@@ -1539,16 +2029,14 @@ export async function GET(
         success: false,
         error: `All providers failed: ${errors.join("; ")}`,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
   // Filter by capabilities if specified
   let filteredModels = allModels;
   if (capabilitiesFilter && capabilitiesFilter.length > 0) {
-    filteredModels = allModels.filter((model) =>
-      model.capabilities.some((cap) => capabilitiesFilter.includes(cap))
-    );
+    filteredModels = allModels.filter((model) => model.capabilities.some((cap) => capabilitiesFilter.includes(cap)));
   }
 
   // Sort models by provider, then by name

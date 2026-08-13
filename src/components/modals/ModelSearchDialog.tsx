@@ -7,6 +7,7 @@ import { deduplicatedFetch, clearFetchCache } from "@/utils/deduplicatedFetch";
 import { useReactFlow } from "@xyflow/react";
 import { ProviderType } from "@/types";
 import { ProviderModel, ModelCapability } from "@/lib/providers/types";
+import { useT } from "@/i18n";
 
 // localStorage cache for models (persists across dev server restarts)
 const MODELS_CACHE_KEY = "node-banana-models-cache";
@@ -176,8 +177,10 @@ export function ModelSearchDialog({
   initialCapabilityFilter,
   showClearOption,
   onClearSelection,
-  title = "Browse Models",
+  title,
 }: ModelSearchDialogProps) {
+  const t = useT();
+  const dialogTitle = title ?? t("models.browseTitle");
   const {
     addNode,
     incrementModalCount,
@@ -329,7 +332,7 @@ export function ModelSearchDialog({
           setServerAvailableProviders(data.availableProviders);
         }
       } else {
-        setError(data.error || "Failed to fetch models");
+        setError(data.error || t("models.errFetch"));
         setModels([]);
       }
     } catch (err) {
@@ -337,7 +340,7 @@ export function ModelSearchDialog({
       if (thisVersion !== requestVersionRef.current) {
         return; // Ignore stale error
       }
-      setError(err instanceof Error ? err.message : "Failed to fetch models");
+      setError(err instanceof Error ? err.message : t("models.errFetch"));
       setModels([]);
     } finally {
       // Only update loading state if this is still the current request
@@ -666,7 +669,7 @@ export function ModelSearchDialog({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-700">
           <h2 className="text-lg font-semibold text-neutral-100">
-            {title}
+            {dialogTitle}
           </h2>
           <button
             onClick={onClose}
@@ -711,7 +714,7 @@ export function ModelSearchDialog({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search models..."
+                placeholder={t("models.searchPlaceholder")}
                 className="w-full pl-10 pr-4 py-2 text-sm bg-neutral-700 border border-neutral-600 rounded text-neutral-100 placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-500"
               />
             </div>
@@ -720,7 +723,7 @@ export function ModelSearchDialog({
             <div className="flex items-center gap-0.5 bg-neutral-700/50 rounded p-0.5">
               <button
                 onClick={() => setProviderFilter("all")}
-                title="All Providers"
+                title={t("models.allProviders")}
                 className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
                   providerFilter === "all"
                     ? "bg-neutral-600 text-neutral-100"
@@ -817,18 +820,18 @@ export function ModelSearchDialog({
               }
               className="px-3 py-2 text-sm bg-neutral-700 border border-neutral-600 rounded text-neutral-100 focus:outline-none focus:ring-1 focus:ring-neutral-500"
             >
-              <option value="all">All Types</option>
-              <option value="image">Image</option>
-              <option value="video">Video</option>
+              <option value="all">{t("models.allTypes")}</option>
+              <option value="image">{t("models.typeImage")}</option>
+              <option value="video">{t("models.typeVideo")}</option>
               <option value="3d">3D</option>
-              <option value="audio">Audio</option>
+              <option value="audio">{t("models.typeAudio")}</option>
             </select>
 
             {/* Refresh Cache */}
             <button
               onClick={handleRefresh}
               disabled={isRefreshing || isLoading}
-              title="Refresh models & schemas"
+              title={t("models.refresh")}
               className="p-2 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg
@@ -913,9 +916,9 @@ export function ModelSearchDialog({
                     <svg className="w-4 h-4 text-red-400 group-hover:text-red-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    <span className="text-sm text-neutral-200 group-hover:text-white">Remove fallback</span>
+                    <span className="text-sm text-neutral-200 group-hover:text-white">{t("models.removeFallback")}</span>
                   </div>
-                  <span className="text-xs text-neutral-500">Clear current selection</span>
+                  <span className="text-xs text-neutral-500">{t("models.clearSelection")}</span>
                 </button>
               )}
               <svg
@@ -931,7 +934,7 @@ export function ModelSearchDialog({
                   d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <p className="text-sm text-neutral-400">No models found</p>
+              <p className="text-sm text-neutral-400">{t("models.noneFound")}</p>
               <p className="text-xs text-neutral-500">
                 Try adjusting your search or filters
               </p>
@@ -948,9 +951,9 @@ export function ModelSearchDialog({
                     <svg className="w-4 h-4 text-red-400 group-hover:text-red-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    <span className="text-sm text-neutral-200 group-hover:text-white">Remove fallback</span>
+                    <span className="text-sm text-neutral-200 group-hover:text-white">{t("models.removeFallback")}</span>
                   </div>
-                  <span className="text-xs text-neutral-500">Clear current selection</span>
+                  <span className="text-xs text-neutral-500">{t("models.clearSelection")}</span>
                 </button>
               )}
 
@@ -1082,7 +1085,7 @@ export function ModelSearchDialog({
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
                           className="text-neutral-500 hover:text-neutral-300 transition-colors flex-shrink-0"
-                          title={`View on ${getProviderDisplayName(model.provider)}`}
+                          title={t("models.viewOn", { provider: getProviderDisplayName(model.provider) })}
                         >
                           <svg
                             className="w-3 h-3"
@@ -1145,7 +1148,9 @@ export function ModelSearchDialog({
         {/* Footer with model count */}
         {!isLoading && !error && models.length > 0 && (
           <div className="px-6 py-3 border-t border-neutral-700 text-xs text-neutral-400">
-            {models.length} model{models.length !== 1 ? "s" : ""} found
+            {models.length === 1
+              ? t("models.countOne", { count: models.length })
+              : t("models.countMany", { count: models.length })}
           </div>
         )}
       </div>

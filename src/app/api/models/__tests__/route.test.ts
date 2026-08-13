@@ -922,25 +922,17 @@ describe("/api/models route", () => {
       expect(data.models.find((m: { id: string }) => m.id === "black-forest/flux")).toBeDefined();
     });
 
-    it("GET: runs the full search even when the cached list already has several matches", async () => {
+    it("GET: skips the search API when the cached list already has enough matches", async () => {
       process.env.REPLICATE_API_KEY = "test-key";
 
       let searchApiCalled = false;
       mockFetch.mockImplementation((url: string) => {
         if (url.includes("/search?query=")) {
           searchApiCalled = true;
-          // Search surfaces a model that is NOT in the cached list
-          return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve({
-              results: [
-                { model: { owner: "obscure", name: "flux-rare", description: "rare flux", visibility: "public", run_count: 1 } },
-              ],
-            }),
-          });
+          return Promise.resolve({ ok: true, json: () => Promise.resolve({ results: [] }) });
         }
         if (url.includes("replicate.com")) {
-          // Local list already has several "flux" matches
+          // List returns more than REPLICATE_SEARCH_MIN_RESULTS matches for "flux"
           return Promise.resolve(
             createReplicateResponse([
               { owner: "a", name: "flux-1", description: "flux" },
@@ -960,10 +952,8 @@ describe("/api/models route", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      // Full search must run despite the local list already having matches...
-      expect(searchApiCalled).toBe(true);
-      // ...and surface the model that only the search API knew about.
-      expect(data.models.find((m: { id: string }) => m.id === "obscure/flux-rare")).toBeDefined();
+      expect(searchApiCalled).toBe(false);
+      expect(data.models.length).toBeGreaterThanOrEqual(5);
     });
   });
 });

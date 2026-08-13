@@ -50,6 +50,7 @@ const defaultProviderSettings: ProviderSettings = {
     fal: { id: "fal", name: "fal.ai", enabled: false, apiKey: null },
     kie: { id: "kie", name: "Kie.ai", enabled: false, apiKey: null },
     wavespeed: { id: "wavespeed", name: "WaveSpeed", enabled: false, apiKey: null },
+    deepseek: { id: "deepseek", name: "DeepSeek", enabled: false, apiKey: null },
     anthropic: { id: "anthropic", name: "Anthropic", enabled: false, apiKey: null },
   },
 };

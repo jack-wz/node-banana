@@ -14,6 +14,7 @@ import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { useT } from "@/i18n";
 
 type GLBViewerNodeType = Node<GLBViewerNodeData, "glbViewer">;
 
@@ -205,6 +206,7 @@ function LoadingIndicator() {
 }
 
 export function GLBViewerNode({ id, data, selected }: NodeProps<GLBViewerNodeType>) {
+  const t = useT();
   const nodeData = data as GLBViewerNodeData;
   const adaptiveCapturedImage = useAdaptiveImageSrc(nodeData.capturedImage, id);
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
@@ -431,7 +433,7 @@ export function GLBViewerNode({ id, data, selected }: NodeProps<GLBViewerNodeTyp
                 </span>
                 <button
                   onClick={() => setAutoRotate(!autoRotate)}
-                  title={autoRotate ? "Stop auto-rotate" : "Auto-rotate"}
+                  title={autoRotate ? t("node.stopAutoRotate") : t("node.autoRotate")}
                   className={`p-0.5 rounded transition-colors ${
                     autoRotate
                       ? "text-cyan-400 bg-cyan-400/10"
@@ -447,7 +449,7 @@ export function GLBViewerNode({ id, data, selected }: NodeProps<GLBViewerNodeTyp
               <div className="flex items-center gap-1 shrink-0 pointer-events-auto">
                 <button
                   onClick={handleCapture}
-                  title="Capture current view as image"
+                  title={t("node.captureView")}
                   className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium text-neutral-300 hover:text-neutral-100 bg-neutral-700 hover:bg-neutral-600 rounded transition-colors"
                 >
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -458,7 +460,7 @@ export function GLBViewerNode({ id, data, selected }: NodeProps<GLBViewerNodeTyp
                 </button>
                 <button
                   onClick={handleRemove}
-                  title="Remove model"
+                  title={t("node.removeModel")}
                   className="p-0.5 text-neutral-500 hover:text-red-400 rounded transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

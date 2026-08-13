@@ -337,7 +337,7 @@ describe("SplitGridNode", () => {
 
     it("calls regenerateNode when clicked with a source image", () => {
       setStoreState(connectedImageState(SOURCE_IMAGE));
-      renderNode({ sourceImage: SOURCE_IMAGE });
+      renderNode({ sourceImage: SOURCE_IMAGE, isConfigured: true });
 
       const splitButton = screen.getByRole("button", { name: "Split 2×3" });
       expect(splitButton).toBeEnabled();

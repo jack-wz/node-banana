@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  allowedDevOrigins: ["node-banana.orca.localhost"],
   experimental: {
     serverActions: {
       bodySizeLimit: "100mb", // Increased for large media files

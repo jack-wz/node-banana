@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { WorkflowFile } from "@/store/workflowStore";
 import { QuickstartBackButton } from "./QuickstartBackButton";
+import { useT, t as translateT } from "@/i18n";
 import {
   getWorkflowsDirectory,
   setWorkflowsDirectory,
@@ -23,15 +24,15 @@ interface WorkflowBrowserViewProps {
 
 function formatRelativeTime(timestamp: number): string {
   const seconds = Math.floor((Date.now() - timestamp) / 1000);
-  if (seconds < 60) return "just now";
+  if (seconds < 60) return translateT("time.justNow");
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return translateT("time.minutesAgo", { count: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return translateT("time.hoursAgo", { count: hours });
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
+  if (days < 30) return translateT("time.daysAgo", { count: days });
   const months = Math.floor(days / 30);
-  return `${months}mo ago`;
+  return translateT("time.monthsAgo", { count: months });
 }
 
 function dirBasename(dirPath: string): string {
@@ -43,6 +44,7 @@ export function WorkflowBrowserView({
   onWorkflowLoaded,
   onClose,
 }: WorkflowBrowserViewProps) {
+  const t = useT();
   const [defaultDir, setDefaultDir] = useState<string | null>(null);
   const [workflows, setWorkflows] = useState<WorkflowListEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -68,13 +70,13 @@ export function WorkflowBrowserView({
       if (result.success) {
         setWorkflows(result.workflows);
         if (result.workflows.length === 0) {
-          setError("No workflows found in this folder");
+          setError(t("browser.errNoWorkflows"));
         }
       } else {
-        setError(result.error || "Failed to list workflows");
+        setError(result.error || t("browser.errListFailed"));
       }
     } catch {
-      setError("Failed to fetch workflows");
+      setError(t("browser.errFetchFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +101,7 @@ export function WorkflowBrowserView({
         setDefaultDir(result.path);
       }
     } catch {
-      setError("Failed to open directory picker");
+      setError(t("browser.errPickerFailed"));
     }
   }, []);
 
@@ -114,7 +116,7 @@ export function WorkflowBrowserView({
         !browseResult.path
       ) {
         if (!browseResult.success && !browseResult.cancelled) {
-          setError(browseResult.error || "Failed to open directory picker");
+          setError(browseResult.error || t("browser.errPickerFailed"));
         }
         return;
       }
@@ -129,7 +131,7 @@ export function WorkflowBrowserView({
       setLoadingWorkflow(null);
 
       if (!loadResult.success) {
-        setError(loadResult.error || "No workflow file found in directory");
+        setError(loadResult.error || t("browser.errNoFile"));
         return;
       }
 
@@ -137,7 +139,7 @@ export function WorkflowBrowserView({
       onClose?.();
     } catch {
       setLoadingWorkflow(null);
-      setError("Failed to open workflow");
+      setError(t("browser.errOpenFailed"));
     }
   }, [onWorkflowLoaded, onClose]);
 
@@ -152,7 +154,7 @@ export function WorkflowBrowserView({
         const result = await res.json();
 
         if (!result.success) {
-          setError(result.error || "Failed to load workflow");
+          setError(result.error || t("browser.errLoadFailed"));
           setLoadingWorkflow(null);
           return;
         }
@@ -163,7 +165,7 @@ export function WorkflowBrowserView({
         );
         onClose?.();
       } catch {
-        setError("Failed to load workflow");
+        setError(t("browser.errLoadFailed"));
         setLoadingWorkflow(null);
       }
     },
@@ -197,17 +199,17 @@ export function WorkflowBrowserView({
               </svg>
             </div>
             <h2 id="workflow-browser-title" className="text-lg font-medium text-neutral-200">
-              Your Workflows
+              {t("browser.title")}
             </h2>
           </div>
           <p className="text-sm text-neutral-500 max-w-xs text-center">
-            Choose the folder that contains your workflow projects. You can change this later.
+            {t("browser.chooseFolderHint")}
           </p>
           <button
             onClick={browseAndSetDir}
             className="px-4 py-2 text-sm font-medium text-neutral-200 bg-neutral-700 hover:bg-neutral-600 rounded-lg transition-colors"
           >
-            Choose folder
+            {t("browser.chooseFolder")}
           </button>
         </div>
       </div>
@@ -226,10 +228,10 @@ export function WorkflowBrowserView({
         )}
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="text-lg font-medium text-neutral-200">
-            Your Workflows
+            {t("browser.title")}
           </h2>
           <span className="text-xs text-neutral-600 tabular-nums flex-shrink-0">
-            {workflows.length} project{workflows.length !== 1 ? "s" : ""}
+            {t("browser.projectCount", { count: workflows.length })}
           </span>
         </div>
         <p
@@ -261,9 +263,9 @@ export function WorkflowBrowserView({
                 d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
               />
             </svg>
-            <p className="text-sm text-neutral-400 mb-1">No workflows found</p>
+            <p className="text-sm text-neutral-400 mb-1">{t("browser.noWorkflows")}</p>
             <p className="text-xs text-neutral-600">
-              This folder doesn&apos;t contain any workflow projects
+              {t("browser.noWorkflowsHint")}
             </p>
           </div>
         ) : (
@@ -345,14 +347,14 @@ export function WorkflowBrowserView({
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
           </svg>
-          Open from directory
+          {t("browser.openFromDirectory")}
         </button>
         <button
           onClick={browseAndSetDir}
           disabled={loadingWorkflow !== null}
           className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors disabled:opacity-50"
         >
-          Change folder
+          {t("browser.changeFolder")}
         </button>
       </div>
     </div>

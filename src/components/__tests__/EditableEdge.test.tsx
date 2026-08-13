@@ -133,22 +133,35 @@ describe("EditableEdge", () => {
         </TestWrapper>
       );
 
-      // Edges now reference shared gradient IDs instead of per-edge defs
+      // Weavy parity: per-edge source→target gradient in handle type colors
+      const gradient = container.querySelector("#nb-edge-grad-edge-1");
+      expect(gradient).toBeInTheDocument();
+      const stops = gradient?.querySelectorAll("stop");
+      expect(stops?.[0]?.getAttribute("stop-color")).toBe("#6EDDB3"); // image mint
+      expect(stops?.[1]?.getAttribute("stop-color")).toBe("#6EDDB3");
+
       const basePath = container.querySelector(".react-flow__edge-path");
       const stroke = basePath?.getAttribute("style") ?? "";
-      expect(stroke).toContain("edge-grad-image-");
+      expect(stroke).toContain("nb-edge-grad-edge-1");
     });
 
-    it("should use blue color for prompt handle type", () => {
+    it("should use pink color for prompt handle type", () => {
       const { container } = render(
         <TestWrapper>
           <EditableEdge {...createDefaultProps({ sourceHandleId: "prompt" })} />
         </TestWrapper>
       );
 
+      // Source handle is prompt (pink), target handle stays image (mint)
+      const gradient = container.querySelector("#nb-edge-grad-edge-1");
+      expect(gradient).toBeInTheDocument();
+      const stops = gradient?.querySelectorAll("stop");
+      expect(stops?.[0]?.getAttribute("stop-color")).toBe("#F1A0FA"); // prompt pink
+      expect(stops?.[1]?.getAttribute("stop-color")).toBe("#6EDDB3"); // image mint
+
       const basePath = container.querySelector(".react-flow__edge-path");
       const stroke = basePath?.getAttribute("style") ?? "";
-      expect(stroke).toContain("edge-grad-prompt-");
+      expect(stroke).toContain("nb-edge-grad-edge-1");
     });
 
     it("should use orange color when edge is paused", () => {
@@ -281,10 +294,11 @@ describe("EditableEdge", () => {
         </TestWrapper>
       );
 
-      // Should reference the "active" shared gradient
+      // Weavy parity: selection emphasis is full opacity on the per-edge gradient
       const basePath = container.querySelector(".react-flow__edge-path");
-      const stroke = basePath?.getAttribute("style") ?? "";
-      expect(stroke).toContain("-active");
+      const style = basePath?.getAttribute("style") ?? "";
+      expect(style).toContain("nb-edge-grad-edge-1");
+      expect(style).toContain("opacity: 1");
     });
 
     it("should have dimmed opacity when not connected to selected node", () => {
@@ -300,10 +314,10 @@ describe("EditableEdge", () => {
         </TestWrapper>
       );
 
-      // Should reference the "dimmed" shared gradient
+      // Weavy parity: edges not connected to the selection dim to 0.55
       const basePath = container.querySelector(".react-flow__edge-path");
-      const stroke = basePath?.getAttribute("style") ?? "";
-      expect(stroke).toContain("-dimmed");
+      const style = basePath?.getAttribute("style") ?? "";
+      expect(style).toContain("opacity: 0.55");
     });
   });
 

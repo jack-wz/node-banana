@@ -465,9 +465,9 @@ describe("splitGridTemplate utilities", () => {
     });
 
     it("offsets each cell cluster without overlap (default template)", () => {
-      // imageInput is 300x280; split node at (100,200) with width 300.
-      // startX = 100 + 300 + 100 = 500, startY = 200.
-      // stride = cluster + 2*padding(20) + gap(60) => x: 400, y: 380.
+      // Cluster stride is derived from defaultNodeDimensions (imageInput is
+      // currently 460x280) plus 2*padding(20) and a fixed gap, so these
+      // values track whatever those defaults currently are.
       const { options } = makeBuildOptions(createDefaultSplitGridTemplate(), 2, 2);
 
       const result = buildCellInstances(options);
@@ -475,9 +475,9 @@ describe("splitGridTemplate utilities", () => {
       const positions = result.nodes.map((n) => n.position);
       expect(positions).toEqual([
         { x: 500, y: 200 },
-        { x: 900, y: 200 },
+        { x: 1060, y: 200 },
         { x: 500, y: 580 },
-        { x: 900, y: 580 },
+        { x: 1060, y: 580 },
       ]);
       // All cluster origins are distinct
       const keys = new Set(positions.map((p) => `${p.x},${p.y}`));
@@ -514,7 +514,8 @@ describe("splitGridTemplate utilities", () => {
         "Cell 2-1",
         "Cell 2-2",
       ]);
-      // Cluster is a single 300x280 imageInput; padding is 20 per side
+      // Cluster is a single imageInput node (defaultNodeDimensions.imageInput);
+      // padding is 20 per side.
       const firstCell = result.cells[0];
       const firstGroup = result.groups[firstCell.groupId!];
       const baseNode = result.nodes.find((n) => n.id === firstCell.baseImageNodeId)!;
@@ -522,7 +523,7 @@ describe("splitGridTemplate utilities", () => {
         x: baseNode.position.x - 20,
         y: baseNode.position.y - 20,
       });
-      expect(firstGroup.size).toEqual({ width: 340, height: 320 });
+      expect(firstGroup.size).toEqual({ width: 500, height: 320 });
       expect(firstGroup.color).toBe("blue");
     });
 
