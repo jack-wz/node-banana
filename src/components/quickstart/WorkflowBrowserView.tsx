@@ -80,7 +80,7 @@ export function WorkflowBrowserView({
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (defaultDir) {
@@ -103,7 +103,7 @@ export function WorkflowBrowserView({
     } catch {
       setError(t("browser.errPickerFailed"));
     }
-  }, []);
+  }, [t]);
 
   const handleBrowseOther = useCallback(async () => {
     try {
@@ -141,7 +141,7 @@ export function WorkflowBrowserView({
       setLoadingWorkflow(null);
       setError(t("browser.errOpenFailed"));
     }
-  }, [onWorkflowLoaded, onClose]);
+  }, [onWorkflowLoaded, onClose, t]);
 
   const handleSelectWorkflow = useCallback(
     async (entry: WorkflowListEntry) => {
@@ -169,7 +169,7 @@ export function WorkflowBrowserView({
         setLoadingWorkflow(null);
       }
     },
-    [onWorkflowLoaded, onClose]
+    [onWorkflowLoaded, onClose, t]
   );
 
   // State A: No default directory configured

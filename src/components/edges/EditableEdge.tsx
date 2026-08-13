@@ -81,7 +81,7 @@ export function EditableEdge({
     }
     // Normal edges use the per-edge source→target pair gradient
     return pairGradientId;
-  }, [edgeData?.isLoop, hasPause, pairGradientId]);
+  }, [edgeData?.isLoop, hasPause, pairGradientId, isConnectedToSelection]);
 
   // Dim non-special edges slightly when they are not connected to the current selection
   const edgeOpacity = edgeData?.isLoop || hasPause ? 1 : isConnectedToSelection ? 1 : 0.55;

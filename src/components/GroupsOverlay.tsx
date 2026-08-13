@@ -136,6 +136,13 @@ const GroupControls = memo(function GroupControls({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showColorPicker, showMenu]);
 
+  // The render-time "adjust during render" setState calls above (prevShowMenu,
+  // prevGroupNameForSync/prevIsEditingForSync) make the compiler infer a
+  // different dependency shape for `group?.name` than what's written here;
+  // the manual deps are correct (group can be undefined, hence the optional
+  // chaining) so this keeps its written memoization without the extra
+  // compiler optimization.
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const handleNameSubmit = useCallback(() => {
     if (editName.trim() && editName !== group?.name) {
       updateGroup(groupId, { name: editName.trim() });
@@ -157,7 +164,11 @@ const GroupControls = memo(function GroupControls({
     }
   }
 
+  // Same render-time-setState interaction as handleNameSubmit above (depends
+  // on it transitively) — keeps its written memoization without the extra
+  // compiler optimization.
   const handleKeyDown = useCallback(
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     (e: React.KeyboardEvent) => {
       if (e.key === "Enter") {
         handleNameSubmit();
@@ -203,7 +214,13 @@ const GroupControls = memo(function GroupControls({
   );
 
   // Resize handlers
+  // group?.size / group?.position are plain objects, so the compiler infers
+  // per-field deps (group.size.width, group.position.x, ...) that don't
+  // match the coarser manual deps written here; the manual deps are correct
+  // (they track the whole size/position objects) so this keeps its written
+  // memoization without the extra compiler optimization.
   const handleResizeMouseDown = useCallback(
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     (e: React.MouseEvent, handle: string) => {
       e.stopPropagation();
       e.preventDefault();

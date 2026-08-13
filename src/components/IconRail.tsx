@@ -45,7 +45,7 @@ export function IconRail() {
         className={`${railBtn} mb-2`}
         title={t("iconRail.welcome")}
       >
-        <img src="/banana_icon.png" alt="Node Banana" className="w-6 h-6" />
+        <Image src="/banana_icon.png" alt="Node Banana" width={24} height={24} className="w-6 h-6" />
       </button>
 
       {/* Search */}
@@ -152,3 +152,4 @@ export function IconRail() {
     </nav>
   );
 }
+import Image from "next/image";

@@ -185,6 +185,10 @@ function AutoRotate({ enabled }: { enabled: boolean }) {
     const pos = camera.position.clone();
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
+    // react-three-fiber's animation model is direct mutation of scene-graph
+    // objects inside useFrame (not React state) — camera here isn't a React
+    // value the compiler should track, it's a Three.js object handle.
+    // eslint-disable-next-line react-hooks/immutability
     camera.position.x = pos.x * cos - pos.z * sin;
     camera.position.z = pos.x * sin + pos.z * cos;
     camera.lookAt(0, 0, 0);

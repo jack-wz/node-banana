@@ -70,6 +70,7 @@ export function NodePickerMenu({ x, y, onSelect, onClose }: NodePickerMenuProps)
 
   // Reset selection when the filter changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveIndex(0);
   }, [query]);
 

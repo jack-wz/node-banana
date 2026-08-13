@@ -348,7 +348,7 @@ export function ModelSearchDialog({
         setIsLoading(false);
       }
     }
-  }, [debouncedSearch, providerFilter, capabilityFilter, replicateApiKey, falApiKey, kieApiKey, wavespeedApiKey, openaiApiKey]);
+  }, [debouncedSearch, providerFilter, capabilityFilter, replicateApiKey, falApiKey, kieApiKey, wavespeedApiKey, openaiApiKey, t]);
 
   // Fetch models when filters change. fetchModels has a synchronous
   // cache-hit fast path (setModels/setServerAvailableProviders with no

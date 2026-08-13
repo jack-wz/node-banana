@@ -247,7 +247,7 @@ export function TemplateExplorerView({
         setLoadingWorkflowId(null);
       }
     },
-    [onWorkflowSelected]
+    [onWorkflowSelected, t]
   );
 
   const handleCommunitySelect = useCallback(
@@ -279,7 +279,7 @@ export function TemplateExplorerView({
         setLoadingWorkflowId(null);
       }
     },
-    [onWorkflowSelected]
+    [onWorkflowSelected, t]
   );
 
   const isLoading = loadingWorkflowId !== null;

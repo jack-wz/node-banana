@@ -30,14 +30,22 @@ export default function Home() {
 
   // Prevent React Flow SSR — its internal <Pane> component renders different
   // classNames on server vs client ("draggable" vs "selection"), causing
-  // hydration mismatches that React cannot patch up.
+  // hydration mismatches that React cannot patch up. Deferred to an effect
+  // (not a lazy useState initializer) for the same SSR hydration reason as
+  // the FTUX check below — this can't move to render time.
   const [clientReady, setClientReady] = useState(false);
-  useEffect(() => setClientReady(true), []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setClientReady(true);
+  }, []);
 
   // Weavy parity: the centered FloatingActionBar is FTUX-only chrome.
   // It renders for first-run users and whenever the tutorial is active
   // (tutorial anchors target its buttons), and stays hidden afterwards.
+  // getFTUXCompleted() reads localStorage, so it must stay in an effect for
+  // SSR hydration safety — re-read whenever tutorialActive or showFTUX change.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFtuxCompleted(getFTUXCompleted());
   }, [tutorialActive, showFTUX]);
 

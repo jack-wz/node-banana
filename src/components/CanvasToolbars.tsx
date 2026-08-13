@@ -88,7 +88,10 @@ export function CanvasLeftToolbar() {
   // On the server (and first client render), panActive defaults to false so
   // the rendered HTML matches. After mount, useEffect reads the real value.
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
   const panActive = mounted && canvasNavigationSettings.panMode === "always";
 
   const handleSelectNavigate = useCallback(() => {

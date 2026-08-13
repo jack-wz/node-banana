@@ -91,7 +91,7 @@ export function PromptWorkflowView({
         setIsGenerating(false);
       }
     }
-  }, [description, onWorkflowGenerated]);
+  }, [description, onWorkflowGenerated, t]);
 
   const canGenerate = description.trim().length >= 3 && !isGenerating;
 

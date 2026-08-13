@@ -64,6 +64,7 @@ export function LibraryPanel() {
   // Focus the search box when requested from the icon rail
   useEffect(() => {
     if (searchFocusToken > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTab("nodes");
       setTimeout(() => searchRef.current?.focus(), 50);
     }
@@ -72,8 +73,13 @@ export function LibraryPanel() {
   // Refresh presets/history whenever the panel opens or the tab is selected
   useEffect(() => {
     if (!libraryOpen) return;
-    if (tab === "presets") setPresets(loadPresets());
-    if (tab === "history") setHistory(loadHistory());
+    if (tab === "presets") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPresets(loadPresets());
+    }
+    if (tab === "history") {
+      setHistory(loadHistory());
+    }
   }, [libraryOpen, tab]);
 
   // Load the provider catalogue only when the Models tab is first opened.

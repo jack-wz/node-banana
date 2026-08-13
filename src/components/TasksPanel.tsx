@@ -24,7 +24,7 @@ export function TasksPanel() {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   // `?? []` keeps the panel safe in tests that mock the store with partial state
-  const nodes = useWorkflowStore(useShallow((state) => state.nodes)) ?? [];
+  const nodes = useWorkflowStore(useShallow((state) => state.nodes));
   const isRunning = useWorkflowStore((state) => state.isRunning);
 
   // Track previous task statuses to detect completion transitions
@@ -32,7 +32,7 @@ export function TasksPanel() {
   const toast = useToast((s) => s.show);
 
   const tasks = useMemo(() => {
-    const interesting = nodes.filter((n) => {
+    const interesting = (nodes ?? []).filter((n) => {
       const status = (n.data as { status?: string }).status;
       return status === "loading" || status === "complete" || status === "error";
     });

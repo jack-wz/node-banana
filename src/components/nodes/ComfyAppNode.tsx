@@ -232,6 +232,12 @@ export function ComfyAppNode({ id, data, selected }: NodeProps<ComfyAppNodeType>
     return nodeData.inspection ? { app, inspection: nodeData.inspection } : { app };
   }, [modal, app, nodeData.inspection]);
 
+  // The component's early "adjust during render" setState calls above (for
+  // _autoOpenImport/_pendingWorkflow) make the compiler unable to verify this
+  // memoization is safe to recompile; the manual deps are correct and this
+  // still runs with its written memoization, just without extra compiler
+  // optimization.
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const primaryPreview = useMemo(() => {
     if (!app) return null;
     for (const output of app.outputs) {

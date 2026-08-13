@@ -21,6 +21,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
   const edges = useWorkflowStore((state) => state.edges);
   const nodes = useWorkflowStore((state) => state.nodes);
   const [thumbnails, setThumbnails] = useState<Map<string, string>>(new Map());
+  const [clipDurations, setClipDurations] = useState<Map<string, number>>(new Map());
   const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
   const isRunning = useWorkflowStore((state) => state.isRunning);
   const removeEdge = useWorkflowStore((state) => state.removeEdge);
@@ -139,6 +140,8 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
   const thumbnailsRef = useRef<Map<string, string>>(new Map());
   // Fingerprint cache: edgeId -> last-20-chars of videoData, used to detect which clips changed
   const thumbnailFingerprintsRef = useRef<Map<string, string>>(new Map());
+  // Ref-based cache for extracted clip durations, mirrors thumbnailsRef
+  const durationsRef = useRef<Map<string, number>>(new Map());
 
   // Extract thumbnails from connected videos
   useEffect(() => {
@@ -158,6 +161,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
     const extractThumbnails = async () => {
       const newThumbnails = new Map<string, string>();
       const newFingerprints = new Map<string, string>();
+      const newDurations = new Map<string, number>();
 
       for (const clip of orderedClips) {
         if (cancelled) return;
@@ -170,6 +174,8 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
         const cachedFingerprint = thumbnailFingerprintsRef.current.get(clip.edgeId);
         if (cachedFingerprint === fingerprint && thumbnailsRef.current.has(clip.edgeId)) {
           newThumbnails.set(clip.edgeId, thumbnailsRef.current.get(clip.edgeId)!);
+          const cachedDuration = durationsRef.current.get(clip.edgeId);
+          if (cachedDuration !== undefined) newDurations.set(clip.edgeId, cachedDuration);
           continue;
         }
 
@@ -229,7 +235,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
           const thumbnail = canvas.toDataURL("image/jpeg", 0.7);
           newThumbnails.set(clip.edgeId, thumbnail);
 
-          clip.duration = video.duration;
+          newDurations.set(clip.edgeId, video.duration);
         } catch (error) {
           console.warn(`Failed to extract thumbnail for clip ${clip.edgeId}:`, error);
         }
@@ -242,6 +248,8 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
         thumbnailsRef.current = newThumbnails;
         thumbnailFingerprintsRef.current = newFingerprints;
         setThumbnails(newThumbnails);
+        durationsRef.current = newDurations;
+        setClipDurations(newDurations);
       }
     };
 
@@ -466,6 +474,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
               <div className="overflow-y-auto nowheel grid grid-cols-4 content-start gap-2 p-2 bg-neutral-900/50 rounded">
                 {orderedClips.map((clip) => {
                   const thumbnail = thumbnails.get(clip.edgeId);
+                  const clipDuration = clipDurations.get(clip.edgeId);
                   return (
                     <div
                       key={clip.edgeId}
@@ -514,9 +523,9 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
                       )}
 
                       {/* Duration badge */}
-                      {clip.duration && (
+                      {clipDuration && (
                         <div className="absolute bottom-1 right-1 bg-black/70 px-1 py-0.5 rounded text-[8px] text-white">
-                          {Math.round(clip.duration)}s
+                          {Math.round(clipDuration)}s
                         </div>
                       )}
 
