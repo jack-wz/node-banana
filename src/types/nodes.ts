@@ -53,7 +53,9 @@ export type NodeType =
   | "generate3d"
   | "glbViewer"
   | "comfyApp"
-  | "stickyNote";
+  | "stickyNote"
+  | "transcribe"
+  | "subtitleBurn";
 
 /**
  * Node execution status
@@ -368,12 +370,31 @@ export interface VideoStitchClip {
   handleId: string;              // Which input handle (video-0, video-1, etc.)
 }
 
+/** Per-clip color grading adjustment, keyed by the clip's edge ID. */
+export interface VideoStitchColorGrading {
+  temperature: number; // [-100, 100], 0 = no change
+  tint: number;         // [-100, 100], 0 = no change (negative = green, positive = magenta)
+}
+
+/**
+ * Video Stitch transition - describes the transition applied at one boundary
+ * between two adjacent clips in the stitched sequence.
+ */
+export interface VideoStitchTransition {
+  /** Edge ID of the clip that comes BEFORE this transition (transition plays as this clip ends). */
+  afterClipEdgeId: string;
+  type: "cut" | "crossfade" | "dipToBlack" | "dipToWhite" | "wipe" | "slide" | "zoom" | "push";
+  durationSec: number;            // Overlap window consumed by the transition, in seconds
+}
+
 /**
  * Video Stitch node - concatenates multiple videos into a single output
  */
 export interface VideoStitchNodeData extends BaseNodeData {
   clips: VideoStitchClip[];       // Ordered clip sequence for filmstrip
   clipOrder: string[];            // Edge IDs in user-defined order (drag reorder)
+  transitions: VideoStitchTransition[]; // One entry per boundary between adjacent clips (keyed by the preceding clip's edgeId)
+  colorGrading: Record<string, VideoStitchColorGrading>; // Per-clip color grading, keyed by edgeId
   outputVideo: string | null;     // Stitched video blob URL or data URL
   loopCount: 1 | 2 | 3;          // How many times to repeat the clip sequence (1 = no loop)
   status: NodeStatus;
@@ -401,9 +422,14 @@ export interface EaseCurveNodeData extends BaseNodeData {
  * Video Trim node - trims a video clip to a user-defined start/end time range
  */
 export interface VideoTrimNodeData extends BaseNodeData {
+  mode: "manual" | "removeSilence"; // "manual" = start/end sliders (default), "removeSilence" = automatic silence detection
   startTime: number;          // Trim start in seconds (default 0)
   endTime: number;            // Trim end in seconds (default 0 = full duration, set on video load)
   duration: number | null;    // Source video duration (populated when video loads metadata)
+  silenceThresholdDb: number;      // RMS level below which audio is considered silent, default -40
+  minSilenceDuration: number;      // Minimum silent-region length to remove, in seconds, default 0.5
+  paddingDuration: number;         // Buffer kept on each side of a removed silent region, in seconds, default 0.1
+  removedSilenceDuration: number | null; // Seconds removed by the last removeSilence run, for the status readout
   outputVideo: string | null; // Trimmed video blob URL or data URL
   status: NodeStatus;
   error: string | null;
@@ -728,6 +754,52 @@ export interface StickyNoteNodeData extends BaseNodeData {
 }
 
 /**
+ * Transcribe node - runs speech-to-text on a video/audio input and produces
+ * a plain SRT subtitle transcript. Feeds a subtitleBurn node's SRT input.
+ */
+export interface TranscribeNodeData extends BaseNodeData {
+  language: "auto" | "zh" | "en" | "other"; // ASR language hint, default "auto"
+  outputSrt: string | null;   // Plain SRT transcript text
+  status: NodeStatus;
+  error: string | null;
+  progress: number;           // 0-100
+}
+
+/** One parsed subtitle cue (a single SRT entry). */
+export interface SubtitleCue {
+  index: number;
+  startSec: number;
+  endSec: number;
+  text: string;
+}
+
+export type SubtitleStylePreset =
+  | "default"
+  | "minimal"
+  | "bold"
+  | "centered"
+  | "modern"
+  | "elegant"
+  | "casual";
+
+/**
+ * Subtitle Burn node - burns styled, timed subtitles into a video's frames.
+ * Accepts a video input and an SRT input (from transcribe, or hand-edited/
+ * pasted directly into the node).
+ */
+export interface SubtitleBurnNodeData extends BaseNodeData {
+  srtText: string;                    // Editable SRT source (populated from connected transcribe node or pasted by hand)
+  srtSource: "connected" | "manual";  // Whether srtText currently mirrors a connected transcribe node's output or was hand-edited
+  stylePreset: SubtitleStylePreset;   // default "default"
+  position: "top" | "center" | "bottom"; // default "bottom"
+  outputVideo: string | null;         // Burned-in video blob URL or data URL
+  status: NodeStatus;
+  error: string | null;
+  progress: number;                   // 0-100
+  encoderSupported: boolean | null;
+}
+
+/**
  * Union of all node data types
  */
 export type WorkflowNodeData =
@@ -759,7 +831,9 @@ export type WorkflowNodeData =
   | ConditionalSwitchNodeData
   | GLBViewerNodeData
   | ComfyAppNodeData
-  | StickyNoteNodeData;
+  | StickyNoteNodeData
+  | TranscribeNodeData
+  | SubtitleBurnNodeData;
 
 /**
  * Workflow node with typed data (extended with optional groupId)

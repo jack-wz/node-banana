@@ -136,6 +136,7 @@ export function nodeTypeToIconType(nodeType: string): HandleIconType {
     case "videoStitch":
     case "videoTrim":
     case "videoFrameGrab":
+    case "subtitleBurn":
       return "video";
     case "audioInput":
     case "generateAudio":
@@ -147,6 +148,8 @@ export function nodeTypeToIconType(nodeType: string): HandleIconType {
       return "easeCurve";
     case "stickyNote":
       return "file";
+    case "transcribe":
+      return "text";
     default:
       return "default";
   }

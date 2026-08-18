@@ -62,6 +62,8 @@ const STATIC_OUTPUT_HANDLES: Partial<Record<NodeType, readonly HandleType[]>> = 
   gifEncoder: ["image"],
   router: ["image", "text", "video", "audio", "3d", "easeCurve"],
   glbViewer: ["image"],
+  transcribe: ["text"],
+  subtitleBurn: ["video"],
 };
 
 /**

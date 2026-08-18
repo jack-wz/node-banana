@@ -17,6 +17,8 @@ import {
 } from 'mediabunny';
 import type { Rotation } from 'mediabunny';
 import { createAvcEncodingConfig, AVC_LEVEL_4_0, AVC_LEVEL_5_1 } from '@/lib/video-encoding';
+import type { VideoStitchColorGrading, VideoStitchTransition } from '@/types';
+import { renderGradedCanvas, canvasToVideoSample, compositeTransitionCanvases } from './useStitchTransitions';
 import {
   DEFAULT_BITRATE,
   MAX_OUTPUT_FPS,
@@ -140,7 +142,11 @@ export async function stitchVideosAsync(
   videoBlobs: Blob[],
   audioData?: AudioData | null,
   onProgress?: (progress: StitchProgress) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  /** Color grading per clip, indexed to match `videoBlobs` (post-loop-expansion). */
+  colorGradingByIndex?: Array<VideoStitchColorGrading | undefined>,
+  /** Transition to play at the end of each clip, indexed to match `videoBlobs` (last entry is ignored — there's no clip after it). */
+  transitionsByIndex?: Array<VideoStitchTransition | undefined>
 ): Promise<Blob> {
   try {
     // Initialize progress
@@ -386,12 +392,21 @@ export async function stitchVideosAsync(
     // Start at -frameInterval so first frame can be at timestamp 0
     const frameInterval = 1 / MAX_OUTPUT_FPS;
     let highestWrittenTimestamp = -frameInterval;
+    // Carries the tail frames held back for a not-yet-composited outgoing
+    // transition from one clip iteration into the next.
+    let pendingTailBuffer: OffscreenCanvas[] = [];
+
+    const hasColorGrading = !!colorGradingByIndex?.some(
+      (g) => g && (g.temperature !== 0 || g.tint !== 0)
+    );
+    const hasTransitions = !!transitionsByIndex?.some((t) => t && t.type !== 'cut');
 
     // Process each video blob
     for (let videoIndex = 0; videoIndex < videoBlobs.length; videoIndex++) {
       if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
       const videoBlob = videoBlobs[videoIndex];
       const videoNumber = videoIndex + 1;
+      const grading = colorGradingByIndex?.[videoIndex];
 
       updateProgress(
         'processing',
@@ -420,61 +435,143 @@ export async function stitchVideosAsync(
         // Get duration of this video
         const videoDuration = await input.computeDuration();
 
-        // Track the base offset for this video segment
-        const segmentBaseTime = highestWrittenTimestamp + frameInterval;
-        // Track minimum timestamp in this segment to normalize
-        let segmentMinTimestamp: number | null = null;
+        if (!hasTransitions) {
+          // No transitions configured anywhere in this stitch — keep the
+          // exact original variable-framerate-safe timing/dedup algorithm.
+          // Color grading (if any) is applied per-frame without touching
+          // timing, by re-wrapping the graded canvas as a same-timestamp
+          // VideoSample before encoding.
+          const segmentBaseTime = highestWrittenTimestamp + frameInterval;
+          let segmentMinTimestamp: number | null = null;
+          let samplesFromThisVideo = 0;
 
-        // Read and write samples from this video
-        let samplesFromThisVideo = 0;
-        for await (const sample of sink.samples(0, videoDuration)) {
-          if (signal?.aborted) {
+          for await (const sample of sink.samples(0, videoDuration)) {
+            if (signal?.aborted) {
+              sample.close();
+              throw new DOMException("Aborted", "AbortError");
+            }
+            const originalTimestamp = sample.timestamp ?? 0;
+            if (segmentMinTimestamp === null) segmentMinTimestamp = originalTimestamp;
+            const normalizedTimestamp = originalTimestamp - segmentMinTimestamp;
+            const adjustedTimestamp = segmentBaseTime + normalizedTimestamp;
+            const snappedTimestamp = Math.round(adjustedTimestamp / frameInterval) * frameInterval;
+
+            if (snappedTimestamp < highestWrittenTimestamp) {
+              sample.close();
+              continue;
+            }
+
+            if (hasColorGrading && grading) {
+              const canvas = renderGradedCanvas(sample, safeWidth, safeHeight, grading);
+              sample.close();
+              const gradedSample = canvasToVideoSample(canvas, snappedTimestamp, frameInterval);
+              await videoSource!.add(gradedSample);
+              gradedSample.close();
+            } else {
+              sample.setTimestamp(snappedTimestamp);
+              sample.setDuration(frameInterval);
+              await videoSource!.add(sample);
+              sample.close();
+            }
+
+            highestWrittenTimestamp = snappedTimestamp;
+            samplesFromThisVideo++;
+
+            if (samplesFromThisVideo % 10 === 0) {
+              const videoProgress = samplesFromThisVideo / 300; // Rough estimate
+              const overallProgress = 5 + ((videoIndex + videoProgress) / videoBlobs.length) * 90;
+              updateProgress(
+                'processing',
+                `Processing video ${videoNumber}/${videoBlobs.length}: ${samplesFromThisVideo} frames...`,
+                overallProgress,
+                videoNumber
+              );
+            }
+          }
+        } else {
+          // At least one transition is configured. Transitions inherently
+          // reflow the timeline (they consume frames from both sides of a
+          // boundary and replace them with composited frames), so this path
+          // assigns strictly sequential output timestamps rather than
+          // preserving source variable-framerate timing.
+          const incomingTransition = videoIndex > 0 ? transitionsByIndex?.[videoIndex - 1] : undefined;
+          const outgoingTransition =
+            videoIndex < videoBlobs.length - 1 ? transitionsByIndex?.[videoIndex] : undefined;
+          const hasIncoming =
+            !!incomingTransition && incomingTransition.type !== 'cut' && pendingTailBuffer.length > 0;
+          const hasOutgoing = !!outgoingTransition && outgoingTransition.type !== 'cut';
+          const outgoingWindowFrames = hasOutgoing
+            ? Math.max(1, Math.round(outgoingTransition!.durationSec * MAX_OUTPUT_FPS))
+            : 0;
+
+          const incomingBuffer = pendingTailBuffer;
+          pendingTailBuffer = [];
+
+          const writeFrame = async (canvas: OffscreenCanvas) => {
+            highestWrittenTimestamp += frameInterval;
+            const videoSample = canvasToVideoSample(canvas, highestWrittenTimestamp, frameInterval);
+            await videoSource!.add(videoSample);
+            videoSample.close();
+          };
+
+          const ringBuffer: OffscreenCanvas[] = [];
+          let localFrameIndex = 0;
+          let samplesFromThisVideo = 0;
+
+          for await (const sample of sink.samples(0, videoDuration)) {
+            if (signal?.aborted) {
+              sample.close();
+              throw new DOMException("Aborted", "AbortError");
+            }
+            const canvas = renderGradedCanvas(sample, safeWidth, safeHeight, grading);
             sample.close();
-            throw new DOMException("Aborted", "AbortError");
+
+            if (hasIncoming && localFrameIndex < incomingBuffer.length) {
+              const windowSize = incomingBuffer.length;
+              const progress = windowSize > 1 ? localFrameIndex / (windowSize - 1) : 1;
+              const composited = compositeTransitionCanvases(
+                incomingBuffer[localFrameIndex],
+                canvas,
+                progress,
+                incomingTransition!.type,
+                safeWidth,
+                safeHeight
+              );
+              await writeFrame(composited);
+            } else if (hasOutgoing) {
+              ringBuffer.push(canvas);
+              if (ringBuffer.length > outgoingWindowFrames) {
+                await writeFrame(ringBuffer.shift()!);
+              }
+            } else {
+              await writeFrame(canvas);
+            }
+
+            localFrameIndex++;
+            samplesFromThisVideo++;
+            if (samplesFromThisVideo % 10 === 0) {
+              const videoProgress = samplesFromThisVideo / 300;
+              const overallProgress = 5 + ((videoIndex + videoProgress) / videoBlobs.length) * 90;
+              updateProgress(
+                'processing',
+                `Processing video ${videoNumber}/${videoBlobs.length}: ${samplesFromThisVideo} frames...`,
+                overallProgress,
+                videoNumber
+              );
+            }
           }
-          const originalTimestamp = sample.timestamp ?? 0;
 
-          // On first sample, record the minimum timestamp to normalize from
-          if (segmentMinTimestamp === null) {
-            segmentMinTimestamp = originalTimestamp;
+          // Any incoming-buffer frames never paired (this clip had fewer
+          // frames than the transition window, or no video track) must
+          // still be written so content from the previous clip isn't lost.
+          for (let i = localFrameIndex; i < incomingBuffer.length; i++) {
+            await writeFrame(incomingBuffer[i]);
           }
 
-          // Normalize timestamp relative to segment start, then offset by base time
-          const normalizedTimestamp = originalTimestamp - segmentMinTimestamp;
-          const adjustedTimestamp = segmentBaseTime + normalizedTimestamp;
-
-          // Snap to 60fps grid for consistent framerate
-          const snappedTimestamp = Math.round(adjustedTimestamp / frameInterval) * frameInterval;
-
-          // Skip duplicate frames that land on the same timestamp slot
-          // This ensures strict 60fps without exceeding the target rate
-          if (snappedTimestamp < highestWrittenTimestamp) {
-            sample.close();
-            continue;
-          }
-
-          sample.setTimestamp(snappedTimestamp);
-          sample.setDuration(frameInterval);
-          await videoSource!.add(sample);
-
-          // Update highest written timestamp
-          highestWrittenTimestamp = snappedTimestamp;
-
-          sample.close();
-          samplesFromThisVideo++;
-
-          // Update progress
-          if (samplesFromThisVideo % 10 === 0) {
-            const videoProgress = samplesFromThisVideo / 300; // Rough estimate
-            const overallProgress =
-              5 + ((videoIndex + videoProgress) / videoBlobs.length) * 90;
-            updateProgress(
-              'processing',
-              `Processing video ${videoNumber}/${videoBlobs.length}: ${samplesFromThisVideo} frames...`,
-              overallProgress,
-              videoNumber
-            );
-          }
+          // Carry this clip's held-back tail (possibly shorter than the
+          // configured window, if the clip itself was short) to the next
+          // iteration for compositing into the next clip's transition-in.
+          pendingTailBuffer = hasOutgoing ? ringBuffer : [];
         }
       } catch (videoError) {
         // A user Stop must propagate as an AbortError, not a per-video failure.

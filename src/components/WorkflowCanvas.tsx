@@ -182,6 +182,14 @@ const getHandleType = (handleId: string | null | undefined): "image" | "text" | 
   if (handleId === "video") return "video";
   if (handleId === "audio" || handleId.startsWith("audio")) return "audio";
   if (handleId === "image" || handleId === "text") return handleId;
+  // Transcribe node's media input accepts either video or audio; classified
+  // as "video" here (matching its data-handletype) so isValidConnection's
+  // video-target allowlist below can admit it — the executor itself accepts
+  // either media type at runtime.
+  if (handleId === "media") return "video";
+  // SubtitleBurn node's SRT input is plain text (an SRT string), reusing the
+  // text handle type rather than inventing a new one.
+  if (handleId === "srt") return "text";
   // Dynamic handles - check naming patterns (including indexed: text-0, image-0)
   if (handleId.includes("video")) return "video";
   if (handleId.startsWith("image-") || handleId.includes("image") || handleId.includes("frame")) return "image";
@@ -284,6 +292,11 @@ const getNodeHandles = (nodeType: string): { inputs: string[]; outputs: string[]
       // static list is the superset every app could expose. The real per-node
       // set is read from `inputSchema` / `app.outputs` at connection time.
       return { inputs: ["image", "text", "video", "audio"], outputs: ["image", "text", "video", "audio", "3d"] };
+    case "transcribe":
+      // "media" accepts video or audio (executor handles both at runtime)
+      return { inputs: ["media"], outputs: ["text"] };
+    case "subtitleBurn":
+      return { inputs: ["video", "srt"], outputs: ["video"] };
     default:
       return { inputs: [], outputs: [] };
   }
@@ -505,6 +518,8 @@ export function WorkflowCanvas() {
     imageResize: t("nodeType.imageResize"),
     gifEncoder: t("nodeType.gifEncoder"),
     router: t("nodeType.router"),
+    transcribe: t("nodeType.transcribe"),
+    subtitleBurn: t("nodeType.subtitleBurn"),
     switch: t("nodeType.switch"),
     conditionalSwitch: t("nodeType.conditionalSwitch"),
     glbViewer: t("nodeType.glbViewer"),
@@ -674,7 +689,7 @@ export function WorkflowCanvas() {
         if (!targetNode) return false;
 
         const targetNodeType = targetNode.type;
-        if (targetNodeType === "generateVideo" || targetNodeType === "videoStitch" || targetNodeType === "easeCurve" || targetNodeType === "videoTrim" || targetNodeType === "videoFrameGrab" || targetNodeType === "videoInput" || targetNodeType === "output" || targetNodeType === "outputGallery" || targetNodeType === "router" || targetNodeType === "comfyApp") {
+        if (targetNodeType === "generateVideo" || targetNodeType === "videoStitch" || targetNodeType === "easeCurve" || targetNodeType === "videoTrim" || targetNodeType === "videoFrameGrab" || targetNodeType === "videoInput" || targetNodeType === "output" || targetNodeType === "outputGallery" || targetNodeType === "router" || targetNodeType === "comfyApp" || targetNodeType === "transcribe" || targetNodeType === "subtitleBurn") {
           // For output node, we allow video even though its handle is typed as "image"
           // because output node can display both images and videos
           return true;
@@ -696,7 +711,9 @@ export function WorkflowCanvas() {
       if (sourceType === "audio" || targetType === "audio") {
         if (sourceType === "audio") {
           const targetNode = nodes.find((n) => n.id === connection.target);
-          if (targetNode?.type === "output" || targetNode?.type === "router") return true;
+          // transcribe takes audio on its "media" handle (typed "video" for
+          // validation purposes) — the executor accepts audio at runtime.
+          if (targetNode?.type === "output" || targetNode?.type === "router" || targetNode?.type === "transcribe") return true;
         }
         // A Comfy app needs no clause of its own here: audio-to-audio is what
         // the fallthrough already allows it, and the early return above covers
@@ -2575,6 +2592,10 @@ export function WorkflowCanvas() {
                 return "#06b6d4"; // cyan-500 (distinct from Router gray and Switch violet)
               case "glbViewer":
                 return "#0ea5e9"; // sky-500 (3D viewport)
+              case "transcribe":
+                return "#a78bfa"; // violet-400 (speech-to-text)
+              case "subtitleBurn":
+                return "#fb923c"; // orange-400 (text burned into video)
               default:
                 return "#94a3b8";
             }

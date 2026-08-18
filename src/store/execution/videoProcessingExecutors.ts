@@ -5,7 +5,15 @@
  * Used by both executeWorkflow and regenerateNode.
  */
 
-import type { VideoStitchNodeData, EaseCurveNodeData, VideoTrimNodeData, VideoFrameGrabNodeData } from "@/types";
+import type {
+  VideoStitchNodeData,
+  EaseCurveNodeData,
+  VideoTrimNodeData,
+  VideoFrameGrabNodeData,
+  VideoStitchColorGrading,
+  VideoStitchTransition,
+} from "@/types";
+import { getSourceOutput } from "@/store/utils/connectedInputs";
 import { revokeBlobUrl } from "@/store/utils/executionUtils";
 import type { NodeExecutionContext } from "./types";
 
@@ -13,7 +21,7 @@ import type { NodeExecutionContext } from "./types";
  * VideoStitch: combines multiple video clips into a single output.
  */
 export async function executeVideoStitch(ctx: NodeExecutionContext): Promise<void> {
-  const { node, getConnectedInputs, updateNodeData, getNodes, signal } = ctx;
+  const { node, getConnectedInputs, updateNodeData, getEdges, getNodes, signal } = ctx;
   const nodeData = node.data as VideoStitchNodeData;
 
   if (nodeData.encoderSupported === false) {
@@ -43,8 +51,60 @@ export async function executeVideoStitch(ctx: NodeExecutionContext): Promise<voi
       throw new DOMException("Aborted", "AbortError");
     }
 
+    // Resolve videos in clipOrder order (matching the UI's filmstrip/drag-reorder
+    // sequence) so per-edgeId transitions/colorGrading map onto the right
+    // positions. getConnectedInputs's array order isn't guaranteed to match
+    // clipOrder, so this is rebuilt directly from edges rather than relying on it.
+    const edges = getEdges();
+    const nodes = getNodes();
+    const videoEdges = edges.filter(
+      (e) => e.target === node.id && e.targetHandle?.startsWith("video-") && !e.data?.isLoop
+    );
+    const orderedEdgeIds = nodeData.clipOrder?.length
+      ? [
+          ...nodeData.clipOrder.filter((eid) => videoEdges.some((e) => e.id === eid)),
+          ...videoEdges.map((e) => e.id).filter((eid) => !nodeData.clipOrder.includes(eid)),
+        ]
+      : videoEdges.map((e) => e.id);
+
+    const orderedVideoUrls: string[] = [];
+    const orderedColorGrading: Array<VideoStitchColorGrading | undefined> = [];
+    const orderedTransitions: Array<VideoStitchTransition | undefined> = [];
+    for (const edgeId of orderedEdgeIds) {
+      const edge = videoEdges.find((e) => e.id === edgeId);
+      if (!edge) continue;
+      const sourceNode = nodes.find((n) => n.id === edge.source);
+      if (!sourceNode) continue;
+      const { type, value } = getSourceOutput(
+        sourceNode,
+        edge.sourceHandle,
+        edge.data as Record<string, unknown> | undefined
+      );
+      if (type !== "video" || !value) continue;
+      orderedVideoUrls.push(value);
+      orderedColorGrading.push(nodeData.colorGrading[edgeId]);
+      orderedTransitions.push(nodeData.transitions.find((t) => t.afterClipEdgeId === edgeId));
+    }
+
+    // Fall back to getConnectedInputs's list if edge resolution came up short
+    // (e.g. a test harness or edge case that doesn't populate targetHandle
+    // the way the UI does) — this keeps the "just stitch, no effects" path
+    // working exactly as before.
+    const videoUrls = orderedVideoUrls.length >= 2 ? orderedVideoUrls : inputs.videos;
+    // Only hand the effect arrays to the stitcher when at least one clip
+    // actually configures something — an all-undefined array would force the
+    // effects path for zero visual difference.
+    const colorGradingByClip =
+      orderedVideoUrls.length >= 2 && orderedColorGrading.some((g) => g)
+        ? orderedColorGrading
+        : undefined;
+    const transitionsByClip =
+      orderedVideoUrls.length >= 2 && orderedTransitions.some((t) => t)
+        ? orderedTransitions
+        : undefined;
+
     const videoBlobs = await Promise.all(
-      inputs.videos.map((v) => fetch(v).then((r) => r.blob()))
+      videoUrls.map((v) => fetch(v).then((r) => r.blob()))
     );
 
     // Duplicate blobs based on loopCount (2x or 3x repeats the sequence)
@@ -55,6 +115,17 @@ export async function executeVideoStitch(ctx: NodeExecutionContext): Promise<voi
             videoBlobs.map((b) => new Blob([b], { type: b.type }))
           ).flat()
         : videoBlobs;
+
+    // Transitions/color grading are indexed to videoBlobs, so they must be
+    // repeated per loop iteration too. Transitions only apply within a single
+    // pass through the clip sequence — the seam between loop repeats is
+    // always a hard cut (see VideoStitchTransition docs).
+    const loopedColorGrading = colorGradingByClip
+      ? Array.from({ length: loopCount }, () => colorGradingByClip).flat()
+      : undefined;
+    const loopedTransitions = transitionsByClip
+      ? Array.from({ length: loopCount }, () => transitionsByClip).flat()
+      : undefined;
 
     // Prepare audio if connected
     let audioData = null;
@@ -82,7 +153,9 @@ export async function executeVideoStitch(ctx: NodeExecutionContext): Promise<voi
         if (signal?.aborted) return;
         updateNodeData(node.id, { progress: progress.progress });
       },
-      signal
+      signal,
+      loopedColorGrading,
+      loopedTransitions
     );
 
     if (signal?.aborted) {
@@ -168,29 +241,53 @@ export async function executeVideoTrim(ctx: NodeExecutionContext): Promise<void>
 
     // Get fresh node data for current slider values
     const freshNodeData = getNodes().find((n) => n.id === node.id)?.data as VideoTrimNodeData | undefined;
-    const startTime = freshNodeData?.startTime ?? nodeData.startTime;
-    const endTime = freshNodeData?.endTime ?? nodeData.endTime;
+    const mode = freshNodeData?.mode ?? nodeData.mode ?? "manual";
 
-    if (endTime <= 0 || startTime >= endTime) {
-      updateNodeData(node.id, {
-        status: "error",
-        error: "Set valid start/end trim times",
-        progress: 0,
-      });
-      throw new Error("Set valid start/end trim times");
+    let outputBlob: Blob;
+    let removedSilenceDuration: number | null = null;
+
+    if (mode === "removeSilence") {
+      const thresholdDb = freshNodeData?.silenceThresholdDb ?? nodeData.silenceThresholdDb;
+      const minSilenceDuration = freshNodeData?.minSilenceDuration ?? nodeData.minSilenceDuration;
+      const paddingDuration = freshNodeData?.paddingDuration ?? nodeData.paddingDuration;
+
+      const { trimVideoRemoveSilenceAsync } = await import("@/hooks/useTrimVideo");
+      const result = await trimVideoRemoveSilenceAsync(
+        videoBlob,
+        { thresholdDb, minSilenceDuration, paddingDuration },
+        (progress) => {
+          if (signal?.aborted) return;
+          updateNodeData(node.id, { progress: progress.progress });
+        },
+        signal
+      );
+      outputBlob = result.blob;
+      removedSilenceDuration = result.removedDuration;
+    } else {
+      const startTime = freshNodeData?.startTime ?? nodeData.startTime;
+      const endTime = freshNodeData?.endTime ?? nodeData.endTime;
+
+      if (endTime <= 0 || startTime >= endTime) {
+        updateNodeData(node.id, {
+          status: "error",
+          error: "Set valid start/end trim times",
+          progress: 0,
+        });
+        throw new Error("Set valid start/end trim times");
+      }
+
+      const { trimVideoAsync } = await import("@/hooks/useTrimVideo");
+      outputBlob = await trimVideoAsync(
+        videoBlob,
+        startTime,
+        endTime,
+        (progress) => {
+          if (signal?.aborted) return;
+          updateNodeData(node.id, { progress: progress.progress });
+        },
+        signal
+      );
     }
-
-    const { trimVideoAsync } = await import("@/hooks/useTrimVideo");
-    const outputBlob = await trimVideoAsync(
-      videoBlob,
-      startTime,
-      endTime,
-      (progress) => {
-        if (signal?.aborted) return;
-        updateNodeData(node.id, { progress: progress.progress });
-      },
-      signal
-    );
 
     if (signal?.aborted) {
       throw new DOMException("Aborted", "AbortError");
@@ -223,6 +320,7 @@ export async function executeVideoTrim(ctx: NodeExecutionContext): Promise<void>
       status: "complete",
       progress: 100,
       error: null,
+      removedSilenceDuration: mode === "removeSilence" ? removedSilenceDuration : nodeData.removedSilenceDuration ?? null,
     });
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") {

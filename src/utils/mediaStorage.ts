@@ -557,6 +557,21 @@ async function externalizeNodeMedia(
       break;
     }
 
+    case "transcribe": {
+      // transcribe output is a text transcript, not a media blob — no
+      // reference-swap needed, but content is still runtime-derived.
+      newData = data;
+      break;
+    }
+
+    case "subtitleBurn": {
+      const d = data as import("@/types").SubtitleBurnNodeData;
+      // Clear output video (derived from input video + SRT); keep the
+      // editable srtText and style choices since those are user input.
+      newData = { ...d, outputVideo: null };
+      break;
+    }
+
     case "removeBackground": {
       const d = data as import("@/types").RemoveBackgroundNodeData;
       // Clear output image (derived from input image)
@@ -1194,6 +1209,18 @@ async function hydrateNodeMedia(
 
     case "videoFrameGrab": {
       // videoFrameGrab content is not persisted - it's regenerated on each workflow run
+      newData = data;
+      break;
+    }
+
+    case "transcribe": {
+      // transcribe content is not persisted - it's regenerated on each workflow run
+      newData = data;
+      break;
+    }
+
+    case "subtitleBurn": {
+      // subtitleBurn content is not persisted - it's regenerated on each workflow run
       newData = data;
       break;
     }

@@ -31,6 +31,8 @@ import {
   SwitchNodeData,
   ConditionalSwitchNodeData,
   ComfyAppNodeData,
+  TranscribeNodeData,
+  SubtitleBurnNodeData,
 } from "@/types";
 
 /**
@@ -95,6 +97,10 @@ export function getSourceOutput(
     return { type: "video", value: (sourceNode.data as EaseCurveNodeData).outputVideo };
   } else if (sourceNode.type === "videoTrim") {
     return { type: "video", value: (sourceNode.data as VideoTrimNodeData).outputVideo };
+  } else if (sourceNode.type === "transcribe") {
+    return { type: "text", value: (sourceNode.data as TranscribeNodeData).outputSrt };
+  } else if (sourceNode.type === "subtitleBurn") {
+    return { type: "video", value: (sourceNode.data as SubtitleBurnNodeData).outputVideo };
   } else if (sourceNode.type === "prompt") {
     return { type: "text", value: (sourceNode.data as PromptNodeData).prompt };
   } else if (sourceNode.type === "array") {

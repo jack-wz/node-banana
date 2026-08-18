@@ -20,6 +20,7 @@ export type LogCategory =
   | 'api.gemini'
   | 'api.openai'
   | 'api.llm'
+  | 'api.transcribe'
   | 'api.error'
   | 'file.save'
   | 'file.load'

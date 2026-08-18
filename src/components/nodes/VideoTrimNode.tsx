@@ -158,7 +158,39 @@ export function VideoTrimNode({ id, data, selected }: NodeProps<VideoTrimNodeTyp
   }, [id, regenerateNode]);
 
   const hasSourceVideo = Boolean(sourceVideoUrl);
-  const canTrim = hasSourceVideo && startTime < endTime && endTime > 0;
+  const mode = nodeData.mode;
+  const canTrim =
+    mode === "removeSilence"
+      ? hasSourceVideo
+      : hasSourceVideo && startTime < endTime && endTime > 0;
+
+  const handleModeChange = useCallback(
+    (newMode: "manual" | "removeSilence") => {
+      updateNodeData(id, { mode: newMode });
+    },
+    [id, updateNodeData]
+  );
+
+  const handleThresholdChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      updateNodeData(id, { silenceThresholdDb: parseFloat(e.target.value) });
+    },
+    [id, updateNodeData]
+  );
+
+  const handleMinSilenceChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      updateNodeData(id, { minSilenceDuration: parseFloat(e.target.value) });
+    },
+    [id, updateNodeData]
+  );
+
+  const handlePaddingChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      updateNodeData(id, { paddingDuration: parseFloat(e.target.value) });
+    },
+    [id, updateNodeData]
+  );
 
   // Which video URL to show in preview
   const previewUrl = showOutput && nodeData.outputVideo ? nodeData.outputVideo : sourceVideoUrl;
@@ -324,8 +356,34 @@ export function VideoTrimNode({ id, data, selected }: NodeProps<VideoTrimNodeTyp
           )}
         </div>
 
-        {/* Trim controls (only shown when we have a duration) */}
+        {/* Mode toggle */}
         {hasSourceVideo && (
+          <div className="shrink-0 flex gap-1 px-1">
+            <button
+              onClick={() => handleModeChange("manual")}
+              className={`flex-1 px-2 py-1 rounded text-[10px] font-medium transition-colors ${
+                mode === "manual"
+                  ? "bg-blue-600 text-white"
+                  : "bg-neutral-800 text-neutral-400 hover:text-neutral-200"
+              }`}
+            >
+              {t("videoTrim.modeManual")}
+            </button>
+            <button
+              onClick={() => handleModeChange("removeSilence")}
+              className={`flex-1 px-2 py-1 rounded text-[10px] font-medium transition-colors ${
+                mode === "removeSilence"
+                  ? "bg-blue-600 text-white"
+                  : "bg-neutral-800 text-neutral-400 hover:text-neutral-200"
+              }`}
+            >
+              {t("videoTrim.modeRemoveSilence")}
+            </button>
+          </div>
+        )}
+
+        {/* Trim controls (only shown when we have a duration, manual mode) */}
+        {hasSourceVideo && mode === "manual" && (
           <div className="shrink-0 flex flex-col gap-1.5 px-1">
             {/* Dual range slider */}
             <div className="nodrag nowheel relative h-5 flex items-center trim-slider-container">
@@ -403,6 +461,56 @@ export function VideoTrimNode({ id, data, selected }: NodeProps<VideoTrimNodeTyp
                 <span className="text-[11px] text-neutral-200 font-mono">{formatTime(endTime)}</span>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Silence detection controls (removeSilence mode) */}
+        {hasSourceVideo && mode === "removeSilence" && (
+          <div className="shrink-0 flex flex-col gap-1.5 px-1">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] text-neutral-400 shrink-0">{t("videoTrim.threshold")}</span>
+              <input
+                type="range"
+                min={-60}
+                max={-10}
+                step={1}
+                value={nodeData.silenceThresholdDb}
+                onChange={handleThresholdChange}
+                className="nodrag flex-1"
+              />
+              <span className="text-[10px] text-neutral-300 font-mono w-10 text-right">{nodeData.silenceThresholdDb}dB</span>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] text-neutral-400 shrink-0">{t("videoTrim.minSilence")}</span>
+              <input
+                type="range"
+                min={0.1}
+                max={2}
+                step={0.1}
+                value={nodeData.minSilenceDuration}
+                onChange={handleMinSilenceChange}
+                className="nodrag flex-1"
+              />
+              <span className="text-[10px] text-neutral-300 font-mono w-10 text-right">{nodeData.minSilenceDuration.toFixed(1)}s</span>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] text-neutral-400 shrink-0">{t("videoTrim.padding")}</span>
+              <input
+                type="range"
+                min={0}
+                max={0.5}
+                step={0.05}
+                value={nodeData.paddingDuration}
+                onChange={handlePaddingChange}
+                className="nodrag flex-1"
+              />
+              <span className="text-[10px] text-neutral-300 font-mono w-10 text-right">{nodeData.paddingDuration.toFixed(2)}s</span>
+            </div>
+            {nodeData.removedSilenceDuration !== null && (
+              <div className="text-[10px] text-neutral-400 text-center pt-0.5">
+                {t("videoTrim.removedSummary", { seconds: nodeData.removedSilenceDuration.toFixed(1) })}
+              </div>
+            )}
           </div>
         )}
 

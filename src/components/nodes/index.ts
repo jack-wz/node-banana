@@ -26,3 +26,5 @@ export { SwitchNode } from "./SwitchNode";
 export { ConditionalSwitchNode } from "./ConditionalSwitchNode";
 export { ComfyAppNode } from "./ComfyAppNode";
 export { StickyNoteNode } from "./StickyNoteNode";
+export { TranscribeNode } from "./TranscribeNode";
+export { SubtitleBurnNode } from "./SubtitleBurnNode";

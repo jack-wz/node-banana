@@ -11,8 +11,20 @@ import { useVideoAutoplay } from "@/hooks/useVideoAutoplay";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
 import { useT } from "@/i18n";
+import type { VideoStitchTransition } from "@/types";
 
 type VideoStitchNodeType = Node<VideoStitchNodeData, "videoStitch">;
+
+const TRANSITION_TYPES: VideoStitchTransition["type"][] = [
+  "cut",
+  "crossfade",
+  "dipToBlack",
+  "dipToWhite",
+  "wipe",
+  "slide",
+  "zoom",
+  "push",
+];
 
 export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNodeType>) {
   const t = useT();
@@ -28,6 +40,8 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
   const videoBlobUrl = useVideoBlobUrl(nodeData.outputVideo ?? null);
   const videoAutoplayRef = useVideoAutoplay(id, selected);
   const showLabels = useShowHandleLabels(selected);
+  const [openTransitionEdgeId, setOpenTransitionEdgeId] = useState<string | null>(null);
+  const [openColorPopoverEdgeId, setOpenColorPopoverEdgeId] = useState<string | null>(null);
 
   // Check encoder support on mount
   useEffect(() => {
@@ -327,6 +341,48 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
     [removeEdge]
   );
 
+  const getTransitionAfter = useCallback(
+    (edgeId: string): VideoStitchTransition | null => {
+      return nodeData.transitions.find((t) => t.afterClipEdgeId === edgeId) ?? null;
+    },
+    [nodeData.transitions]
+  );
+
+  const handleTransitionChange = useCallback(
+    (afterClipEdgeId: string, type: VideoStitchTransition["type"]) => {
+      const existing = nodeData.transitions.filter((t) => t.afterClipEdgeId !== afterClipEdgeId);
+      if (type === "cut") {
+        updateNodeData(id, { transitions: existing });
+      } else {
+        updateNodeData(id, {
+          transitions: [...existing, { afterClipEdgeId, type, durationSec: 1 }],
+        });
+      }
+      setOpenTransitionEdgeId(null);
+    },
+    [id, nodeData.transitions, updateNodeData]
+  );
+
+  const getColorGrading = useCallback(
+    (edgeId: string) => nodeData.colorGrading[edgeId] ?? { temperature: 0, tint: 0 },
+    [nodeData.colorGrading]
+  );
+
+  const handleColorGradingChange = useCallback(
+    (edgeId: string, field: "temperature" | "tint", value: number) => {
+      const current = nodeData.colorGrading[edgeId] ?? { temperature: 0, tint: 0 };
+      const updated = { ...current, [field]: value };
+      const nextColorGrading = { ...nodeData.colorGrading };
+      if (updated.temperature === 0 && updated.tint === 0) {
+        delete nextColorGrading[edgeId];
+      } else {
+        nextColorGrading[edgeId] = updated;
+      }
+      updateNodeData(id, { colorGrading: nextColorGrading });
+    },
+    [id, nodeData.colorGrading, updateNodeData]
+  );
+
   const handleStitch = useCallback(() => {
     regenerateNode(id);
   }, [id, regenerateNode]);
@@ -475,6 +531,11 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
                 {orderedClips.map((clip) => {
                   const thumbnail = thumbnails.get(clip.edgeId);
                   const clipDuration = clipDurations.get(clip.edgeId);
+                  const grading = getColorGrading(clip.edgeId);
+                  const hasGrading = grading.temperature !== 0 || grading.tint !== 0;
+                  const clipIndex = orderedClips.findIndex((c) => c.edgeId === clip.edgeId);
+                  const isLastClip = clipIndex === orderedClips.length - 1;
+                  const transition = getTransitionAfter(clip.edgeId);
                   return (
                     <div
                       key={clip.edgeId}
@@ -539,6 +600,96 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
+
+                      {/* Color grading trigger */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenColorPopoverEdgeId(openColorPopoverEdgeId === clip.edgeId ? null : clip.edgeId);
+                        }}
+                        className={`nodrag absolute top-0.5 left-0.5 w-4 h-4 rounded flex items-center justify-center transition-opacity ${
+                          hasGrading ? "bg-blue-600 opacity-100" : "bg-neutral-900/70 opacity-0 group-hover:opacity-100"
+                        }`}
+                        title={t("videoStitch.colorGrading")}
+                      >
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <circle cx="12" cy="12" r="9" />
+                          <path strokeLinecap="round" d="M12 3v18M3 12h18" />
+                        </svg>
+                      </button>
+
+                      {/* Color grading popover */}
+                      {openColorPopoverEdgeId === clip.edgeId && (
+                        <div
+                          onPointerDown={(e) => e.stopPropagation()}
+                          className="nodrag nowheel absolute top-5 left-0 z-20 w-32 bg-neutral-800 border border-neutral-600 rounded shadow-lg p-2 flex flex-col gap-1.5"
+                        >
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="text-[9px] text-neutral-400">{t("videoStitch.temperature")}</span>
+                            <span className="text-[9px] text-neutral-300 font-mono">{grading.temperature}</span>
+                          </div>
+                          <input
+                            type="range"
+                            min={-100}
+                            max={100}
+                            step={1}
+                            value={grading.temperature}
+                            onChange={(e) => handleColorGradingChange(clip.edgeId, "temperature", parseInt(e.target.value, 10))}
+                            className="nodrag w-full"
+                          />
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="text-[9px] text-neutral-400">{t("videoStitch.tint")}</span>
+                            <span className="text-[9px] text-neutral-300 font-mono">{grading.tint}</span>
+                          </div>
+                          <input
+                            type="range"
+                            min={-100}
+                            max={100}
+                            step={1}
+                            value={grading.tint}
+                            onChange={(e) => handleColorGradingChange(clip.edgeId, "tint", parseInt(e.target.value, 10))}
+                            className="nodrag w-full"
+                          />
+                        </div>
+                      )}
+
+                      {/* Transition picker (between this clip and the next) */}
+                      {!isLastClip && (
+                        <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 translate-y-1/2 z-10">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenTransitionEdgeId(openTransitionEdgeId === clip.edgeId ? null : clip.edgeId);
+                            }}
+                            className={`nodrag w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold transition-colors ${
+                              transition ? "bg-blue-600 text-white" : "bg-neutral-700 text-neutral-400 hover:bg-neutral-600"
+                            }`}
+                            title={t("videoStitch.transition")}
+                          >
+                            {transition ? "" : "+"}
+                          </button>
+                          {openTransitionEdgeId === clip.edgeId && (
+                            <div
+                              onPointerDown={(e) => e.stopPropagation()}
+                              className="nodrag nowheel absolute top-5 left-1/2 -translate-x-1/2 z-20 w-28 bg-neutral-800 border border-neutral-600 rounded shadow-lg py-1 flex flex-col"
+                            >
+                              {TRANSITION_TYPES.map((type) => (
+                                <button
+                                  key={type}
+                                  onClick={() => handleTransitionChange(clip.edgeId, type)}
+                                  className={`px-2 py-1 text-left text-[9px] transition-colors ${
+                                    (transition?.type ?? "cut") === type
+                                      ? "bg-blue-600 text-white"
+                                      : "text-neutral-300 hover:bg-neutral-700"
+                                  }`}
+                                >
+                                  {t(`videoStitch.transitionType.${type}`)}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}

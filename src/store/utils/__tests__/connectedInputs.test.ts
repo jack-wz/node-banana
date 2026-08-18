@@ -78,6 +78,26 @@ describe("getConnectedInputsPure", () => {
     expect(result.videos).toEqual(["data:video/mp4;base64,vid"]);
   });
 
+  it("should extract SRT text from transcribe output", () => {
+    const nodes = [
+      makeNode("tr", "transcribe", { outputSrt: "1\n00:00:00,000 --> 00:00:01,000\nHi" }),
+      makeNode("sb", "subtitleBurn"),
+    ];
+    const edges = [makeEdge("tr", "sb", "srt")];
+    const result = getConnectedInputsPure("sb", nodes, edges);
+    expect(result.text).toBe("1\n00:00:00,000 --> 00:00:01,000\nHi");
+  });
+
+  it("should extract video from subtitleBurn output", () => {
+    const nodes = [
+      makeNode("sb", "subtitleBurn", { outputVideo: "data:video/mp4;base64,burned" }),
+      makeNode("out", "output"),
+    ];
+    const edges = [makeEdge("sb", "out", "video")];
+    const result = getConnectedInputsPure("out", nodes, edges);
+    expect(result.videos).toEqual(["data:video/mp4;base64,burned"]);
+  });
+
   it("should extract text from llmGenerate source", () => {
     const nodes = [
       makeNode("llm", "llmGenerate", { outputText: "generated text" }),

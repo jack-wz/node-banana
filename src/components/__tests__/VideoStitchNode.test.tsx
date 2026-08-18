@@ -94,6 +94,8 @@ function setMockStoreState(overrides: Record<string, unknown> = {}) {
 const createNodeData = (overrides: Partial<VideoStitchNodeData> = {}): VideoStitchNodeData => ({
   clips: [],
   clipOrder: [],
+  transitions: [],
+  colorGrading: {},
   outputVideo: null,
   loopCount: 1,
   status: "idle",
@@ -229,6 +231,100 @@ describe("VideoStitchNode", () => {
 
       render(<VideoStitchNode {...createNodeProps({ clipOrder: ["e1"] })} />);
       expect(screen.getByText("Stitch")).toBeDisabled();
+    });
+  });
+
+  describe("Transitions & Color Grading", () => {
+    const setupTwoClips = () => {
+      setMockStoreState({
+        edges: [
+          { id: "e1", source: "gen1", target: "test-stitch-1", targetHandle: "video-0", data: { createdAt: 1 } },
+          { id: "e2", source: "gen2", target: "test-stitch-1", targetHandle: "video-1", data: { createdAt: 2 } },
+        ],
+        nodes: [
+          { id: "gen1", type: "generateVideo", data: { outputVideo: "blob:video1" } },
+          { id: "gen2", type: "generateVideo", data: { outputVideo: "blob:video2" } },
+        ],
+      });
+    };
+
+    it("renders a transition picker only between adjacent clips (not after the last)", () => {
+      setupTwoClips();
+      render(<VideoStitchNode {...createNodeProps({ clipOrder: ["e1", "e2"] })} />);
+
+      const transitionButtons = screen.getAllByTitle("Transition");
+      expect(transitionButtons).toHaveLength(1);
+    });
+
+    it("opens the transition menu and selects a type, storing it keyed by edgeId", () => {
+      setupTwoClips();
+      render(<VideoStitchNode {...createNodeProps({ clipOrder: ["e1", "e2"] })} />);
+
+      fireEvent.click(screen.getByTitle("Transition"));
+      fireEvent.click(screen.getByText("Crossfade"));
+
+      expect(mockUpdateNodeData).toHaveBeenCalledWith("test-stitch-1", {
+        transitions: [{ afterClipEdgeId: "e1", type: "crossfade", durationSec: 1 }],
+      });
+    });
+
+    it("selecting Cut removes the stored transition for that boundary", () => {
+      setupTwoClips();
+      render(
+        <VideoStitchNode
+          {...createNodeProps({
+            clipOrder: ["e1", "e2"],
+            transitions: [{ afterClipEdgeId: "e1", type: "crossfade", durationSec: 1 }],
+          })}
+        />
+      );
+
+      fireEvent.click(screen.getByTitle("Transition"));
+      fireEvent.click(screen.getByText("Cut"));
+
+      expect(mockUpdateNodeData).toHaveBeenCalledWith("test-stitch-1", { transitions: [] });
+    });
+
+    it("opens the color grading popover and writes temperature into colorGrading", () => {
+      setupTwoClips();
+      render(<VideoStitchNode {...createNodeProps({ clipOrder: ["e1", "e2"] })} />);
+
+      const gradingButtons = screen.getAllByTitle("Color grading");
+      expect(gradingButtons).toHaveLength(2);
+
+      fireEvent.click(gradingButtons[0]);
+
+      const temperatureSlider = document.querySelector(
+        'input[type="range"][min="-100"][max="100"]'
+      ) as HTMLInputElement;
+      expect(temperatureSlider).not.toBeNull();
+
+      fireEvent.change(temperatureSlider, { target: { value: "50" } });
+
+      expect(mockUpdateNodeData).toHaveBeenCalledWith("test-stitch-1", {
+        colorGrading: { e1: { temperature: 50, tint: 0 } },
+      });
+    });
+
+    it("clears the colorGrading entry when both sliders return to 0", () => {
+      setupTwoClips();
+      render(
+        <VideoStitchNode
+          {...createNodeProps({
+            clipOrder: ["e1", "e2"],
+            colorGrading: { e1: { temperature: 50, tint: 0 } },
+          })}
+        />
+      );
+
+      fireEvent.click(screen.getAllByTitle("Color grading")[0]);
+
+      const temperatureSlider = document.querySelector(
+        'input[type="range"][min="-100"][max="100"]'
+      ) as HTMLInputElement;
+      fireEvent.change(temperatureSlider, { target: { value: "0" } });
+
+      expect(mockUpdateNodeData).toHaveBeenCalledWith("test-stitch-1", { colorGrading: {} });
     });
   });
 });

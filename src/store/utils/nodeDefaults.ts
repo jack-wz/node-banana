@@ -30,6 +30,8 @@ import {
   GLBViewerNodeData,
   ComfyAppNodeData,
   StickyNoteNodeData,
+  TranscribeNodeData,
+  SubtitleBurnNodeData,
   WorkflowNodeData,
   GroupColor,
   SelectedModel,
@@ -75,6 +77,8 @@ export const defaultNodeDimensions: Record<NodeType, { width: number; height: nu
   glbViewer: { width: 360, height: 380 },
   comfyApp: { width: 320, height: 340 },
   stickyNote: { width: 240, height: 160 },
+  transcribe: { width: 340, height: 260 },
+  subtitleBurn: { width: 400, height: 360 },
 };
 
 /**
@@ -308,6 +312,8 @@ export const createDefaultNodeData = (type: NodeType): WorkflowNodeData => {
       return {
         clips: [],
         clipOrder: [],
+        transitions: [],
+        colorGrading: {},
         outputVideo: null,
         loopCount: 1,
         status: "idle",
@@ -329,9 +335,14 @@ export const createDefaultNodeData = (type: NodeType): WorkflowNodeData => {
       } as EaseCurveNodeData;
     case "videoTrim":
       return {
+        mode: "manual",
         startTime: 0,
         endTime: 0,
         duration: null,
+        silenceThresholdDb: -40,
+        minSilenceDuration: 0.5,
+        paddingDuration: 0.1,
+        removedSilenceDuration: null,
         outputVideo: null,
         status: "idle",
         error: null,
@@ -436,5 +447,25 @@ export const createDefaultNodeData = (type: NodeType): WorkflowNodeData => {
       return {
         text: "",
       } as StickyNoteNodeData;
+    case "transcribe":
+      return {
+        language: "auto",
+        outputSrt: null,
+        status: "idle",
+        error: null,
+        progress: 0,
+      } as TranscribeNodeData;
+    case "subtitleBurn":
+      return {
+        srtText: "",
+        srtSource: "manual",
+        stylePreset: "default",
+        position: "bottom",
+        outputVideo: null,
+        status: "idle",
+        error: null,
+        progress: 0,
+        encoderSupported: null,
+      } as SubtitleBurnNodeData;
   }
 };

@@ -28,6 +28,8 @@ import { executeRemoveBackground } from "./removeBackgroundExecutor";
 import { executeImageResize, executeGifEncoder } from "./imageProcessingExecutors";
 import { executeGenerateAudio } from "./generateAudioExecutor";
 import { executeComfyApp } from "./comfyAppExecutor";
+import { executeTranscribe } from "./transcribeExecutor";
+import { executeSubtitleBurn } from "./subtitleBurnExecutor";
 import { addRecentModel } from "@/store/utils/localStorage";
 
 /** Track the selected model for recently-used Quick Access. */
@@ -152,6 +154,12 @@ export async function executeNode(
       break;
     case "comfyApp":
       await executeComfyApp(ctx);
+      break;
+    case "transcribe":
+      await executeTranscribe(ctx);
+      break;
+    case "subtitleBurn":
+      await executeSubtitleBurn(ctx);
       break;
   }
 }

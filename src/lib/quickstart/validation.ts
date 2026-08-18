@@ -40,6 +40,10 @@ const VALID_NODE_TYPES: NodeType[] = [
   "switch",
   "conditionalSwitch",
   "glbViewer",
+  "comfyApp",
+  "stickyNote",
+  "transcribe",
+  "subtitleBurn",
 ];
 
 const VALID_HANDLE_TYPES = ["image", "text", "audio", "video", "easeCurve", "3d", "reference"];
@@ -75,6 +79,8 @@ const DEFAULT_DIMENSIONS: Record<NodeType, { width: number; height: number }> = 
   glbViewer: { width: 360, height: 380 },
   comfyApp: { width: 320, height: 340 },
   stickyNote: { width: 240, height: 160 },
+  transcribe: { width: 340, height: 260 },
+  subtitleBurn: { width: 400, height: 360 },
 };
 
 /**
@@ -377,6 +383,8 @@ function createDefaultNodeData(type: NodeType): WorkflowNodeData {
       return {
         clips: [],
         clipOrder: [],
+        transitions: [],
+        colorGrading: {},
         outputVideo: null,
         loopCount: 1,
         status: "idle",
@@ -497,6 +505,26 @@ function createDefaultNodeData(type: NodeType): WorkflowNodeData {
     case "stickyNote":
       return {
         text: "",
+      };
+    case "transcribe":
+      return {
+        language: "auto",
+        outputSrt: null,
+        status: "idle",
+        error: null,
+        progress: 0,
+      };
+    case "subtitleBurn":
+      return {
+        srtText: "",
+        srtSource: "manual",
+        stylePreset: "default",
+        position: "bottom",
+        outputVideo: null,
+        status: "idle",
+        error: null,
+        progress: 0,
+        encoderSupported: null,
       };
   }
 }

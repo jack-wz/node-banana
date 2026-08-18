@@ -50,6 +50,8 @@ export const ALL_NODES_CATEGORIES: { label: string; nodes: { type: NodeType; lab
       { type: "videoFrameGrab", label: "Frame Grab" },
       { type: "removeBackground", label: "Remove Background" },
       { type: "imageCompare", label: "Image Compare" },
+      { type: "transcribe", label: "Transcribe" },
+      { type: "subtitleBurn", label: "Subtitle Burn" },
     ],
   },
   {
