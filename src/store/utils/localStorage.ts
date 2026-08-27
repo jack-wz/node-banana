@@ -11,6 +11,7 @@ import {
   CanvasNavigationSettings,
   defaultCanvasNavigationSettings,
 } from "@/types";
+import { APP_VERSION } from "@/lib/version";
 
 // Storage keys
 export const STORAGE_KEY = "node-banana-workflow-configs";
@@ -23,6 +24,7 @@ export const CANVAS_NAVIGATION_KEY = "node-banana-canvas-navigation";
 export const LAST_PROJECT_BASE_DIR_KEY = "node-banana-last-project-dir";
 export const WORKFLOWS_DIRECTORY_KEY = "node-banana-workflows-directory";
 export const FTUX_COMPLETED_KEY = "node-banana-ftux-completed";
+export const WELCOME_LAST_VERSION_KEY = "node-banana-welcome-last-version";
 
 // Maximum recent models to store (show 4 in UI, keep 8 for persistence)
 export const MAX_RECENT_MODELS = 8;
@@ -262,6 +264,31 @@ export const getFTUXCompleted = (): boolean => {
 export const setFTUXCompleted = (completed: boolean): void => {
   if (typeof window === "undefined") return;
   localStorage.setItem(FTUX_COMPLETED_KEY, completed ? "true" : "false");
+};
+
+// Welcome modal gating: only auto-open after a version change
+export const getLastSeenVersion = (): string | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(WELCOME_LAST_VERSION_KEY);
+  } catch {
+    return null;
+  }
+};
+
+export const setLastSeenVersion = (version: string): void => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(WELCOME_LAST_VERSION_KEY, version);
+  } catch {
+    // Ignore storage errors
+  }
+};
+
+export const shouldShowWelcomeOnStartup = (): boolean => {
+  if (typeof window === "undefined") return false;
+  const lastSeen = getLastSeenVersion();
+  return lastSeen !== APP_VERSION;
 };
 
 // Recent models helpers

@@ -46,7 +46,10 @@ import {
   generateWorkflowId,
   getCanvasNavigationSettings,
   saveCanvasNavigationSettings,
+  shouldShowWelcomeOnStartup,
+  setLastSeenVersion,
 } from "./utils/localStorage";
+import { APP_VERSION } from "@/lib/version";
 import {
   createDefaultNodeData,
   defaultNodeDimensions,
@@ -645,7 +648,7 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
   groups: {},
   openModalCount: 0,
   isModalOpen: false,
-  showQuickstart: true,
+  showQuickstart: shouldShowWelcomeOnStartup(),
   hoveredNodeId: null,
   isRunning: false,
   currentNodeIds: [],  // Changed from currentNodeId for parallel execution
@@ -775,6 +778,9 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
   },
 
   setShowQuickstart: (show: boolean) => {
+    if (!show) {
+      setLastSeenVersion(APP_VERSION);
+    }
     set({ showQuickstart: show });
   },
 
