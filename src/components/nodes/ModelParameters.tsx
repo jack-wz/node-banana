@@ -144,12 +144,22 @@ function ModelParametersInner({
           { headers }
         );
 
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error || `Failed to fetch schema: ${response.status}`);
+        const responseText = await response.text();
+        let responseData: { error?: string; parameters?: ModelParameter[]; inputs?: ModelInputDef[] } | null = null;
+        try {
+          responseData = JSON.parse(responseText);
+        } catch {
+          // Response is not valid JSON; fall through and surface the raw body as text.
         }
 
-        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(
+            responseData?.error ||
+            `Failed to fetch schema: ${response.status} ${responseText.slice(0, 200)}`.trim()
+          );
+        }
+
+        const data = responseData || {};
         const params = data.parameters || [];
         const inputs = data.inputs || [];
 
