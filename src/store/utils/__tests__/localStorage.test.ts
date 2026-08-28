@@ -23,8 +23,13 @@ import {
   getLLMDefaults,
   getCanvasNavigationSettings,
   saveCanvasNavigationSettings,
+  WELCOME_LAST_VERSION_KEY,
+  getLastSeenVersion,
+  setLastSeenVersion,
+  shouldShowWelcomeOnStartup,
 } from "../localStorage";
 import { defaultCanvasNavigationSettings, ProviderSettings, NodeDefaultsConfig } from "@/types";
+import { APP_VERSION } from "@/lib/version";
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -441,6 +446,28 @@ describe("localStorage utilities", () => {
 
       const stored = JSON.parse(localStorageMock.getItem(CANVAS_NAVIGATION_KEY)!);
       expect(stored).toEqual(settings);
+    });
+  });
+
+  describe("welcome version gating", () => {
+    it("returns true on first run (no stored version)", () => {
+      expect(shouldShowWelcomeOnStartup()).toBe(true);
+    });
+
+    it("returns false when the stored version matches the app version", () => {
+      localStorageMock.setItem(WELCOME_LAST_VERSION_KEY, APP_VERSION);
+      expect(shouldShowWelcomeOnStartup()).toBe(false);
+    });
+
+    it("returns true when the stored version differs from the app version", () => {
+      localStorageMock.setItem(WELCOME_LAST_VERSION_KEY, "0.0.0");
+      expect(shouldShowWelcomeOnStartup()).toBe(true);
+    });
+
+    it("persists and reads the last seen version", () => {
+      setLastSeenVersion(APP_VERSION);
+      expect(getLastSeenVersion()).toBe(APP_VERSION);
+      expect(localStorageMock.getItem(WELCOME_LAST_VERSION_KEY)).toBe(APP_VERSION);
     });
   });
 });
