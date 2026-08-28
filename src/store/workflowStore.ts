@@ -2683,6 +2683,11 @@ const workflowStoreImpl: StateCreator<WorkflowStore> = (set, get) => ({
     // replaced. Safe because the undo history that referenced them is cleared below.
     revokeNodeBlobUrls(get().nodes);
 
+    // Record the current version as seen since loading a workflow dismisses the
+    // welcome modal (showQuickstart: false below). Without this, the modal would
+    // reappear on next launch if the version check didn't match.
+    setLastSeenVersion(APP_VERSION);
+
     set({
       // Clear selected state - selection should not be persisted across sessions
       // Also validate position to ensure coordinates are finite numbers
