@@ -1,7 +1,6 @@
 import { WorkflowFile } from "@/store/workflowStore";
 import { createDefaultNodeData } from "@/store/utils/nodeDefaults";
 import { NodeType } from "@/types";
-import { getEasingBezier } from "@/lib/easing-presets";
 
 interface ValidationError {
   path: string;
