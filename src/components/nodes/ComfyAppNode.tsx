@@ -58,6 +58,9 @@ export function ComfyAppNode({ id, data, selected }: NodeProps<ComfyAppNodeType>
   // render (set at creation time), so this must fire on mount.
   useEffect(() => {
     if (nodeData._autoOpenImport) {
+      // One-shot consumption of a creation-time flag; opening the modal from
+      // an effect is intentional here (mount-time initialization).
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setModal("replace");
       updateNodeData(id, { _autoOpenImport: false });
     }
@@ -70,6 +73,9 @@ export function ComfyAppNode({ id, data, selected }: NodeProps<ComfyAppNodeType>
   // creation time.
   useEffect(() => {
     if (nodeData._pendingWorkflow) {
+      // One-shot consumption of a creation-time flag; capturing the dropped
+      // upload into local state from an effect is intentional here.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDropped(nodeData._pendingWorkflow);
       setModal("replace");
       updateNodeData(id, { _pendingWorkflow: null });
@@ -222,6 +228,9 @@ export function ComfyAppNode({ id, data, selected }: NodeProps<ComfyAppNodeType>
     return nodeData.inspection ? { app, inspection: nodeData.inspection } : { app };
   }, [modal, app, nodeData.inspection]);
 
+  // Compiler cannot preserve this memo (deps reach into node data); it is a
+  // cheap loop over a handful of outputs, so a bail-out is acceptable.
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const primaryPreview = useMemo(() => {
     if (!app) return null;
     for (const output of app.outputs) {
