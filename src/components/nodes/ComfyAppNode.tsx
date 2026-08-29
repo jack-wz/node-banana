@@ -53,38 +53,28 @@ export function ComfyAppNode({ id, data, selected }: NodeProps<ComfyAppNodeType>
   const [dropped, setDropped] = useState<ComfyUpload | null>(null);
 
   // Created from the connection menu, which had nowhere to attach its wire —
-  // go straight to choosing a workflow so the node becomes usable. Adjusted
-  // during render (tracking the previous flag) rather than in an effect.
+  // go straight to choosing a workflow so the node becomes usable.
   // _autoOpenImport is typically already true on the node's very first
-  // render (set at creation time), so this must also fire on mount, not
-  // just on later transitions.
-  const [hasCheckedAutoOpen, setHasCheckedAutoOpen] = useState(false);
-  const [prevAutoOpenImport, setPrevAutoOpenImport] = useState(nodeData._autoOpenImport);
-  if (!hasCheckedAutoOpen || nodeData._autoOpenImport !== prevAutoOpenImport) {
-    setHasCheckedAutoOpen(true);
-    setPrevAutoOpenImport(nodeData._autoOpenImport);
+  // render (set at creation time), so this must fire on mount.
+  useEffect(() => {
     if (nodeData._autoOpenImport) {
       setModal("replace");
       updateNodeData(id, { _autoOpenImport: false });
     }
-  }
+  }, [id, nodeData._autoOpenImport, updateNodeData]);
 
   // Created by dropping a ComfyUI workflow onto the canvas: skip the file step
   // and read the dropped file straight away. It moves into local state because
   // it belongs to this import, not to the node — a saved workflow should not
-  // carry a copy of the upload it was built from. Same mount-time concern as
-  // above: _pendingWorkflow is set at creation time.
-  const [hasCheckedPendingWorkflow, setHasCheckedPendingWorkflow] = useState(false);
-  const [prevPendingWorkflow, setPrevPendingWorkflow] = useState(nodeData._pendingWorkflow);
-  if (!hasCheckedPendingWorkflow || nodeData._pendingWorkflow !== prevPendingWorkflow) {
-    setHasCheckedPendingWorkflow(true);
-    setPrevPendingWorkflow(nodeData._pendingWorkflow);
+  // carry a copy of the upload it was built from. _pendingWorkflow is set at
+  // creation time.
+  useEffect(() => {
     if (nodeData._pendingWorkflow) {
       setDropped(nodeData._pendingWorkflow);
       setModal("replace");
       updateNodeData(id, { _pendingWorkflow: null });
     }
-  }
+  }, [id, nodeData._pendingWorkflow, updateNodeData]);
 
   const edges = useWorkflowStore((state) => state.edges);
   const removeEdge = useWorkflowStore((state) => state.removeEdge);
@@ -232,12 +222,6 @@ export function ComfyAppNode({ id, data, selected }: NodeProps<ComfyAppNodeType>
     return nodeData.inspection ? { app, inspection: nodeData.inspection } : { app };
   }, [modal, app, nodeData.inspection]);
 
-  // The component's early "adjust during render" setState calls above (for
-  // _autoOpenImport/_pendingWorkflow) make the compiler unable to verify this
-  // memoization is safe to recompile; the manual deps are correct and this
-  // still runs with its written memoization, just without extra compiler
-  // optimization.
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const primaryPreview = useMemo(() => {
     if (!app) return null;
     for (const output of app.outputs) {
