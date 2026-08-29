@@ -498,6 +498,14 @@ export const en: Dictionary = {
   "qs.templatesDesc": "Pre-built workflows",
   "qs.promptWorkflow": "Prompt a workflow",
   "qs.promptWorkflowDesc": "Get Gemini to build it",
+  "qs.workflowLibrary": "Workflow library",
+  "qs.browseAll": "Browse all",
+  "qs.myFiles": "Recent workflows",
+  "qs.searchWorkflows": "Search workflows…",
+  "qs.chooseFolder": "Choose a workflows folder to see recent files",
+  "qs.lastEdited": "Last edited",
+  "qs.noRecentWorkflows": "No matching workflows",
+  "qs.loadingWorkflows": "Loading…",
 
   // ---- Workflow browser ----
   "browser.title": "Your Workflows",

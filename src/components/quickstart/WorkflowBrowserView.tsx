@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { WorkflowFile } from "@/store/workflowStore";
 import { QuickstartBackButton } from "./QuickstartBackButton";
-import { useT, t as translateT } from "@/i18n";
+import { useT } from "@/i18n";
+import { formatRelativeTime } from "@/utils/relativeTime";
 import {
   getWorkflowsDirectory,
   setWorkflowsDirectory,
@@ -22,20 +23,7 @@ interface WorkflowBrowserViewProps {
   onClose?: () => void;
 }
 
-function formatRelativeTime(timestamp: number): string {
-  const seconds = Math.floor((Date.now() - timestamp) / 1000);
-  if (seconds < 60) return translateT("time.justNow");
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return translateT("time.minutesAgo", { count: minutes });
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return translateT("time.hoursAgo", { count: hours });
-  const days = Math.floor(hours / 24);
-  if (days < 30) return translateT("time.daysAgo", { count: days });
-  const months = Math.floor(days / 30);
-  return translateT("time.monthsAgo", { count: months });
-}
-
-function dirBasename(dirPath: string): string {
+export function dirBasename(dirPath: string): string {
   return dirPath.split("/").filter(Boolean).pop() || dirPath;
 }
 

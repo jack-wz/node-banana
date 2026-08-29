@@ -497,6 +497,14 @@ export const zh: Dictionary = {
   "qs.templatesDesc": "预置工作流",
   "qs.promptWorkflow": "提示词建工作流",
   "qs.promptWorkflowDesc": "让 Gemini 帮你搭建",
+  "qs.workflowLibrary": "工作流库",
+  "qs.browseAll": "浏览全部",
+  "qs.myFiles": "最近的工作流",
+  "qs.searchWorkflows": "搜索工作流…",
+  "qs.chooseFolder": "选择工作流文件夹，查看最近项目",
+  "qs.lastEdited": "上次编辑",
+  "qs.noRecentWorkflows": "没有找到匹配的工作流",
+  "qs.loadingWorkflows": "加载中…",
 
   // ---- 工作流浏览器 ----
   "browser.title": "你的工作流",

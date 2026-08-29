@@ -7,6 +7,7 @@ import { QuickstartBackButton } from "./QuickstartBackButton";
 import { TemplateCard } from "./TemplateCard";
 import { CommunityWorkflowMeta, TemplateCategory, TemplateMetadata } from "@/types/quickstart";
 import { useT } from "@/i18n";
+import { primaryThumbnails, hoverThumbnails } from "@/lib/quickstart/templateThumbnails";
 
 interface TemplateExplorerViewProps {
   onBack: () => void;
@@ -26,25 +27,7 @@ const CATEGORY_OPTIONS: { id: CategoryFilter; labelKey: string }[] = [
 // identity is stable across renders and downstream useMemos stay cached.
 const PRESETS = getAllPresets();
 
-// Primary thumbnails (resized content images - 288px for 2x retina)
-const primaryThumbnails: Record<string, string> = {
-  "product-shot": "/template-thumbnails/primary/product-shot.jpg",
-  "model-product": "/template-thumbnails/primary/model-product.jpg",
-  "color-variations": "/template-thumbnails/primary/color-variations.jpg",
-  "background-swap": "/template-thumbnails/primary/background-swap.jpg",
-  "style-transfer": "/template-thumbnails/primary/style-transfer.jpg",
-  "scene-composite": "/template-thumbnails/primary/scene-composite.jpg",
-};
 
-// Hover thumbnails (workflow screenshots - 288px)
-const hoverThumbnails: Record<string, string> = {
-  "product-shot": "/template-thumbnails/product-shot.png",
-  "model-product": "/template-thumbnails/model-product.png",
-  "color-variations": "/template-thumbnails/color-variations.png",
-  "background-swap": "/template-thumbnails/background-swap.png",
-  "style-transfer": "/template-thumbnails/style-transfer.png",
-  "scene-composite": "/template-thumbnails/scene-composite.png",
-};
 
 export function TemplateExplorerView({
   onBack,

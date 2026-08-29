@@ -91,7 +91,7 @@ describe("WelcomeModal", () => {
 
       expect(screen.getByText("Node Banana")).toBeInTheDocument();
       expect(screen.getByText("New project")).toBeInTheDocument();
-      expect(screen.getByText("Templates")).toBeInTheDocument();
+      expect(screen.getByText("Workflow library")).toBeInTheDocument();
       expect(screen.getByText("Prompt a workflow")).toBeInTheDocument();
     });
 
@@ -124,7 +124,7 @@ describe("WelcomeModal", () => {
       expect(mockOnNewProject).toHaveBeenCalled();
     });
 
-    it("should navigate to templates view when 'Templates' is clicked", async () => {
+    it("should navigate to templates view when 'Browse all' is clicked", async () => {
       render(
         <WelcomeModal
           onWorkflowGenerated={mockOnWorkflowGenerated}
@@ -134,7 +134,7 @@ describe("WelcomeModal", () => {
       );
 
       await act(async () => {
-        fireEvent.click(screen.getByText("Templates"));
+        fireEvent.click(screen.getByText(/Browse all/i));
       });
 
       await waitFor(() => {
@@ -171,7 +171,7 @@ describe("WelcomeModal", () => {
 
       // Navigate to templates
       await act(async () => {
-        fireEvent.click(screen.getByText("Templates"));
+        fireEvent.click(screen.getByText(/Browse all/i));
       });
 
       await waitFor(() => {
@@ -217,7 +217,7 @@ describe("WelcomeModal", () => {
         />
       );
 
-      fireEvent.click(screen.getByText("Load workflow"));
+      fireEvent.click(screen.getByText(/Load workflow/i));
 
       expect(screen.getByTestId("workflow-browser-view")).toBeInTheDocument();
     });
@@ -231,7 +231,7 @@ describe("WelcomeModal", () => {
         />
       );
 
-      fireEvent.click(screen.getByText("Load workflow"));
+      fireEvent.click(screen.getByText(/Load workflow/i));
       expect(screen.getByTestId("workflow-browser-view")).toBeInTheDocument();
 
       fireEvent.click(screen.getByText("Back"));
@@ -247,7 +247,7 @@ describe("WelcomeModal", () => {
         />
       );
 
-      fireEvent.click(screen.getByText("Load workflow"));
+      fireEvent.click(screen.getByText(/Load workflow/i));
       fireEvent.click(screen.getByTestId("load-workflow-btn"));
 
       expect(mockOnWorkflowGenerated).toHaveBeenCalledWith(
@@ -269,7 +269,7 @@ describe("WelcomeModal", () => {
 
       // Navigate to templates
       await act(async () => {
-        fireEvent.click(screen.getByText("Templates"));
+        fireEvent.click(screen.getByText(/Browse all/i));
       });
 
       await waitFor(() => {

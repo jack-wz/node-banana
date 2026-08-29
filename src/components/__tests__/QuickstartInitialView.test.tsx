@@ -7,239 +7,105 @@ describe("QuickstartInitialView", () => {
   const mockOnSelectTemplates = vi.fn();
   const mockOnSelectVibe = vi.fn();
   const mockOnSelectLoad = vi.fn();
+  const mockOnWorkflowLoaded = vi.fn();
+
+  function renderView() {
+    return render(
+      <QuickstartInitialView
+        onNewProject={mockOnNewProject}
+        onSelectTemplates={mockOnSelectTemplates}
+        onSelectVibe={mockOnSelectVibe}
+        onSelectLoad={mockOnSelectLoad}
+        onWorkflowLoaded={mockOnWorkflowLoaded}
+      />
+    );
+  }
 
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  describe("Basic Rendering", () => {
-    it("should render the Node Banana title and logo", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
+  describe("Header", () => {
+    it("renders the Node Banana title and logo", () => {
+      renderView();
       expect(screen.getByText("Node Banana")).toBeInTheDocument();
-      expect(screen.getAllByAltText("").length).toBeGreaterThan(0); // Logo images
+      expect(screen.getAllByAltText("").length).toBeGreaterThan(0);
     });
 
-    it("should render the description text", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
+    it("renders the tagline", () => {
+      renderView();
       expect(
         screen.getByText(/node based workflow editor for generative AI pipelines/i)
       ).toBeInTheDocument();
     });
 
-    it("should render all four option buttons", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
-      expect(screen.getByText("New project")).toBeInTheDocument();
-      expect(screen.getByText("Load workflow")).toBeInTheDocument();
-      expect(screen.getByText("Templates")).toBeInTheDocument();
-      expect(screen.getByText("Prompt a workflow")).toBeInTheDocument();
-    });
-
-    it("should render option descriptions", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
-      expect(screen.getByText("Start a new workflow")).toBeInTheDocument();
-      expect(screen.getByText("Open existing file")).toBeInTheDocument();
-      expect(screen.getByText("Pre-built workflows")).toBeInTheDocument();
-      expect(screen.getByText("Prompt a workflow")).toBeInTheDocument();
-    });
-  });
-
-  describe("New Project Option", () => {
-    it("should call onNewProject when clicked", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
+    it("renders the primary New project button and calls onNewProject", () => {
+      renderView();
       fireEvent.click(screen.getByText("New project"));
-
       expect(mockOnNewProject).toHaveBeenCalledTimes(1);
     });
 
-    it("should display correct description for new project", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
-      expect(screen.getByText("Start a new workflow")).toBeInTheDocument();
-    });
-  });
-
-  describe("Load Workflow Option", () => {
-    it("should call onSelectLoad when clicked", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
-      fireEvent.click(screen.getByText("Load workflow"));
-
-      expect(mockOnSelectLoad).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe("Templates Option", () => {
-    it("should call onSelectTemplates when clicked", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
-      fireEvent.click(screen.getByText("Templates"));
-
-      expect(mockOnSelectTemplates).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe("Prompt a Workflow Option", () => {
-    it("should call onSelectVibe when clicked", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
+    it("renders the Prompt a workflow action with Beta badge", () => {
+      renderView();
       fireEvent.click(screen.getByText("Prompt a workflow"));
-
       expect(mockOnSelectVibe).toHaveBeenCalledTimes(1);
-    });
-
-    it("should display Beta badge on prompt option", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
       expect(screen.getByText("Beta")).toBeInTheDocument();
     });
   });
 
-  describe("External Links", () => {
-    it("should render Discord link with correct URL", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
-      const discordLink = screen.getByText("Discord").closest("a");
-      expect(discordLink).toHaveAttribute(
-        "href",
-        "https://discord.com/invite/89Nr6EKkTf"
-      );
-      expect(discordLink).toHaveAttribute("target", "_blank");
-      expect(discordLink).toHaveAttribute("rel", "noopener noreferrer");
+  describe("Workflow library strip", () => {
+    it("renders the library section with a Browse all action", () => {
+      renderView();
+      expect(screen.getByText("Workflow library")).toBeInTheDocument();
+      fireEvent.click(screen.getByText(/Browse all/i));
+      expect(mockOnSelectTemplates).toHaveBeenCalledTimes(1);
     });
 
-    it("should render Twitter/X link with correct URL", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
-      const twitterLink = screen.getByText("Willie").closest("a");
-      expect(twitterLink).toHaveAttribute("href", "https://x.com/ReflctWillie");
-      expect(twitterLink).toHaveAttribute("target", "_blank");
-      expect(twitterLink).toHaveAttribute("rel", "noopener noreferrer");
-    });
-
-    it("should render docs link", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
-
-      const docsLink = screen.getByText("Docs").closest("a");
-      expect(docsLink).toHaveAttribute("href", "https://node-banana-docs.vercel.app/");
-      expect(docsLink).toHaveAttribute("target", "_blank");
-      expect(docsLink).toHaveAttribute("rel", "noopener noreferrer");
+    it("renders preset template poster cards", () => {
+      renderView();
+      // PRESET_TEMPLATES has 6 presets; each renders as a button card
+      const strip = screen.getByText("Workflow library").closest("section");
+      expect(strip).not.toBeNull();
+      const cards = strip!.querySelectorAll("button");
+      expect(cards.length).toBeGreaterThanOrEqual(6);
     });
   });
 
-  describe("Accessibility", () => {
-    it("should have all buttons as interactive button elements", () => {
-      render(
-        <QuickstartInitialView
-          onNewProject={mockOnNewProject}
-          onSelectTemplates={mockOnSelectTemplates}
-          onSelectVibe={mockOnSelectVibe}
-          onSelectLoad={mockOnSelectLoad}
-        />
-      );
+  describe("Recent workflows", () => {
+    it("renders the recent files section", () => {
+      renderView();
+      expect(screen.getByText("Recent workflows")).toBeInTheDocument();
+    });
 
-      const buttons = screen.getAllByRole("button");
-      // Should have 4 option buttons
-      expect(buttons.length).toBe(4);
+    it("shows the choose-folder CTA when no workflows directory is configured", () => {
+      renderView();
+      expect(
+        screen.getByText(/Choose a workflows folder/i)
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe("Footer", () => {
+    it("renders the Load workflow secondary action", () => {
+      renderView();
+      fireEvent.click(screen.getByText(/Load workflow/i));
+      expect(mockOnSelectLoad).toHaveBeenCalledTimes(1);
+    });
+
+    it("renders external links with correct URLs", () => {
+      renderView();
+      const discord = screen.getByText("Discord").closest("a");
+      expect(discord).toHaveAttribute("href", "https://discord.com/invite/89Nr6EKkTf");
+      const docs = screen.getByText("Docs").closest("a");
+      expect(docs).toHaveAttribute("href", "https://node-banana-docs.vercel.app/");
+      const x = screen.getByText("Willie").closest("a");
+      expect(x).toHaveAttribute("href", "https://x.com/ReflctWillie");
     });
   });
 });
+
