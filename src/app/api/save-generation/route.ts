@@ -4,6 +4,8 @@ import * as path from "path";
 import * as crypto from "crypto";
 import { logger } from "@/utils/logger";
 import { recordGeneration } from "@/lib/db";
+import { validateWorkflowPathDeep } from "@/utils/pathValidation";
+import { validateMediaUrl } from "@/utils/urlValidation";
 
 export const maxDuration = 300; // 5 minute timeout for large media operations
 
@@ -145,6 +147,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate target directory (absolute, no traversal, not a system dir,
+    // symlink-resolved) before any filesystem writes.
+    const pathValidation = await validateWorkflowPathDeep(directoryPath);
+    if (!pathValidation.valid) {
+      logger.warn('file.error', 'Generation save failed: invalid path', {
+        directoryPath,
+        error: pathValidation.error,
+      });
+      return NextResponse.json(
+        { success: false, error: pathValidation.error },
+        { status: 400 }
+      );
+    }
+
     // Validate directory exists (or create if requested)
     try {
       const stats = await fs.stat(directoryPath);
@@ -187,6 +203,18 @@ export async function POST(request: NextRequest) {
     let extension: string;
 
     if (isHttpUrl(content)) {
+      // Block SSRF to internal networks before fetching provider content.
+      const urlCheck = validateMediaUrl(content);
+      if (!urlCheck.valid) {
+        logger.warn('file.error', 'Generation save failed: blocked URL', {
+          error: urlCheck.error,
+        });
+        return NextResponse.json(
+          { success: false, error: urlCheck.error },
+          { status: 400 }
+        );
+      }
+
       // Handle HTTP URL (common for large video files from providers)
       logger.info('file.save', 'Fetching content from URL', { url: content.substring(0, 100) });
 

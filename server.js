@@ -14,6 +14,13 @@ const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
   const server = createServer(async (req, res) => {
+    // Inject the authoritative client address for route-handler guards.
+    // Strip any client-supplied copy first so the header cannot be spoofed;
+    // see src/utils/requestGuards.ts.
+    delete req.headers['x-node-banana-remote-addr'];
+    if (req.socket.remoteAddress) {
+      req.headers['x-node-banana-remote-addr'] = req.socket.remoteAddress;
+    }
     await handle(req, res);
   });
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import * as fs from "fs/promises";
 import * as path from "path";
 import { logger } from "@/utils/logger";
+import { isSafePathComponent, validateWorkflowPathDeep } from "@/utils/pathValidation";
 
 // Supported file extensions
 const SUPPORTED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'mp4', 'webm', 'mov', 'mp3', 'wav', 'ogg', 'flac', 'aac'];
@@ -50,6 +51,28 @@ export async function POST(request: NextRequest) {
       });
       return NextResponse.json(
         { success: false, error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Reject imageIds that could escape the directory via path traversal.
+    if (!isSafePathComponent(imageId)) {
+      logger.warn('file.error', 'Generation load failed: unsafe imageId', { imageId });
+      return NextResponse.json(
+        { success: false, error: "Invalid imageId" },
+        { status: 400 }
+      );
+    }
+
+    // Validate the directory (absolute, no traversal, not a system dir).
+    const pathValidation = await validateWorkflowPathDeep(directoryPath);
+    if (!pathValidation.valid) {
+      logger.warn('file.error', 'Generation load failed: invalid path', {
+        directoryPath,
+        error: pathValidation.error,
+      });
+      return NextResponse.json(
+        { success: false, error: pathValidation.error },
         { status: 400 }
       );
     }

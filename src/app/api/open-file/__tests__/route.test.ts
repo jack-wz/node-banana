@@ -95,13 +95,26 @@ describe("/api/open-file route", () => {
       expect(data.error).toBe("Forbidden: localhost only");
     });
 
-    it("should allow requests from 127.0.0.1 x-forwarded-for", async () => {
+    it("should reject requests carrying x-forwarded-for (spoofable)", async () => {
+      const request = createMockRequest(
+        { filePath: "/Users/testuser/file.glb" },
+        { "x-forwarded-for": "127.0.0.1", host: "localhost:3000" }
+      );
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(data.error).toBe("Forbidden: localhost only");
+    });
+
+    it("should allow requests with a loopback socket address header", async () => {
       mockStat.mockResolvedValue({ isFile: () => true });
       mockExecFileAsync.mockResolvedValue({ stdout: "", stderr: "" });
 
       const request = createMockRequest(
         { filePath: "/Users/testuser/file.glb" },
-        { "x-forwarded-for": "127.0.0.1", host: "localhost:3000" }
+        { "x-node-banana-remote-addr": "127.0.0.1", host: "example.com" }
       );
 
       const response = await POST(request);
@@ -111,20 +124,17 @@ describe("/api/open-file route", () => {
       expect(data.success).toBe(true);
     });
 
-    it("should allow requests from ::1 x-forwarded-for", async () => {
-      mockStat.mockResolvedValue({ isFile: () => true });
-      mockExecFileAsync.mockResolvedValue({ stdout: "", stderr: "" });
-
+    it("should reject requests with a non-loopback socket address header", async () => {
       const request = createMockRequest(
         { filePath: "/Users/testuser/file.glb" },
-        { "x-forwarded-for": "::1", host: "localhost:3000" }
+        { "x-node-banana-remote-addr": "192.168.1.50", host: "localhost:3000" }
       );
 
       const response = await POST(request);
       const data = await response.json();
 
-      expect(response.status).toBe(200);
-      expect(data.success).toBe(true);
+      expect(response.status).toBe(403);
+      expect(data.error).toBe("Forbidden: localhost only");
     });
 
     it("should allow requests with localhost host header", async () => {
