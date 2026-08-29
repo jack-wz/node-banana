@@ -37,7 +37,7 @@ Node Banana is a node-based visual workflow editor for AI image generation. User
 | Purpose | Location |
 |---------|----------|
 | Central workflow state & execution logic | `src/store/workflowStore.ts` |
-| All TypeScript type definitions | `src/types/index.ts` |
+| All TypeScript type definitions | `src/types/` (split across `nodes.ts`, `workflow.ts`, etc., re-exported from `index.ts`) |
 | Main canvas component & connection validation | `src/components/WorkflowCanvas.tsx` |
 | Base node component (shared by all nodes) | `src/components/nodes/BaseNode.tsx` |
 | Image generation API route | `src/app/api/generate/route.ts` |
@@ -140,10 +140,10 @@ Returns `{ images: string[], text: string | null }`.
 
 ## Adding New Node Types
 
-1. Define the data interface in `src/types/index.ts`
-2. Add to `NodeType` union in `src/types/index.ts`
-3. Create default data in `createDefaultNodeData()` in `workflowStore.ts`
-4. Add dimensions to `defaultDimensions` in `workflowStore.ts`
+1. Define the data interface in `src/types/nodes.ts`
+2. Add to `NodeType` union in `src/types/nodes.ts`
+3. Create default data in `createDefaultNodeData()` in `src/store/utils/nodeDefaults.ts`
+4. Add dimensions to `defaultNodeDimensions` in `src/store/utils/nodeDefaults.ts`
 5. Create the component in `src/components/nodes/`
 6. Export from `src/components/nodes/index.ts`
 7. Register in `nodeTypes` in `WorkflowCanvas.tsx`
@@ -344,4 +344,3 @@ All routes in `src/app/api/`:
 - Commit after each logical task or unit of work is complete. When implementing a multi-task plan, commit after finishing each task — do NOT batch all tasks into a single commit at the end.
 - Each commit should be atomic and self-contained: one task = one commit.
 - The .planning directory is untracked, do not attempt to commit any changes to the files in this directory.
-
