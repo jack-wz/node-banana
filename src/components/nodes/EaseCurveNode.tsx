@@ -130,7 +130,7 @@ export function EaseCurveNode({ id, data, selected }: NodeProps<EaseCurveNodeTyp
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
           </svg>
           <span className="text-xs text-neutral-400">
-            Your browser doesn&apos;t support video encoding.
+            {t("node.encoderNotSupported")}
           </span>
           <a
             href="https://discord.com/invite/89Nr6EKkTf"
@@ -138,7 +138,7 @@ export function EaseCurveNode({ id, data, selected }: NodeProps<EaseCurveNodeTyp
             rel="noopener noreferrer"
             className="text-[10px] text-blue-400 hover:text-blue-300 underline"
           >
-            Doesn&apos;t seem right? Message Willie on Discord.
+            {t("node.encoderDiscordHint")}
           </a>
         </div>
       </BaseNode>
@@ -258,7 +258,7 @@ export function EaseCurveNode({ id, data, selected }: NodeProps<EaseCurveNodeTyp
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
           </svg>
-          <span className="text-white text-xs">Processing... {Math.round(nodeData.progress)}%</span>
+          <span className="text-white text-xs">{t("node.processing")} {Math.round(nodeData.progress)}%</span>
         </div>
       )}
 

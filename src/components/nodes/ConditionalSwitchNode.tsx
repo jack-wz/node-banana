@@ -223,7 +223,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
             <span className="text-[9px] whitespace-nowrap ml-1">
-              Clear
+              {t("node.clearText")}
             </span>
           </button>
         </div>
@@ -251,9 +251,9 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
           {nodeData.evaluationPaused ? (
             <span className="text-yellow-400">{t("node.evaluationPaused")}</span>
           ) : incomingText ? (
-            <>Input: &quot;{incomingText.slice(0, 50)}{incomingText.length > 50 ? "..." : ""}&quot;</>
+            <>{t("node.inputPrefix")}: &quot;{incomingText.slice(0, 50)}{incomingText.length > 50 ? "..." : ""}&quot;</>
           ) : (
-            "No input connected"
+            t("node.noInputConnected")
           )}
         </div>
 
@@ -334,10 +334,10 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
               value={rule.mode}
               onChange={(e) => handleModeChange(rule.id, e.target.value as MatchMode)}
             >
-              <option value="exact">exact</option>
-              <option value="contains">contains</option>
-              <option value="starts-with">starts</option>
-              <option value="ends-with">ends</option>
+              <option value="exact">{t("node.modeExact")}</option>
+              <option value="contains">{t("node.modeContains")}</option>
+              <option value="starts-with">{t("node.modeStartsWith")}</option>
+              <option value="ends-with">{t("node.modeEndsWith")}</option>
             </select>
 
             {/* Value input */}
@@ -387,7 +387,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          Add Rule
+          {t("node.addRule")}
         </button>
       </div>
 
