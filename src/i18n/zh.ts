@@ -505,6 +505,8 @@ export const zh: Dictionary = {
   "qs.lastEdited": "上次编辑",
   "qs.noRecentWorkflows": "没有找到匹配的工作流",
   "qs.loadingWorkflows": "加载中…",
+  "qs.viewGrid": "网格视图",
+  "qs.viewList": "列表视图",
 
   // ---- 工作流浏览器 ----
   "browser.title": "你的工作流",

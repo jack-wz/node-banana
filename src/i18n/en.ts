@@ -506,6 +506,8 @@ export const en: Dictionary = {
   "qs.lastEdited": "Last edited",
   "qs.noRecentWorkflows": "No matching workflows",
   "qs.loadingWorkflows": "Loading…",
+  "qs.viewGrid": "Grid view",
+  "qs.viewList": "List view",
 
   // ---- Workflow browser ----
   "browser.title": "Your Workflows",
