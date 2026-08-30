@@ -42,6 +42,12 @@ export function VideoFrameGrabNode({ id, data, selected }: NodeProps<VideoFrameG
     regenerateNode(id);
   };
 
+  // Compact by default: the First/Last + Extract controls live behind an
+  // expand toggle so the node stays small and never covers its handles.
+  const collapsed = nodeData.controlsCollapsed ?? true;
+  const toggleCollapsed = () =>
+    updateNodeData(id, { controlsCollapsed: !collapsed });
+
   return (
     <BaseNode
       id={id}
@@ -49,7 +55,7 @@ export function VideoFrameGrabNode({ id, data, selected }: NodeProps<VideoFrameG
       isExecuting={isRunning}
       hasError={nodeData.status === "error"}
       minWidth={320}
-      minHeight={320}
+      minHeight={collapsed ? 200 : 320}
       aspectFitMedia={nodeData.outputImage}
     >
       {/* Video In (target, left, 50%) */}
@@ -99,12 +105,14 @@ export function VideoFrameGrabNode({ id, data, selected }: NodeProps<VideoFrameG
           ) : (
             <div className="absolute inset-0 flex items-center justify-center border border-dashed border-neutral-600 rounded">
               <span className="text-[10px] text-neutral-500 text-center px-4">
-                Connect a video and extract a frame
+                {t("node.connectVideoHint")}
               </span>
             </div>
           )}
         </div>
 
+        {!collapsed && (
+          <>
         {/* Frame position toggle */}
         <div className="nodrag nowheel shrink-0 flex gap-1 px-1">
           <button
@@ -115,7 +123,7 @@ export function VideoFrameGrabNode({ id, data, selected }: NodeProps<VideoFrameG
                 : "bg-neutral-800 text-neutral-400 hover:text-neutral-200"
             }`}
           >
-            First
+            {t("node.frameFirst")}
           </button>
           <button
             onClick={() => updateNodeData(id, { framePosition: "last", outputImage: null })}
@@ -125,7 +133,7 @@ export function VideoFrameGrabNode({ id, data, selected }: NodeProps<VideoFrameG
                 : "bg-neutral-800 text-neutral-400 hover:text-neutral-200"
             }`}
           >
-            Last
+            {t("node.frameLast")}
           </button>
         </div>
 
@@ -136,7 +144,32 @@ export function VideoFrameGrabNode({ id, data, selected }: NodeProps<VideoFrameG
             disabled={!canExtract}
             className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed rounded text-white text-xs font-medium transition-colors"
           >
-            {nodeData.status === "loading" ? "Extracting..." : "Extract Frame"}
+            {nodeData.status === "loading" ? t("node.extractingFrame") : t("node.extractFrame")}
+          </button>
+        </div>
+          </>
+        )}
+
+        {/* Collapse/expand bar — compact summary + chevron, always visible */}
+        <div className="nodrag shrink-0 flex items-center justify-between px-1">
+          <span className="text-[10px] text-neutral-500">
+            {nodeData.framePosition === "first" ? t("node.frameFirst") : t("node.frameLast")}
+          </span>
+          <button
+            onClick={toggleCollapsed}
+            className="flex items-center gap-1 text-[10px] text-neutral-400 hover:text-neutral-200 transition-colors"
+            title={collapsed ? t("node.expandControls") : t("node.collapseControls")}
+          >
+            {collapsed ? t("node.expandControls") : t("node.collapseControls")}
+            <svg
+              className={`w-3 h-3 transition-transform ${collapsed ? "" : "rotate-180"}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+            </svg>
           </button>
         </div>
 

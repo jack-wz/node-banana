@@ -445,6 +445,8 @@ export interface VideoFrameGrabNodeData extends BaseNodeData {
   outputImage: string | null;        // Extracted frame as base64 PNG data URL
   status: NodeStatus;
   error: string | null;
+  /** Compact mode: hide First/Last + Extract controls until expanded. */
+  controlsCollapsed?: boolean;
 }
 
 /**

@@ -369,7 +369,7 @@ describe("SplitGridNode", () => {
     it("shows the connect-image placeholder when no source image", () => {
       renderNode({ sourceImage: null });
 
-      expect(screen.getByText("Connect image")).toBeInTheDocument();
+      expect(screen.getByText("Connect an image to split it into a grid")).toBeInTheDocument();
       expect(screen.queryByAltText("Source grid")).not.toBeInTheDocument();
     });
   });
