@@ -185,7 +185,7 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
               <button
                 onClick={handleDismissConfirmation}
                 className="absolute top-3 right-3 text-neutral-400 hover:text-neutral-200 transition-colors focus:outline-none"
-                aria-label="Close"
+aria-label={t("common.close")}
               >
                 <svg
                   className="w-5 h-5"

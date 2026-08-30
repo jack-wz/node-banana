@@ -12,6 +12,7 @@ import {
 import { useSavedComfyNodes } from "@/hooks/useSavedComfyNodes";
 import { buildComfyApp } from "@/lib/comfy/buildApp";
 import { loaderInputType } from "@/lib/comfy/graph";
+import { useT } from "@/i18n";
 import {
   instantiateSavedComfyNode,
   removeSavedComfyNode,
@@ -152,6 +153,7 @@ export function ComfyWorkflowImportModal({
   reconfigure,
   upload,
 }: ComfyWorkflowImportModalProps) {
+  const t = useT();
   const [tab, setTab] = useState<"file" | "blueprints" | "saved">("file");
   const [inspection, setInspection] = useState<Inspection | null>(null);
   const [source, setSource] = useState<"upload" | "blueprint">("upload");
@@ -720,7 +722,7 @@ export function ComfyWorkflowImportModal({
               {inspection?.hasAppMode && isMain && (
                 <span
                   className="mr-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-300/90 border border-emerald-500/25"
-                  title="This workflow ships an App Mode configuration — its author's inputs, settings and outputs are already selected."
+                  title={t("import.appModeBadgeTitle")}
                 >
                   App Mode
                 </span>
@@ -728,8 +730,8 @@ export function ComfyWorkflowImportModal({
               <button
                 type="button"
                 onClick={() => setView((prev) => (prev === "help" ? "main" : "help"))}
-                title="How to prepare a workflow for this"
-                aria-label="How to prepare a workflow"
+                title={t("import.helpButtonTitle")}
+                aria-label={t("import.helpButtonAria")}
                 aria-pressed={showHelp}
                 className={`w-10 h-10 flex items-center justify-center rounded-lg transition-[background-color,color,scale] duration-150 active:scale-[0.96] ${
                   showHelp
@@ -754,8 +756,8 @@ export function ComfyWorkflowImportModal({
               <button
                 type="button"
                 onClick={() => setShowSettings((open) => !open)}
-                title="ComfyUI connection — engine, API key"
-                aria-label="ComfyUI connection settings"
+                title={t("import.connectionTitle")}
+                aria-label={t("import.connectionAria")}
                 aria-pressed={showSettings}
                 className={`w-10 h-10 flex items-center justify-center rounded-lg transition-[background-color,color,scale] duration-150 active:scale-[0.96] ${
                   showSettings
@@ -958,20 +960,20 @@ export function ComfyWorkflowImportModal({
                   type="button"
                   onClick={() => saveToLibrary("update")}
                   disabled={!canAttach}
-                  title="Overwrite the saved node this one came from"
+                  title={t("import.updateSavedTitle")}
                   className={SECONDARY_BUTTON}
                 >
-                  Update saved node
+                  {t("import.updateSavedNode")}
                 </button>
               )}
               <button
                 type="button"
                 onClick={() => saveToLibrary("new")}
                 disabled={!canAttach}
-                title="Keep this node, as configured, in the node menus"
+                title={t("import.saveAsNodeTitle")}
                 className={SECONDARY_BUTTON}
               >
-                {canUpdateSaved ? "Save as new" : "Save as node"}
+                {canUpdateSaved ? t("import.saveAsNew") : t("import.saveAsNode")}
               </button>
               <button type="button" onClick={attach} disabled={!canAttach} className={PRIMARY_BUTTON}>
                 {reconfigure ? "Save changes" : "Add to node"}
@@ -1053,7 +1055,7 @@ function TabButton({
 }
 
 function FileDropZone({
-  busy,
+ busy,
   dragOver,
   onDragOver,
   onPick,
@@ -1065,6 +1067,7 @@ function FileDropZone({
   onPick: () => void;
   onFile: (file: File) => void;
 }) {
+  const t = useT();
   return (
     // A button, not a div: dropping a file needs a pointer, but *picking* one
     // should not — and the Blueprints tab is a different task, not an
@@ -1111,9 +1114,9 @@ function FileDropZone({
           </svg>
           {/* Spans, not p/div: a button may only hold phrasing content. */}
           <span className="block text-center">
-            <span className="block text-sm text-neutral-300">Drop a workflow JSON here</span>
+            <span className="block text-sm text-neutral-300">{t("import.dropWorkflow")}</span>
             <span className="block text-[11px] text-neutral-500 mt-0.5">
-              Saved or API-format exports both work
+              {t("import.dropFormats")}
             </span>
           </span>
         </>
@@ -1131,7 +1134,7 @@ function FileDropZone({
  * until Add (or a double-click) confirms it.
  */
 function BlueprintPicker({
-  blueprints,
+ blueprints,
   error,
   selected,
   onSelect,
@@ -1147,6 +1150,7 @@ function BlueprintPicker({
   onAdd: () => void;
   busy: boolean;
 }) {
+  const t = useT();
   const [filter, setFilter] = useState("");
 
   if (error) {
@@ -1206,14 +1210,14 @@ function BlueprintPicker({
           type="text"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Search Blueprints…"
-          aria-label="Search Blueprints"
+          placeholder={t("import.searchBlueprints")}
+          aria-label={t("import.searchBlueprints")}
           className="w-full bg-transparent py-2.5 text-sm text-neutral-100 placeholder:text-neutral-400 focus:outline-none"
         />
       </div>
       <div
         role="listbox"
-        aria-label="Blueprints"
+        aria-label={t("import.blueprints")}
         className="divide-y divide-neutral-800/80 max-h-[280px] overflow-y-auto"
       >
         {visible.map((blueprint) => {
@@ -1368,7 +1372,7 @@ function SavedNodePicker({
 }
 
 function ConfirmStep({
-  inspection,
+ inspection,
   name,
   onName,
   inputs,
@@ -1397,6 +1401,7 @@ function ConfirmStep({
   ) => void;
   onToggleMediaInput: (candidate: ComfyNodeCandidate, type: ComfyInputType) => void;
 }) {
+  const t = useT();
   const [showAll, setShowAll] = useState(false);
   const [widgetFilter, setWidgetFilter] = useState("");
 
@@ -1466,7 +1471,7 @@ function ConfirmStep({
       ))}
 
       <div>
-        <label className="block text-sm text-neutral-400 mb-1">Node name</label>
+        <label className="block text-sm text-neutral-400 mb-1">{t("import.nodeName")}</label>
         <input
           type="text"
           value={name}
@@ -1479,9 +1484,9 @@ function ConfirmStep({
       </div>
 
       <Section
-        title="Inputs"
-        hint="Connected from other nodes."
-        count={`${inputs.length} of ${mediaCandidates.length + textInputs.length} exposed`}
+        title={t("import.inputs")}
+        hint={t("import.inputsHint")}
+        count={t("import.exposedCount", { shown: inputs.length, total: mediaCandidates.length + textInputs.length })}
         empty="Nothing in this workflow accepts an incoming connection."
         isEmpty={mediaCandidates.length === 0 && textInputs.length === 0}
       >
@@ -1522,9 +1527,9 @@ function ConfirmStep({
       </Section>
 
       <Section
-        title="Settings"
-        hint="Adjustable on the node itself."
-        count={`${exposedCount} of ${inspection.widgetCandidates.length} exposed`}
+        title={t("common.settings")}
+        hint={t("import.settingsHint")}
+        count={t("import.exposedCount", { shown: exposedCount, total: inspection.widgetCandidates.length })}
         empty="This workflow has no adjustable widgets."
         isEmpty={inspection.widgetCandidates.length === 0}
       >
@@ -1588,8 +1593,8 @@ function ConfirmStep({
                     type="text"
                     value={widgetFilter}
                     onChange={(e) => setWidgetFilter(e.target.value)}
-                    placeholder="Search widgets…"
-                    aria-label="Search widgets"
+                    placeholder={t("import.searchWidgets")}
+                    aria-label={t("import.searchWidgets")}
                     className="w-full bg-transparent py-2.5 text-xs text-neutral-100 placeholder:text-neutral-400 focus:outline-none"
                   />
                 </div>
@@ -1639,9 +1644,9 @@ function ConfirmStep({
       </Section>
 
       <Section
-        title="Outputs"
-        hint="Produced results, connected onward."
-        count={`${outputs.length} of ${inspection.outputCandidates.length} exposed`}
+        title={t("import.outputs")}
+        hint={t("import.outputsHint")}
+        count={t("import.exposedCount", { shown: outputs.length, total: inspection.outputCandidates.length })}
         empty="This workflow has no Save or Preview node."
         isEmpty={inspection.outputCandidates.length === 0}
       >
@@ -1723,27 +1728,25 @@ function widgetName(candidate: ComfyWidgetCandidate): string {
  * because an import did not produce the node they expected.
  */
 function HelpPanel() {
+  const t = useT();
   return (
     <div className="space-y-5">
       <div className="space-y-2">
         <p className="text-sm text-neutral-200 leading-relaxed">
-          Drop a ComfyUI workflow onto the canvas, or start from a Blueprint. Select the inputs and
-          the outputs you want, and it becomes a node like any other.
+          {t("import.helpIntro1")}
         </p>
         <p className="text-sm text-neutral-200 leading-relaxed">
-          It runs on Comfy Cloud, or on your local ComfyUI.
+          {t("import.helpIntro2")}
         </p>
       </div>
 
       <section className="space-y-1.5">
-        <h3 className="text-sm font-medium text-neutral-100">App Mode gives the best result</h3>
+        <h3 className="text-sm font-medium text-neutral-100">{t("import.appModeBest")}</h3>
         <p className="text-xs text-neutral-400 leading-relaxed">
-          App Mode is part of the ComfyUI editor. In App Mode, you select the inputs and the outputs
-          of the graph. Node Banana keeps those selections, so the node arrives ready to run.
+          {t("import.appModeBody1")}
         </p>
         <p className="text-xs text-neutral-400 leading-relaxed">
-          Without App Mode, Node Banana finds the inputs and the outputs itself. You confirm them
-          here, and you can change them later.
+          {t("import.appModeBody2")}
         </p>
       </section>
 
@@ -1753,7 +1756,7 @@ function HelpPanel() {
         rel="noreferrer noopener"
         className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"
       >
-        Read the App Mode guide
+        {t("import.readAppModeGuide")}
         <svg
           className="w-3 h-3"
           viewBox="0 0 24 24"
@@ -1896,6 +1899,7 @@ function SettingRow({
   /** Set under a node heading, so the rows read as that node's. */
   indented?: boolean;
 }) {
+  const t = useT();
   const exposed = role !== "off";
   return (
     <div
@@ -1912,7 +1916,7 @@ function SettingRow({
       {candidate.fromAppMode && (
         <span
           className="shrink-0 w-1.5 h-1.5 rounded-full bg-emerald-400/70"
-          title="Chosen by this workflow's author"
+          title={t("import.authorChosen")}
         />
       )}
       <ChoiceToggle
@@ -1970,4 +1974,3 @@ function outputTypeOf(inspection: Inspection, nodeId: string): ComfyOutputType {
   const suggested = inspection.suggested.outputs.find((o) => o.nodeId === nodeId);
   return suggested?.type ?? "image";
 }
-

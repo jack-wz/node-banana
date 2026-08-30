@@ -4,6 +4,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { NodeType } from "@/types";
 import { useSavedComfyNodes } from "@/hooks/useSavedComfyNodes";
 import { ALL_NODE_OPTIONS, optionKey, savedComfyOptions } from "./ConnectionDropMenu";
+import { useT } from "@/i18n";
 
 interface NodeSearchMenuProps {
   /** Screen position (clientX/clientY) where the menu should anchor. */
@@ -21,6 +22,7 @@ const MENU_MAX_HEIGHT = 336; // header + max-h-64 list + footer, approx
  * the empty canvas. Styled to match ConnectionDropMenu (the handle-drag menu).
  */
 export function NodeSearchMenu({ position, onSelect, onClose }: NodeSearchMenuProps) {
+  const t = useT();
   const menuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -133,9 +135,9 @@ export function NodeSearchMenu({ position, onSelect, onClose }: NodeSearchMenuPr
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Search nodes…"
+          placeholder={t("search.nodesPlaceholder")}
           className="w-full bg-transparent text-[11px] text-neutral-100 placeholder-neutral-500 outline-none"
-          aria-label="Search nodes"
+          aria-label={t("search.nodesAria")}
         />
       </div>
       <div ref={listRef} className="py-1 max-h-64 overflow-y-auto overscroll-contain nowheel">

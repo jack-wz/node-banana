@@ -238,7 +238,7 @@ export function ArrayNode({ id, data, selected }: NodeProps<ArrayNodeType>) {
           >
             <option value="delimiter">{t("node.delimiter")}</option>
             <option value="newline">{t("node.newline")}</option>
-            <option value="regex">Regex (Advanced)</option>
+            <option value="regex">{t("node.regexAdvanced")}</option>
           </select>
           {/* Batch mode toggle */}
           <button

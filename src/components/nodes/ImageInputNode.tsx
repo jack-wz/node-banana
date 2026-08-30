@@ -118,7 +118,7 @@ export function ImageInputNode({ id, data, selected }: NodeProps<ImageInputNodeT
           )}
           <button
             onClick={() => downloadMedia(nodeData.image!, "image")}
-            aria-label="Download image"
+aria-label={t("node.downloadImage")}
             className="absolute top-2 right-10 w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded text-xs opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all flex items-center justify-center"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -127,7 +127,7 @@ export function ImageInputNode({ id, data, selected }: NodeProps<ImageInputNodeT
           </button>
           <button
             onClick={handleRemove}
-            aria-label="Remove image"
+aria-label={t("node.removeImage")}
             className="absolute top-2 right-2 w-6 h-6 bg-black/60 hover:bg-red-600/80 text-white rounded text-xs opacity-0 group-hover:opacity-100 focus:opacity-100 focus:ring-1 focus:ring-red-400 transition-all flex items-center justify-center"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -139,7 +139,7 @@ export function ImageInputNode({ id, data, selected }: NodeProps<ImageInputNodeT
         <div
           role="button"
           tabIndex={0}
-          aria-label="Upload image"
+aria-label={t("node.uploadImage")}
           onClick={() => fileInputRef.current?.click()}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {

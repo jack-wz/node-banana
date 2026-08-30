@@ -10,10 +10,12 @@ import { useAdaptiveImageSrc } from "@/hooks/useAdaptiveImageSrc";
 import { downloadMedia } from "@/utils/downloadMedia";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 type AnnotationNodeType = Node<AnnotationNodeData, "annotation">;
 
 export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeType>) {
+  const t = useT();
   const nodeData = data;
   const openModal = useAnnotationStore((state) => state.openModal);
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
@@ -142,7 +144,7 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
               e.stopPropagation();
               downloadMedia(displayImage!, "image");
             }}
-            aria-label="Download image"
+aria-label={t("node.downloadImage")}
             className="absolute top-2 right-10 w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded text-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-white transition-opacity flex items-center justify-center"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

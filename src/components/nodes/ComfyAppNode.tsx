@@ -16,6 +16,7 @@ import { ComfyWordmark } from "@/components/icons/ComfyWordmark";
 import { useComfyPreview } from "@/hooks/useComfyPreview";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { useWorkflowStore } from "@/store/workflowStore";
+import { useT } from "@/i18n";
 import { outputsToNodeData } from "@/store/execution/comfyAppExecutor";
 import { appInputHandles, appToInputSchema } from "@/lib/comfy/nodeSchema";
 import { mergeParamValues } from "@/lib/comfy/reconfigure";
@@ -458,6 +459,7 @@ function ComfyAppHeader({
   onReplace: () => void;
   runStatus: string | null;
 }) {
+  const t = useT();
   return (
     <div className="flex items-center gap-2 pt-2 pb-1.5 shrink-0">
       <div className="min-w-0 flex-1">
@@ -472,11 +474,11 @@ function ComfyAppHeader({
             : `${app.nodeCount} node${app.nodeCount === 1 ? "" : "s"}`}
         </p>
       </div>
-      <HeaderButton onClick={onEdit} title="Choose inputs, settings and outputs">
+<HeaderButton onClick={onEdit} title={t("node.chooseInputs")}>
         <circle cx="12" cy="12" r="3" />
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
       </HeaderButton>
-      <HeaderButton onClick={onReplace} title="Replace this workflow">
+<HeaderButton onClick={onReplace} title={t("node.replaceWorkflow")}>
         <path d="M21 2v6h-6" />
         <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
         <path d="M3 22v-6h6" />
@@ -570,6 +572,7 @@ function Preview({
   livePreview: string | null;
   error: string | null;
 }) {
+  const t = useT();
   if (isRunning) return <Rendering livePreview={livePreview} />;
   if (error) {
     return (
@@ -579,7 +582,7 @@ function Preview({
     );
   }
   if (!preview) {
-    return <span className="text-[10px] text-neutral-600">No output yet</span>;
+    return <span className="text-[10px] text-neutral-600">{t("common.noOutputYet")}</span>;
   }
   if (preview.type === "text") {
     return (

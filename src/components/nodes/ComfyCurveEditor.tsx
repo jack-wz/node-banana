@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo, useRef, useState } from "react";
+import { useT } from "@/i18n";
 
 import {
   IDENTITY_CURVE,
@@ -36,6 +37,7 @@ const DIVISIONS = 4;
  * pointer and the canvas pans instead of the point moving.
  */
 function ComfyCurveEditorInner({ label, value, onChange, description }: ComfyCurveEditorProps) {
+  const t = useT();
   const svgRef = useRef<SVGSVGElement>(null);
   const [dragging, setDragging] = useState<number | null>(null);
   const curve = useMemo(() => normalizeCurve(value), [value]);
@@ -97,7 +99,7 @@ function ComfyCurveEditorInner({ label, value, onChange, description }: ComfyCur
         </label>
         <button
           type="button"
-          title="Reset this curve"
+          title={t("node.resetCurve")}
           disabled={isIdentityCurve(curve)}
           onClick={() => onChange(IDENTITY_CURVE)}
           className="nodrag nopan text-[9px] text-neutral-500 hover:text-neutral-200 disabled:opacity-30 disabled:hover:text-neutral-500 transition-colors"
@@ -169,7 +171,7 @@ function ComfyCurveEditorInner({ label, value, onChange, description }: ComfyCur
                 onChange(removeCurvePoint(curve, index));
               }}
             >
-              {locked && <title>Endpoint — moves vertically only</title>}
+              {locked && <title>{t("node.endpointVertical")}</title>}
             </circle>
           );
         })}

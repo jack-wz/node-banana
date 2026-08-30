@@ -8,6 +8,7 @@ import type { GifEncoderNodeData, WorkflowNode } from "@/types";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
 import { generateThumbnail } from "@/utils/imageThumbnail";
+import { useT } from "@/i18n";
 import {
   getThumbnail,
   setThumbnail,
@@ -107,6 +108,7 @@ function formatBytes(bytes: number | null): string {
 }
 
 export function GifEncoderNode({ id, data, selected }: NodeProps<GifEncoderNodeType>) {
+  const t = useT();
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const regenerateNode = useWorkflowStore((state) => state.regenerateNode);
@@ -273,7 +275,7 @@ export function GifEncoderNode({ id, data, selected }: NodeProps<GifEncoderNodeT
         {/* Filmstrip */}
         {orderedFrames.length === 0 ? (
           <div className="h-16 flex items-center justify-center border border-dashed border-neutral-600 rounded">
-            <span className="text-[10px] text-neutral-500">Connect image frames</span>
+            <span className="text-[10px] text-neutral-500">{t("node.connectFrames")}</span>
           </div>
         ) : (
           <div className="overflow-y-auto nowheel grid grid-cols-6 content-start gap-1.5 p-1.5 bg-neutral-900/50 rounded shrink-0 max-h-[120px]">
@@ -301,7 +303,7 @@ export function GifEncoderNode({ id, data, selected }: NodeProps<GifEncoderNodeT
                 <button
                   onClick={() => removeEdge(frame.edgeId)}
                   className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-600/80 hover:bg-red-500 rounded text-white opacity-0 group-hover:opacity-100 flex items-center justify-center"
-                  title="Disconnect"
+                  title={t("node.disconnect")}
                 >
                   <svg className="w-2 h-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -321,7 +323,7 @@ export function GifEncoderNode({ id, data, selected }: NodeProps<GifEncoderNodeT
               <button
                 onClick={() => updateNodeData(id, { outputGif: null, status: "idle", outputBytes: null, outputDimensions: null })}
                 className="absolute top-1 right-1 w-5 h-5 bg-neutral-900/80 hover:bg-red-600/80 rounded flex items-center justify-center text-neutral-400 hover:text-white"
-                title="Clear GIF"
+                title={t("node.clearGif")}
               >
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -347,7 +349,7 @@ export function GifEncoderNode({ id, data, selected }: NodeProps<GifEncoderNodeT
               onChange={(e) => updateNodeData(id, { fps: Math.max(1, Math.min(30, Number(e.target.value) || 1)) })}
               className="w-12 px-1.5 py-0.5 bg-neutral-800 rounded text-neutral-200"
             />
-            <label className="text-neutral-400">Colors</label>
+            <label className="text-neutral-400">{t("node.colors")}</label>
             <input
               type="number"
               min={2}

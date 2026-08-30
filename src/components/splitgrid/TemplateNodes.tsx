@@ -10,6 +10,7 @@
  */
 
 import { createContext, memo, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useT } from "@/i18n";
 import {
   BaseEdge,
   getBezierPath,
@@ -241,6 +242,7 @@ function MiniCard({ selected, children }: { selected: boolean; children: React.R
 }
 
 function BaseImageBody({ sourceImage }: { sourceImage?: string | null }) {
+  const t = useT();
   return (
     <div className="relative w-full h-full overflow-clip rounded-lg">
       {sourceImage ? (
@@ -258,7 +260,7 @@ function BaseImageBody({ sourceImage }: { sourceImage?: string | null }) {
           <svg className="w-8 h-8 text-neutral-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
           </svg>
-          <span className="text-xs text-neutral-500 mt-2">Split image lands here</span>
+          <span className="text-xs text-neutral-500 mt-2">{t("tpl.splitImageLandsHere")}</span>
         </div>
       )}
     </div>
@@ -266,13 +268,14 @@ function BaseImageBody({ sourceImage }: { sourceImage?: string | null }) {
 }
 
 function PromptBody({ nodeId, overrides }: { nodeId: string; overrides: Record<string, unknown> }) {
+  const t = useT();
   const { setOverrides } = useContext(TemplateEditorContext);
   const prompt = typeof overrides.prompt === "string" ? overrides.prompt : "";
   return (
     <textarea
       value={prompt}
       onChange={(event) => setOverrides(nodeId, { ...overrides, prompt: event.target.value })}
-      placeholder="Describe what to generate..."
+      placeholder={t("tpl.describeGenerate")}
       className="nodrag nopan nowheel w-full h-full p-3 text-xs leading-relaxed text-neutral-100 bg-neutral-800 rounded-lg resize-none focus:outline-none placeholder:text-neutral-500"
     />
   );
@@ -283,6 +286,7 @@ function PromptBody({ nodeId, overrides }: { nodeId: string; overrides: Record<s
  * gemini selects, external-provider ModelParameters, ModelSearchDialog browse.
  */
 function GenerateBody({ nodeId, overrides }: { nodeId: string; overrides: Record<string, unknown> }) {
+  const t = useT();
   const { setOverrides } = useContext(TemplateEditorContext);
   const [isParamsExpanded, setIsParamsExpanded] = useState(true);
   const [isBrowseDialogOpen, setIsBrowseDialogOpen] = useState(false);
@@ -372,7 +376,7 @@ function GenerateBody({ nodeId, overrides }: { nodeId: string; overrides: Record
         {/* Preview area — parity with GenerateImageNode's empty state */}
         <div className="relative flex-1 min-h-[64px] overflow-hidden rounded-t-lg">
           <div className="w-full h-full bg-neutral-900/40 flex flex-col items-center justify-center">
-            <span className="text-neutral-500 text-[10px]">Run to generate</span>
+            <span className="text-neutral-500 text-[10px]">{t("tpl.runToGenerate")}</span>
           </div>
         </div>
 
@@ -387,7 +391,7 @@ function GenerateBody({ nodeId, overrides }: { nodeId: string; overrides: Record
           {isGeminiProvider && currentModelId ? (
             <div className="space-y-1.5 max-w-[280px]">
               <div className="flex items-center gap-2">
-                <label className="text-[11px] text-neutral-400 shrink-0">Model</label>
+                <label className="text-[11px] text-neutral-400 shrink-0">{t("common.model")}</label>
                 <select
                   value={currentModelId}
                   onChange={handleGeminiModelChange}
@@ -401,7 +405,7 @@ function GenerateBody({ nodeId, overrides }: { nodeId: string; overrides: Record
                 </select>
               </div>
               <div className="flex items-center gap-2">
-                <label className="text-[11px] text-neutral-400 shrink-0">Aspect Ratio</label>
+                <label className="text-[11px] text-neutral-400 shrink-0">{t("tpl.aspectRatio")}</label>
                 <select
                   value={aspectRatio}
                   onChange={(e) => setOverrides(nodeId, { ...overrides, aspectRatio: e.target.value })}
@@ -416,7 +420,7 @@ function GenerateBody({ nodeId, overrides }: { nodeId: string; overrides: Record
               </div>
               {supportsResolution && (
                 <div className="flex items-center gap-2">
-                  <label className="text-[11px] text-neutral-400 shrink-0">Resolution</label>
+                  <label className="text-[11px] text-neutral-400 shrink-0">{t("tpl.resolution")}</label>
                   <select
                     value={resolution}
                     onChange={(e) => setOverrides(nodeId, { ...overrides, resolution: e.target.value })}
@@ -486,6 +490,7 @@ function GenerateBody({ nodeId, overrides }: { nodeId: string; overrides: Record
  * provider, model, temperature, and max tokens.
  */
 function LlmBody({ nodeId, overrides }: { nodeId: string; overrides: Record<string, unknown> }) {
+  const t = useT();
   const { setOverrides } = useContext(TemplateEditorContext);
   const [isParamsExpanded, setIsParamsExpanded] = useState(true);
   const panelRef = useAutoGrowPanel(nodeId);
@@ -519,7 +524,7 @@ function LlmBody({ nodeId, overrides }: { nodeId: string; overrides: Record<stri
           <span className="text-neutral-600 [&>svg]:w-8 [&>svg]:h-8">
             {getTemplateNodeIcon("llmGenerate")}
           </span>
-          <span className="text-neutral-500 text-[10px]">AI text generation</span>
+          <span className="text-neutral-500 text-[10px]">{t("tpl.aiTextGeneration")}</span>
         </div>
       </div>
 
@@ -532,7 +537,7 @@ function LlmBody({ nodeId, overrides }: { nodeId: string; overrides: Record<stri
         >
           <div className="space-y-1.5 max-w-[280px]">
             <div className="flex items-center gap-2">
-              <label className="text-[11px] text-neutral-400 shrink-0">Provider</label>
+              <label className="text-[11px] text-neutral-400 shrink-0">{t("common.provider")}</label>
               <select value={provider} onChange={handleProviderChange} className={GEMINI_SELECT_CLASS}>
                 {LLM_PROVIDERS.map((p) => (
                   <option key={p.value} value={p.value}>
@@ -542,7 +547,7 @@ function LlmBody({ nodeId, overrides }: { nodeId: string; overrides: Record<stri
               </select>
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-[11px] text-neutral-400 shrink-0">Model</label>
+              <label className="text-[11px] text-neutral-400 shrink-0">{t("common.model")}</label>
               <select
                 value={model}
                 onChange={(e) => setOverrides(nodeId, { ...overrides, model: e.target.value })}

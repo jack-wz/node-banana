@@ -457,7 +457,7 @@ export function VideoTrimNode({ id, data, selected }: NodeProps<VideoTrimNodeTyp
                 <span className="text-[11px] text-neutral-200 font-mono">{formatTime(trimDuration)}</span>
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-[10px] text-neutral-400">End</span>
+                <span className="text-[10px] text-neutral-400">{t("node.trimEnd")}</span>
                 <span className="text-[11px] text-neutral-200 font-mono">{formatTime(endTime)}</span>
               </div>
             </div>
