@@ -129,3 +129,22 @@ export function getEasingFunction(name: string): EasingFunction {
 export function getAllEasingNames(): string[] {
   return Object.keys(easing);
 }
+
+/**
+ * Generate an SVG polyline (in 0..width / 0..height coordinate space)
+ * previewing an easing curve. Shared by the control panel and the inline
+ * editor on the Ease Curve node.
+ */
+export function generateEasingPolyline(
+  easingName: string,
+  width: number,
+  height: number,
+  samples: number = 20
+): string {
+  const fn = getEasingFunction(easingName);
+  return Array.from({ length: samples + 1 }, (_, i) => {
+    const t = i / samples;
+    const y = fn(t);
+    return `${(t * width).toFixed(1)},${((1 - y) * height).toFixed(1)}`;
+  }).join(" ");
+}

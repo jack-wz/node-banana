@@ -10,7 +10,7 @@ import { ModelSearchDialog } from "@/components/modals/ModelSearchDialog";
 import { ModelParameters } from "./ModelParameters";
 import { CubicBezierEditor } from "@/components/CubicBezierEditor";
 import { EASING_PRESETS, getEasingBezier } from "@/lib/easing-presets";
-import { getAllEasingNames, getEasingFunction } from "@/lib/easing-functions";
+import { getAllEasingNames, generateEasingPolyline } from "@/lib/easing-functions";
 import { getModelPageUrl, getProviderDisplayName } from "@/utils/providerUrls";
 import { useT } from "@/i18n";
 
@@ -78,20 +78,6 @@ const LLM_MODELS: Record<LLMProvider, { value: LLMModelType; label: string }[]> 
 const ALL_EASING_NAMES = getAllEasingNames();
 const PRESET_NAMES = new Set(EASING_PRESETS);
 
-// Generate SVG polyline for easing preview
-function generateEasingPolyline(
-  easingName: string,
-  width: number,
-  height: number,
-  samples: number = 20
-): string {
-  const fn = getEasingFunction(easingName);
-  return Array.from({ length: samples + 1 }, (_, i) => {
-    const t = i / samples;
-    const y = fn(t);
-    return `${(t * width).toFixed(1)},${((1 - y) * height).toFixed(1)}`;
-  }).join(" ");
-}
 
 /**
  * Fixed-position control panel on the right side of viewport

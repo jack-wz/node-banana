@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useCallback } from "react";
 import { Handle, Position, NodeProps, Node } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { useWorkflowStore } from "@/store/workflowStore";
@@ -11,6 +11,9 @@ import { useVideoAutoplay } from "@/hooks/useVideoAutoplay";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
 import { useT } from "@/i18n";
+import { CubicBezierEditor } from "@/components/CubicBezierEditor";
+import { EASING_PRESETS, getEasingBezier } from "@/lib/easing-presets";
+import { generateEasingPolyline } from "@/lib/easing-functions";
 
 type EaseCurveNodeType = Node<EaseCurveNodeData, "easeCurve">;
 
@@ -20,6 +23,7 @@ export function EaseCurveNode({ id, data, selected }: NodeProps<EaseCurveNodeTyp
   const nodeData = data;
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
   const isRunning = useWorkflowStore((state) => state.isRunning);
+  const edges = useWorkflowStore((state) => state.edges);
   const videoBlobUrl = useVideoBlobUrl(nodeData.outputVideo ?? null);
   const videoAutoplayRef = useVideoAutoplay(id, selected);
   const showLabels = useShowHandleLabels(selected);
@@ -32,6 +36,35 @@ export function EaseCurveNode({ id, data, selected }: NodeProps<EaseCurveNodeTyp
       });
     }
   }, [id, nodeData.encoderSupported, updateNodeData]);
+
+  // Inline curve editing: an easeCurve connection means settings are
+  // inherited from upstream — mirror the side panel's inherited overlay.
+  const isInherited = edges.some((e) => e.target === id && e.targetHandle === "easeCurve");
+
+  const handleBezierChange = useCallback(
+    (value: [number, number, number, number]) => {
+      updateNodeData(id, { bezierHandles: value, easingPreset: null });
+    },
+    [id, updateNodeData]
+  );
+
+  const handleSelectPreset = useCallback(
+    (name: string) => {
+      updateNodeData(id, { easingPreset: name, bezierHandles: getEasingBezier(name) });
+    },
+    [id, updateNodeData]
+  );
+
+  const editorEasingCurve = useMemo(() => {
+    if (!nodeData.easingPreset) return undefined;
+    return generateEasingPolyline(nodeData.easingPreset, 100, 100, 50);
+  }, [nodeData.easingPreset]);
+
+  // Preset chips with mini curve thumbnails (same set as the side panel).
+  const presetChips = useMemo(
+    () => EASING_PRESETS.map((name) => ({ name, polyline: generateEasingPolyline(name, 36, 36) })),
+    []
+  );
 
   // Shared handles rendered in ALL states (4 handles with labels)
   const renderHandles = () => (
@@ -170,8 +203,51 @@ export function EaseCurveNode({ id, data, selected }: NodeProps<EaseCurveNodeTyp
           </button>
         </div>
       ) : (
-        <div className="w-full h-full flex items-center justify-center bg-neutral-900/40 rounded-lg">
-          <span className="text-[10px] text-neutral-500">{t("node.applyEaseHint")}</span>
+        <div className="w-full h-full flex flex-col bg-neutral-900/40 rounded-lg p-3 gap-2 nodrag nowheel">
+          {isInherited ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center gap-1">
+              <span className="text-xs text-neutral-300">{t("node.settingsInherited")}</span>
+              <span className="text-[10px] text-neutral-500">{t("node.breakConnection")}</span>
+            </div>
+          ) : (
+            <>
+              <div className="flex-1 min-h-0 flex items-center">
+                <div className="w-full max-w-[220px] mx-auto">
+                  <CubicBezierEditor
+                    value={nodeData.bezierHandles || [0.42, 0, 0.58, 1]}
+                    onChange={handleBezierChange}
+                    onCommit={handleBezierChange}
+                    easingCurve={editorEasingCurve}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center justify-center gap-1.5 shrink-0">
+                {presetChips.map((chip) => (
+                  <button
+                    key={chip.name}
+                    onClick={() => handleSelectPreset(chip.name)}
+                    title={chip.name}
+                    className={`w-8 h-8 rounded border transition-colors ${
+                      nodeData.easingPreset === chip.name
+                        ? "border-lime-300/70 bg-lime-300/10"
+                        : "border-neutral-700 hover:border-neutral-500 bg-neutral-800/50"
+                    }`}
+                  >
+                    <svg viewBox="0 0 36 36" className="w-full h-full p-1">
+                      <polyline
+                        points={chip.polyline}
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className={nodeData.easingPreset === chip.name ? "text-lime-300" : "text-neutral-400"}
+                      />
+                    </svg>
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-neutral-500 text-center shrink-0">{t("node.applyEaseHint")}</p>
+            </>
+          )}
         </div>
       )}
 
