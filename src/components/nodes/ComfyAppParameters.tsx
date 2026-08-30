@@ -179,7 +179,7 @@ function ComfyParameterInputInner({ param, value, onChange }: ComfyParameterInpu
           className="nodrag nopan flex-1 min-w-0 text-[11px] py-1 px-2 rounded-md bg-[#1a1a1a] focus:outline-none focus:ring-1 focus:ring-neutral-600 text-white"
         >
           <option value="">
-            {param.default !== undefined ? `Default (${String(param.default)})` : "Default"}
+            {param.default !== undefined ? t("node.defaultWithValue", { value: String(param.default) }) : t("node.defaultValue")}
           </option>
           {param.enum.map((option) => (
             <option key={option} value={option}>

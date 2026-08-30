@@ -359,7 +359,7 @@ export function OutputGalleryNode({ id, data, selected }: NodeProps<OutputGaller
         {displayMedia.length === 0 ? (
           <div className="w-full flex-1 min-h-[200px] border border-dashed border-neutral-600 rounded flex items-center justify-center">
             <span className="text-neutral-500 text-[10px] text-center px-4">
-              Connect image or video nodes to view gallery
+              {t("node.connectToGallery")}
             </span>
           </div>
         ) : (

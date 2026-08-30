@@ -167,8 +167,8 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
     if (nodeData.selectedModel?.displayName && nodeData.selectedModel.modelId) {
       return nodeData.selectedModel.displayName;
     }
-    return "Generate Audio";
-  }, [nodeData.selectedModel?.displayName, nodeData.selectedModel?.modelId]);
+    return t("node.generateAudio");
+  }, [nodeData.selectedModel?.displayName, nodeData.selectedModel?.modelId, t]);
 
   // Inline parameters: compute collapse state and toggle handler
   const isParamsExpanded = nodeData.parametersExpanded ?? true; // default expanded

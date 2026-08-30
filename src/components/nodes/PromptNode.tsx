@@ -127,7 +127,7 @@ export function PromptNode({ id, data, selected }: NodeProps<PromptNodeType>) {
             className="nodrag nopan text-[10px] text-blue-400 hover:text-blue-300 transition-colors"
             title={t("node.setVariable")}
           >
-            {nodeData.variableName ? `@${nodeData.variableName}` : "Add variable"}
+            {nodeData.variableName ? `@${nodeData.variableName}` : t("node.addVariable")}
           </button>
         </div>
 

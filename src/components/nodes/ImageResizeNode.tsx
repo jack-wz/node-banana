@@ -120,7 +120,7 @@ export function ImageResizeNode({ id, data, selected }: NodeProps<ImageResizeNod
                     : "bg-neutral-800 text-neutral-400 hover:text-neutral-200"
                 }`}
               >
-                {m === "exact" ? "Exact" : m === "maxEdge" ? "Max Edge" : "Scale %"}
+                {m === "exact" ? t("node.resizeExact") : m === "maxEdge" ? t("node.maxEdge") : t("node.resizeScalePct")}
               </button>
             ))}
           </div>
@@ -238,7 +238,7 @@ export function ImageResizeNode({ id, data, selected }: NodeProps<ImageResizeNod
             disabled={!nodeData.sourceImage || nodeData.status === "loading" || isRunning}
             className="px-3 py-1 bg-blue-600 hover:bg-blue-500 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed rounded text-white text-xs font-medium transition-colors"
           >
-            {nodeData.status === "loading" ? "Resizing..." : "Resize"}
+            {nodeData.status === "loading" ? t("node.resizing") : t("node.resize")}
           </button>
         </div>
 

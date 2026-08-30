@@ -37,7 +37,7 @@ function InlineParameterPanelInner({
         type="button"
         onClick={onToggle}
         className={`nodrag nopan w-full flex items-center justify-center gap-1 py-1 text-neutral-500 hover:text-neutral-300 transition-colors ${expanded ? "bg-[#2a2a2a]" : ""}`}
-        aria-label={expanded ? "Collapse parameters" : "Expand parameters"}
+        aria-label={expanded ? t("node.collapseParams") : t("node.expandParams")}
         aria-expanded={expanded}
         aria-controls={`params-${nodeId}`}
       >

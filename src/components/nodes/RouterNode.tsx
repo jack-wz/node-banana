@@ -6,6 +6,7 @@ import { BaseNode } from "./BaseNode";
 import { useWorkflowStore } from "@/store/workflowStore";
 import type { WorkflowNode } from "@/types";
 import { HANDLE_COLORS as SHARED_HANDLE_COLORS } from "@/utils/handleColors";
+import { useT } from "@/i18n";
 
 const ALL_HANDLE_TYPES = ["image", "text", "video", "audio", "3d", "easeCurve"] as const;
 
@@ -20,6 +21,7 @@ const HANDLE_COLORS: Record<(typeof ALL_HANDLE_TYPES)[number], string> = {
 };
 
 export const RouterNode = memo(({ id, selected }: NodeProps<WorkflowNode>) => {
+  const t = useT();
   const edges = useWorkflowStore((state) => state.edges);
   const updateNodeInternals = useUpdateNodeInternals();
   const { setNodes } = useReactFlow();
@@ -130,7 +132,7 @@ export const RouterNode = memo(({ id, selected }: NodeProps<WorkflowNode>) => {
       <div className="text-[10px] text-neutral-500 text-center py-1">
         {activeInputTypes.length > 0
           ? `${activeInputTypes.length} type${activeInputTypes.length !== 1 ? "s" : ""} routed`
-          : "Drop connections here"}
+          : t("node.dropConnections")}
       </div>
     </BaseNode>
   );

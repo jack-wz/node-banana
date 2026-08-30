@@ -133,8 +133,8 @@ export function ImageCompareNode({
         <div className="w-full flex-1 min-h-[200px] border border-dashed border-neutral-600 rounded flex flex-col items-center justify-center gap-2">
           <span className="text-neutral-500 text-[10px] text-center px-4">
             {!imageA && !imageB
-              ? "Connect 2 images to compare"
-              : "Connect another image to compare"}
+              ? t("node.connect2Images")
+              : t("node.connectAnotherImage")}
           </span>
           {imageA && !imageB && (
             <div className="text-[9px] text-neutral-600">{t("node.imageAConnected")}</div>

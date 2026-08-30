@@ -369,7 +369,7 @@ export function ArrayNode({ id, data, selected }: NodeProps<ArrayNodeType>) {
         </div>
         <div className="text-[10px] text-neutral-500">
           {nodeData.batchMode
-            ? "Batch: all items sent to downstream node"
+            ? t("node.batchDescription")
             : nodeData.selectedOutputIndex !== null
               ? `Next wire uses item ${nodeData.selectedOutputIndex + 1}`
               : "No selection: wires advance in order from item 1"}

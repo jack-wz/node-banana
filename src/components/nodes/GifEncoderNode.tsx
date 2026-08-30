@@ -408,7 +408,7 @@ export function GifEncoderNode({ id, data, selected }: NodeProps<GifEncoderNodeT
             disabled={orderedFrames.filter((f) => f.src).length < 2 || nodeData.status === "loading" || isRunning}
             className="px-3 py-1 bg-blue-600 hover:bg-blue-500 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed rounded text-white text-xs font-medium transition-colors"
           >
-            {nodeData.status === "loading" ? "Encoding..." : "Encode GIF"}
+            {nodeData.status === "loading" ? t("node.encoding") : t("node.encodeGif")}
           </button>
         </div>
 

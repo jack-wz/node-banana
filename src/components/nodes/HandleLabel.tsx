@@ -1,4 +1,25 @@
 import { HandleTypeIcon, HandleIconType } from "./HandleTypeIcon";
+import { useT } from "@/i18n";
+
+/** Known handle labels → i18n keys. Translates at render time so callers
+ *  can keep passing the English name as the stable identifier. */
+const HANDLE_LABEL_KEYS: Record<string, string> = {
+  "Image": "handle.image",
+  "Video": "handle.video",
+  "Audio": "handle.audio",
+  "Text": "handle.text",
+  "Prompt": "handle.prompt",
+  "Settings": "handle.settings",
+  "Output": "handle.output",
+  "Image In": "handle.imageIn",
+  "Image Out": "handle.imageOut",
+  "Video In": "handle.videoIn",
+  "Video Out": "handle.videoOut",
+  "Audio In": "handle.audioIn",
+  "Audio Out": "handle.audioOut",
+  "GIF Out": "handle.gifOut",
+  "Neg. Prompt": "handle.negPrompt",
+};
 
 interface HandleLabelProps {
   label: string;
@@ -20,6 +41,8 @@ function inferTypeFromColor(color: string): HandleIconType | undefined {
 }
 
 export function HandleLabel({ label, side, color, top = "calc(50% - 18px)", visible, opacity, type }: HandleLabelProps) {
+  const t = useT();
+  const displayLabel = HANDLE_LABEL_KEYS[label] ? t(HANDLE_LABEL_KEYS[label]) : label;
   const positionStyle = side === "target"
     ? { right: "calc(100% + 8px)" }
     : { left: "calc(100% + 8px)" };
@@ -44,7 +67,7 @@ export function HandleLabel({ label, side, color, top = "calc(50% - 18px)", visi
       ) : (
         <HandleTypeIcon type="default" color={color} size={6} />
       )}
-      <span>{label}</span>
+      <span>{displayLabel}</span>
     </div>
   );
 }

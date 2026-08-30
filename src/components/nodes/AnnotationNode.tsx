@@ -28,7 +28,7 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
       if (!file) return;
 
       if (!file.type.match(/^image\/(png|jpeg|webp)$/)) {
-        alert("Unsupported format. Use PNG, JPG, or WebP.");
+        alert(t("node.unsupportedFormat"));
         return;
       }
 
@@ -50,7 +50,7 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
       };
       reader.readAsDataURL(file);
     },
-    [id, updateNodeData]
+    [id, updateNodeData, t]
   );
 
   const handleDrop = useCallback(
@@ -79,11 +79,11 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
   const handleEdit = useCallback(() => {
     const imageToEdit = nodeData.sourceImage || nodeData.outputImage;
     if (!imageToEdit) {
-      alert("No image available. Connect an image or load one manually.");
+      alert(t("node.noImageAvailable"));
       return;
     }
     openModal(id, imageToEdit, nodeData.annotations);
-  }, [id, nodeData, openModal]);
+  }, [id, nodeData, openModal, t]);
 
   const handleRemove = useCallback(() => {
     updateNodeData(id, {
@@ -164,7 +164,7 @@ aria-label={t("node.downloadImage")}
           </button>
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center pointer-events-none">
             <span className="text-xs font-medium text-white opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 px-3 py-1.5 rounded">
-              {nodeData.annotations.length > 0 ? `Edit (${nodeData.annotations.length})` : "Add annotations"}
+              {nodeData.annotations.length > 0 ? t("node.editAnnotations", { count: nodeData.annotations.length }) : t("node.addAnnotations")}
             </span>
           </div>
         </div>
@@ -179,7 +179,7 @@ aria-label={t("node.downloadImage")}
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
           <span className="text-xs text-neutral-500 mt-2">
-            Drop, click, or connect
+            {t("node.dropClickConnect")}
           </span>
         </div>
       )}
