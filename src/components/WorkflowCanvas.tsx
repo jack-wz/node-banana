@@ -19,7 +19,8 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-import { useWorkflowStore, WorkflowFile } from "@/store/workflowStore";
+import { useWorkflowStore, WorkflowFile, generateWorkflowId } from "@/store/workflowStore";
+import { getLastProjectBaseDir } from "@/store/utils/localStorage";
 import { useShallow } from "zustand/shallow";
 import { useToast } from "@/components/Toast";
 import dynamic from "next/dynamic";
@@ -2419,7 +2420,14 @@ export function WorkflowCanvas() {
           onNewProject={() => {
             clearWorkflow();
             setShowQuickstart(false);
-            setShowNewProjectSetup(true);
+            const lastDir = getLastProjectBaseDir();
+            if (lastDir) {
+              // Quick start: reuse last project directory, skip setup modal
+              const id = generateWorkflowId();
+              setWorkflowMetadata(id, t("header.untitled"), lastDir);
+            } else {
+              setShowNewProjectSetup(true);
+            }
           }}
         />
       )}
@@ -2693,6 +2701,7 @@ export function WorkflowCanvas() {
                 type={node.type as NodeType}
                 isInLockedGroup={!!(node.groupId && groups[node.groupId]?.locked)}
                 isExecuting={isRunning}
+                status={(node.data as Record<string, unknown>).status as string | undefined}
                 focusedCommentNodeId={focusedCommentNodeId}
                 position={node.position}
                 width={headerWidth}

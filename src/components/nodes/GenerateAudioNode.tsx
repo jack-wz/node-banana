@@ -171,7 +171,7 @@ export function GenerateAudioNode({ id, data, selected }: NodeProps<GenerateAudi
   }, [nodeData.selectedModel?.displayName, nodeData.selectedModel?.modelId, t]);
 
   // Inline parameters: compute collapse state and toggle handler
-  const isParamsExpanded = nodeData.parametersExpanded ?? true; // default expanded
+const isParamsExpanded = nodeData.parametersExpanded ?? false; // default compact — params on demand
 
   const handleToggleParams = useCallback(() => {
     updateNodeData(id, { parametersExpanded: !isParamsExpanded });

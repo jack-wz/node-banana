@@ -431,6 +431,7 @@ export const zh: Dictionary = {
   "node.addCommentPlaceholder": "添加评论…",
   "node.expandEditor": "展开编辑器",
   "node.runThis": "运行此节点",
+  "node.retryThis": "重试此节点",
   "node.typeTitle": "节点类型：{type}",
   "node.promptConnected": "来自连接节点的文本（可编辑）…",
   "node.promptOptional": "可选提示词（留空则跳过）…",

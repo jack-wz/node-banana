@@ -432,6 +432,7 @@ export const en: Dictionary = {
   "node.addCommentPlaceholder": "Add a comment...",
   "node.expandEditor": "Expand editor",
   "node.runThis": "Run this node",
+  "node.retryThis": "Retry this node",
   "node.typeTitle": "Node type: {type}",
   "node.promptConnected": "Text from connected node (editable)...",
   "node.promptOptional": "Optional prompt (leave empty to skip)...",
