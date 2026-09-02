@@ -78,7 +78,7 @@ export function GenerateVideoNode({ id, data, selected }: NodeProps<GenerateVide
   const currentProvider: ProviderType = nodeData.selectedModel?.provider || "fal";
 
   // Inline parameters: compute collapse state and toggle handler
-  const isParamsExpanded = nodeData.parametersExpanded ?? true; // default expanded
+const isParamsExpanded = nodeData.parametersExpanded ?? false; // default compact — params on demand
 
   const handleToggleParams = useCallback(() => {
     updateNodeData(id, { parametersExpanded: !isParamsExpanded });

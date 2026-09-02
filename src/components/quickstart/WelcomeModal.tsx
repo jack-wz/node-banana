@@ -48,9 +48,20 @@ export function WelcomeModal({
     [onWorkflowGenerated]
   );
 
-  // Template explorer needs more width for two-column layout
-  const dialogWidth = currentView === "templates" ? "max-w-6xl" : "max-w-2xl";
-  const dialogHeight = currentView === "templates" || currentView === "browse" ? "max-h-[85vh]" : "max-h-[80vh]";
+ // Template explorer needs more width for two-column layout
+  // Template explorer needs the most width (two-column layout); the
+  // dashboard-style initial view needs room for the library strip and the
+  // recent-files grid.
+  const dialogWidth =
+    currentView === "templates"
+      ? "max-w-6xl"
+      : currentView === "initial"
+        ? "max-w-3xl"
+        : "max-w-2xl";
+  const dialogHeight =
+    currentView === "initial" || currentView === "templates" || currentView === "browse"
+      ? "max-h-[85vh]"
+      : "max-h-[80vh]";
 
   return (
     <div
@@ -65,6 +76,9 @@ export function WelcomeModal({
             onSelectTemplates={handleSelectTemplates}
             onSelectVibe={handleSelectVibe}
             onSelectLoad={handleSelectLoad}
+            onWorkflowLoaded={(workflow, dirPath) =>
+              onWorkflowGenerated(workflow, dirPath)
+            }
           />
         )}
         {currentView === "templates" && (

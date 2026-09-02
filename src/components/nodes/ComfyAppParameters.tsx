@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 
 
 import { ComfyCurveEditor } from "./ComfyCurveEditor";
 import type { ComfyAppParam } from "@/lib/comfy/types";
+import { useT } from "@/i18n";
 
 interface ComfyAppParametersProps {
   params: ComfyAppParam[];
@@ -34,6 +35,7 @@ function shortLabel(param: ComfyAppParam): string {
  * so a Comfy node's settings look like every other generation node's.
  */
 function ComfyAppParametersInner({ params, values, onChange }: ComfyAppParametersProps) {
+  const t = useT();
   const handleChange = useCallback(
     (id: string, value: unknown) => {
       const next = { ...values };
@@ -57,7 +59,7 @@ function ComfyAppParametersInner({ params, values, onChange }: ComfyAppParameter
   }, [params]);
 
   if (params.length === 0) {
-    return <span className="text-[9px] text-neutral-500">This workflow exposes no settings</span>;
+    return <span className="text-[9px] text-neutral-500">{t("node.noSettingsExposed")}</span>;
   }
 
   // A curve editor and a prompt box both need the full width; everything else
@@ -111,6 +113,7 @@ interface ComfyParameterInputProps {
  * the end on each keystroke.
  */
 function ComfyParameterInputInner({ param, value, onChange }: ComfyParameterInputProps) {
+  const t = useT();
   const label = shortLabel(param);
   // Pairs each label with its control, so a screen reader announces the field
   // by name and a click on the label focuses it. Generated rather than derived
@@ -176,7 +179,7 @@ function ComfyParameterInputInner({ param, value, onChange }: ComfyParameterInpu
           className="nodrag nopan flex-1 min-w-0 text-[11px] py-1 px-2 rounded-md bg-[#1a1a1a] focus:outline-none focus:ring-1 focus:ring-neutral-600 text-white"
         >
           <option value="">
-            {param.default !== undefined ? `Default (${String(param.default)})` : "Default"}
+            {param.default !== undefined ? t("node.defaultWithValue", { value: String(param.default) }) : t("node.defaultValue")}
           </option>
           {param.enum.map((option) => (
             <option key={option} value={option}>
@@ -266,7 +269,7 @@ function ComfyParameterInputInner({ param, value, onChange }: ComfyParameterInpu
           {param.isSeed && (
             <button
               type="button"
-              title="Randomise this seed now"
+              title={t("node.randomiseSeed")}
               onClick={() => {
                 const next = Math.floor(Math.random() * 1_000_000_000);
                 setLocal(String(next));

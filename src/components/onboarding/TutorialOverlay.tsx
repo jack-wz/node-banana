@@ -464,7 +464,7 @@ export function TutorialOverlay() {
               handleContinue();
             }
           }}
-          aria-label="Click to continue tutorial"
+aria-label={t("tutorial.clickToContinue")}
           className="fixed inset-0 cursor-pointer"
           style={{ zIndex: 92 }}
         />

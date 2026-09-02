@@ -146,7 +146,7 @@ export function VideoInputNode({ id, data, selected }: NodeProps<VideoInputNodeT
           )}
           <button
             onClick={() => downloadMedia(nodeData.video!, "video")}
-            aria-label="Download video"
+aria-label={t("node.downloadVideo")}
             className="absolute top-2 right-10 w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded text-xs opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all flex items-center justify-center"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -155,7 +155,7 @@ export function VideoInputNode({ id, data, selected }: NodeProps<VideoInputNodeT
           </button>
           <button
             onClick={handleRemove}
-            aria-label="Remove video"
+aria-label={t("node.removeVideo")}
             className="absolute top-2 right-2 w-6 h-6 bg-black/60 hover:bg-red-600/80 text-white rounded text-xs opacity-0 group-hover:opacity-100 focus:opacity-100 focus:ring-1 focus:ring-red-400 transition-all flex items-center justify-center"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -167,7 +167,7 @@ export function VideoInputNode({ id, data, selected }: NodeProps<VideoInputNodeT
         <div
           role="button"
           tabIndex={0}
-          aria-label="Upload video file"
+aria-label={t("node.uploadVideo")}
           onClick={() => fileInputRef.current?.click()}
           onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInputRef.current?.click(); } }}
           onDrop={handleDrop}

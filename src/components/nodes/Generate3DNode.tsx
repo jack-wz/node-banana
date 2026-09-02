@@ -105,7 +105,7 @@ export function Generate3DNode({ id, data, selected }: NodeProps<Generate3DNodeT
   }, [nodeData.selectedModel?.displayName, nodeData.selectedModel?.modelId]);
 
   // Inline parameters: compute collapse state and toggle handler
-  const isParamsExpanded = nodeData.parametersExpanded ?? true; // default expanded
+const isParamsExpanded = nodeData.parametersExpanded ?? false; // default compact — params on demand
 
   const handleToggleParams = useCallback(() => {
     updateNodeData(id, { parametersExpanded: !isParamsExpanded });

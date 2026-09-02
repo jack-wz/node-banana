@@ -3,9 +3,22 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { ModelParameters } from "@/components/nodes/ModelParameters";
 import { ModelParameter } from "@/lib/providers/types";
 
-// Mock deduplicatedFetch to pass through to global fetch (avoids caching issues in tests)
+// Mock deduplicatedFetch to pass through to global fetch, then normalize the
+// mocked response into a real Response so callers can safely use `.text()`/`.json()`
+// regardless of whether the test mock exposed both.
 vi.mock("@/utils/deduplicatedFetch", () => ({
-  deduplicatedFetch: (...args: Parameters<typeof fetch>) => fetch(...args),
+  deduplicatedFetch: async (...args: Parameters<typeof fetch>) => {
+    const res = await fetch(...args);
+    if (typeof res.text === "function" && typeof res.json === "function") {
+      return res;
+    }
+    const body = await res.json();
+    const status = res.ok ? 200 : (res as { status?: number }).status ?? 500;
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: { "content-type": "application/json" },
+    });
+  },
   clearFetchCache: vi.fn(),
 }));
 

@@ -4,10 +4,20 @@ import { promisify } from "util";
 import { stat } from "fs/promises";
 import path from "path";
 import os from "os";
+import { isLocalRequest } from "@/utils/requestGuards";
 
 const execFileAsync = promisify(execFile);
 
 export async function POST(req: NextRequest) {
+    // Only allow requests from the local machine — the dev server binds to
+    // 0.0.0.0, so without this anyone on the LAN could open Finder windows.
+    if (!isLocalRequest(req)) {
+        return NextResponse.json(
+            { success: false, error: "Forbidden: localhost only" },
+            { status: 403 }
+        );
+    }
+
     try {
         const body = await req.json();
         const { path: inputPath } = body;
@@ -21,6 +31,15 @@ export async function POST(req: NextRequest) {
 
         // Normalize and resolve the path to prevent traversal attacks
         const normalizedPath = path.resolve(inputPath);
+
+        // Restrict to the user's home directory (consistent with open-file).
+        const homeDir = os.homedir();
+        if (!normalizedPath.startsWith(homeDir + path.sep) && normalizedPath !== homeDir) {
+            return NextResponse.json(
+                { success: false, error: "Path is outside allowed directory" },
+                { status: 403 }
+            );
+        }
 
         // Validate that the path exists and is a directory
         try {

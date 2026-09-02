@@ -241,12 +241,12 @@ export function SplitGridNode({ id, data, selected }: NodeProps<SplitGridNodeTyp
   }, [id, regenerateNode]);
 
   const statusText = nodeData.status === "error"
-    ? nodeData.error || "Error"
+    ? nodeData.error || t("node.statusError")
     : cells.length > 0
       ? cellsAreStale
-        ? "Cells out of date — Split rebuilds"
+        ? t("node.cellsOutOfDate")
         : `${cells.length} cell group${cells.length === 1 ? "" : "s"}`
-      : "Split creates a group per cell";
+      : t("node.splitCreatesGroup");
 
   return (
     <>
@@ -289,13 +289,13 @@ export function SplitGridNode({ id, data, selected }: NodeProps<SplitGridNodeTyp
           <button
             onClick={() => setShowEditor(true)}
             disabled={isRunning}
-            title={isRunning ? "Wait for the current run to finish" : undefined}
+            title={isRunning ? t("node.waitForRun") : undefined}
             className="nodrag nopan w-full flex items-center gap-2 px-2.5 py-2 bg-neutral-900 border border-neutral-700 hover:border-neutral-500 rounded-md text-neutral-300 hover:text-neutral-100 disabled:text-neutral-600 disabled:hover:border-neutral-700 disabled:cursor-not-allowed transition-colors"
           >
             <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v2.25A2.25 2.25 0 006 10.5zm0 9.75h2.25A2.25 2.25 0 0010.5 18v-2.25a2.25 2.25 0 00-2.25-2.25H6a2.25 2.25 0 00-2.25 2.25V18A2.25 2.25 0 006 20.25zm9.75-9.75H18a2.25 2.25 0 002.25-2.25V6A2.25 2.25 0 0018 3.75h-2.25A2.25 2.25 0 0013.5 6v2.25a2.25 2.25 0 002.25 2.25z" />
             </svg>
-            <span className="text-xs font-medium">Cell nodes</span>
+            <span className="text-xs font-medium">{t("node.cellNodes")}</span>
             <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700 text-neutral-400">
               {templateNodeCount} / cell
             </span>
@@ -395,7 +395,8 @@ export function SplitGridNode({ id, data, selected }: NodeProps<SplitGridNodeTyp
                 <svg className="w-5 h-5 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
                 </svg>
-                <span className="text-neutral-500 text-[10px]">Connect image</span>
+                <span className="text-neutral-400 text-[10px] text-center">{t("node.connectImageToSplit")}</span>
+                <span className="text-neutral-600 text-[9px] text-center">{t("node.configureFirst")} → Split</span>
               </div>
             )}
             {nodeData.status === "loading" && (

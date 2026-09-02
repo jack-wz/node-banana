@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useT } from "@/i18n";
 
 interface CubicBezierEditorProps {
   value: [number, number, number, number];
@@ -33,6 +34,7 @@ export function CubicBezierEditor({
   disabled = false,
   easingCurve,
 }: CubicBezierEditorProps) {
+  const t = useT();
   const editorRef = useRef<HTMLDivElement | null>(null);
   const valueRef = useRef(value);
   const draggingHandleRef = useRef<"p1" | "p2" | null>(null);
@@ -229,7 +231,7 @@ export function CubicBezierEditor({
         {/* Control point 1 - nodrag nopan touch-none prevents React Flow node dragging */}
         <button
           type="button"
-          aria-label="Adjust control point 1"
+          aria-label={t("bezier.adjustPoint1")}
           className={`nodrag nopan absolute h-6 w-6 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border-2 border-neutral-900/80 bg-lime-300/80 shadow transition active:cursor-grabbing active:scale-95 disabled:cursor-not-allowed disabled:pointer-events-none touch-none ${
             draggingHandle === "p1" ? "ring-2 ring-lime-300/80" : ""
           }`}
@@ -240,7 +242,7 @@ export function CubicBezierEditor({
         {/* Control point 2 - nodrag nopan touch-none prevents React Flow node dragging */}
         <button
           type="button"
-          aria-label="Adjust control point 2"
+          aria-label={t("bezier.adjustPoint2")}
           className={`nodrag nopan absolute h-6 w-6 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border-2 border-neutral-900/80 bg-lime-300/80 shadow transition active:cursor-grabbing active:scale-95 disabled:cursor-not-allowed disabled:pointer-events-none touch-none ${
             draggingHandle === "p2" ? "ring-2 ring-lime-300/80" : ""
           }`}

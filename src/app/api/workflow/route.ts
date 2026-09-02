@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import * as fs from "fs/promises";
 import * as path from "path";
 import { logger } from "@/utils/logger";
-import { validateWorkflowPath } from "@/utils/pathValidation";
+import { validateWorkflowPathDeep } from "@/utils/pathValidation";
 import { upsertWorkflow } from "@/lib/db";
 
 export const maxDuration = 300; // 5 minute timeout for large workflow files
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate path to prevent traversal attacks
-    const pathValidation = validateWorkflowPath(directoryPath);
+    const pathValidation = await validateWorkflowPathDeep(directoryPath);
     if (!pathValidation.valid) {
       logger.warn('file.error', 'Workflow save failed: invalid path', {
         directoryPath,
@@ -167,7 +167,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Validate path to prevent traversal attacks
-  const pathValidation = validateWorkflowPath(directoryPath);
+  const pathValidation = await validateWorkflowPathDeep(directoryPath);
   if (!pathValidation.valid) {
     logger.warn('file.error', 'Directory validation failed: invalid path', {
       directoryPath,

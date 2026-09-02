@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import * as fs from "fs/promises";
 import * as path from "path";
 import { logger } from "@/utils/logger";
-import { validateWorkflowPath } from "@/utils/pathValidation";
+import { validateWorkflowPathDeep } from "@/utils/pathValidation";
 
 export const maxDuration = 300; // 5 minute timeout for large image operations
 
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate path to prevent traversal attacks
-    const pathValidation = validateWorkflowPath(workflowPath);
+    const pathValidation = await validateWorkflowPathDeep(workflowPath);
     if (!pathValidation.valid) {
       logger.warn('file.error', 'Workflow image save failed: invalid path', {
         workflowPath,
@@ -208,7 +208,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Validate path to prevent traversal attacks
-    const pathValidation = validateWorkflowPath(workflowPath);
+    const pathValidation = await validateWorkflowPathDeep(workflowPath);
     if (!pathValidation.valid) {
       logger.warn('file.error', 'Workflow image load failed: invalid path', {
         workflowPath,

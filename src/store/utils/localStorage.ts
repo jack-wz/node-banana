@@ -25,6 +25,7 @@ export const LAST_PROJECT_BASE_DIR_KEY = "node-banana-last-project-dir";
 export const WORKFLOWS_DIRECTORY_KEY = "node-banana-workflows-directory";
 export const FTUX_COMPLETED_KEY = "node-banana-ftux-completed";
 export const WELCOME_LAST_VERSION_KEY = "node-banana-welcome-last-version";
+export const MINIMAP_VISIBLE_KEY = "node-banana-minimap-visible";
 
 // Maximum recent models to store (show 4 in UI, keep 8 for persistence)
 export const MAX_RECENT_MODELS = 8;
@@ -240,6 +241,16 @@ export const setLastProjectBaseDir = (dir: string): void => {
 };
 
 // Workflows directory helpers
+export const getMinimapVisible = (): boolean => {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(MINIMAP_VISIBLE_KEY) === "true";
+};
+
+export const setMinimapVisible = (visible: boolean): void => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(MINIMAP_VISIBLE_KEY, String(visible));
+};
+
 export const getWorkflowsDirectory = (): string | null => {
   if (typeof window === "undefined") return null;
   return localStorage.getItem(WORKFLOWS_DIRECTORY_KEY);

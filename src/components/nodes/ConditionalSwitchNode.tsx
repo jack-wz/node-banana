@@ -223,7 +223,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
             <span className="text-[9px] whitespace-nowrap ml-1">
-              Clear
+              {t("node.clearText")}
             </span>
           </button>
         </div>
@@ -251,9 +251,9 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
           {nodeData.evaluationPaused ? (
             <span className="text-yellow-400">{t("node.evaluationPaused")}</span>
           ) : incomingText ? (
-            <>Input: &quot;{incomingText.slice(0, 50)}{incomingText.length > 50 ? "..." : ""}&quot;</>
+            <>{t("node.inputPrefix")}: &quot;{incomingText.slice(0, 50)}{incomingText.length > 50 ? "..." : ""}&quot;</>
           ) : (
-            "No input connected"
+            t("node.noInputConnected")
           )}
         </div>
 
@@ -306,7 +306,7 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
             {editingId === rule.id ? (
               <input
                 type="text"
-                className="w-14 bg-neutral-700 text-neutral-100 text-[10px] px-1 py-0.5 rounded border border-teal-500 outline-none"
+                className="nodrag nopan w-14 bg-neutral-700 text-neutral-100 text-[10px] px-1 py-0.5 rounded border border-teal-500 outline-none"
                 defaultValue={rule.label}
                 autoFocus
                 onBlur={(e) => handleLabelEdit(rule.id, e.target.value)}
@@ -330,20 +330,20 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
 
             {/* Mode dropdown */}
             <select
-              className="bg-neutral-700 text-neutral-100 text-[9px] px-1 py-0.5 rounded border border-neutral-600 outline-none"
+              className="nodrag nopan bg-neutral-700 text-neutral-100 text-[9px] px-1 py-0.5 rounded border border-neutral-600 outline-none"
               value={rule.mode}
               onChange={(e) => handleModeChange(rule.id, e.target.value as MatchMode)}
             >
-              <option value="exact">exact</option>
-              <option value="contains">contains</option>
-              <option value="starts-with">starts</option>
-              <option value="ends-with">ends</option>
+              <option value="exact">{t("node.modeExact")}</option>
+              <option value="contains">{t("node.modeContains")}</option>
+              <option value="starts-with">{t("node.modeStartsWith")}</option>
+              <option value="ends-with">{t("node.modeEndsWith")}</option>
             </select>
 
             {/* Value input */}
             <input
               type="text"
-              className="flex-1 bg-neutral-700 text-neutral-100 text-[10px] px-1 py-0.5 rounded border border-neutral-600 outline-none"
+              className="nodrag nopan flex-1 bg-neutral-700 text-neutral-100 text-[10px] px-1 py-0.5 rounded border border-neutral-600 outline-none"
               placeholder="value,value2,..."
               value={rule.value}
               onChange={(e) => handleRuleValueChange(rule.id, e.target.value)}
@@ -381,13 +381,13 @@ export const ConditionalSwitchNode = memo(({ id, data, selected }: NodeProps<Wor
 
         {/* Add rule button — after Default so it doesn't displace handle alignment */}
         <button
-          className="w-full flex items-center justify-center gap-1 text-neutral-400 hover:text-white text-[10px] py-1 mt-1 rounded hover:bg-teal-900/30 transition-colors"
+          className="nodrag nopan w-full flex items-center justify-center gap-1 text-neutral-400 hover:text-white text-[10px] py-1 mt-1 rounded hover:bg-teal-900/30 transition-colors"
           onClick={handleAddRule}
         >
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          Add Rule
+          {t("node.addRule")}
         </button>
       </div>
 

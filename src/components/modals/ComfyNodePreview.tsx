@@ -5,6 +5,7 @@ import React, { useMemo, useState } from "react";
 import { ComfyWordmark } from "@/components/icons/ComfyWordmark";
 import { ComfyAppParameters } from "@/components/nodes/ComfyAppParameters";
 import type { ComfyAppInput, ComfyAppOutput, ComfyAppParam } from "@/lib/comfy/types";
+import { useT } from "@/i18n";
 
 /**
  * The node this dialog is about to build, drawn as it will appear.
@@ -50,6 +51,7 @@ export function ComfyNodePreview({
   params,
   outputs,
 }: ComfyNodePreviewProps) {
+  const t = useT();
   // Seeded from the defaults, exactly as the node seeds itself on attach —
   // otherwise every dropdown reads "Default (…)", which is a state the real
   // node is never in. Edits are kept but not saved: nothing typed in a preview
@@ -95,7 +97,7 @@ export function ComfyNodePreview({
               </div>
             </div>
             <div className="h-[92px] rounded-md bg-neutral-900/60 flex items-center justify-center">
-              <span className="text-[10px] text-neutral-600">No output yet</span>
+<span className="text-[10px] text-neutral-600">{t("common.noOutputYet")}</span>
             </div>
           </div>
 
@@ -103,7 +105,7 @@ export function ComfyNodePreview({
               show would be a chevron. */}
           <div className="bg-[#2a2a2a] rounded-b-lg">
             <div className="w-full flex items-center justify-center gap-1 py-1 text-neutral-500">
-              <span className="text-[10px]">Settings</span>
+<span className="text-[10px]">{t("common.settings")}</span>
               <svg
                 className="w-3 h-3 rotate-180"
                 viewBox="0 0 24 24"

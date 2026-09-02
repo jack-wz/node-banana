@@ -774,7 +774,7 @@ export function VideoStitchNode({ id, data, selected }: NodeProps<VideoStitchNod
               disabled={orderedClips.length < 2 || nodeData.status === "loading" || isRunning}
               className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed rounded text-white text-xs font-medium transition-colors"
             >
-              {nodeData.status === "loading" ? "Processing..." : "Stitch"}
+              {nodeData.status === "loading" ? t("node.processing") : t("node.stitch")}
             </button>
           </div>
         )}

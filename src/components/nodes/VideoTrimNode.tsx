@@ -457,7 +457,7 @@ export function VideoTrimNode({ id, data, selected }: NodeProps<VideoTrimNodeTyp
                 <span className="text-[11px] text-neutral-200 font-mono">{formatTime(trimDuration)}</span>
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-[10px] text-neutral-400">End</span>
+                <span className="text-[10px] text-neutral-400">{t("node.trimEnd")}</span>
                 <span className="text-[11px] text-neutral-200 font-mono">{formatTime(endTime)}</span>
               </div>
             </div>
@@ -521,7 +521,7 @@ export function VideoTrimNode({ id, data, selected }: NodeProps<VideoTrimNodeTyp
             disabled={!canTrim || nodeData.status === "loading" || isRunning}
             className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed rounded text-white text-xs font-medium transition-colors"
           >
-            {nodeData.status === "loading" ? "Processing..." : "Trim"}
+            {nodeData.status === "loading" ? t("node.processing") : t("node.trim")}
           </button>
         </div>
 

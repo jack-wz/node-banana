@@ -19,7 +19,8 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-import { useWorkflowStore, WorkflowFile } from "@/store/workflowStore";
+import { useWorkflowStore, WorkflowFile, generateWorkflowId } from "@/store/workflowStore";
+import { getLastProjectBaseDir } from "@/store/utils/localStorage";
 import { useShallow } from "zustand/shallow";
 import { useToast } from "@/components/Toast";
 import dynamic from "next/dynamic";
@@ -321,7 +322,7 @@ export const isDraggingNodeRef = { current: false };
 
 export function WorkflowCanvas() {
   const t = useT();
-  const { nodes, edges, groups, isModalOpen, showQuickstart, navigationTarget, canvasNavigationSettings, dimmedNodeIds, skippedNodeIds, isRunning, focusedCommentNodeId } =
+  const { nodes, edges, groups, isModalOpen, showQuickstart, navigationTarget, canvasNavigationSettings, dimmedNodeIds, skippedNodeIds, isRunning, focusedCommentNodeId, showMinimap } =
     useWorkflowStore(useShallow((state) => ({
       nodes: state.nodes,
       edges: state.edges,
@@ -334,6 +335,7 @@ export function WorkflowCanvas() {
       skippedNodeIds: state.skippedNodeIds,
       isRunning: state.isRunning,
       focusedCommentNodeId: state.focusedCommentNodeId,
+      showMinimap: state.showMinimap,
     })));
   const onNodesChange = useWorkflowStore((state) => state.onNodesChange);
   const onEdgesChange = useWorkflowStore((state) => state.onEdgesChange);
@@ -2419,7 +2421,14 @@ export function WorkflowCanvas() {
           onNewProject={() => {
             clearWorkflow();
             setShowQuickstart(false);
-            setShowNewProjectSetup(true);
+            const lastDir = getLastProjectBaseDir();
+            if (lastDir) {
+              // Quick start: reuse last project directory, skip setup modal
+              const id = generateWorkflowId();
+              setWorkflowMetadata(id, t("header.untitled"), lastDir);
+            } else {
+              setShowNewProjectSetup(true);
+            }
           }}
         />
       )}
@@ -2535,7 +2544,7 @@ export function WorkflowCanvas() {
             bottom toolbar zoom menu (⌘+/⌘-/⌘0/⇧1), navigation is scroll/pan based.
             See docs/weavy-research/01-weavy-product-analysis.md §4. */}
         {false && <Controls className={`bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg [&>button]:bg-neutral-800 [&>button]:border-neutral-700 [&>button]:fill-neutral-300 [&>button:hover]:bg-neutral-700 [&>button:hover]:fill-neutral-100 ${tutorialActive && lockedFeatures ? "opacity-30 pointer-events-none" : ""}`} />}
-        {false && <MiniMap
+        {showMinimap && <MiniMap
           className={`bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg ${tutorialActive && lockedFeatures ? "opacity-30 pointer-events-none" : ""}`}
           maskColor="rgba(0, 0, 0, 0.6)"
           pannable
@@ -2693,6 +2702,7 @@ export function WorkflowCanvas() {
                 type={node.type as NodeType}
                 isInLockedGroup={!!(node.groupId && groups[node.groupId]?.locked)}
                 isExecuting={isRunning}
+                status={(node.data as Record<string, unknown>).status as string | undefined}
                 focusedCommentNodeId={focusedCommentNodeId}
                 position={node.position}
                 width={headerWidth}

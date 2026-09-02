@@ -8,6 +8,7 @@ import type { ImageResizeNodeData, ImageResizeFit, ImageResizeFormat, ImageResiz
 import { useAdaptiveImageSrc } from "@/hooks/useAdaptiveImageSrc";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 type ImageResizeNodeType = Node<ImageResizeNodeData, "imageResize">;
 
@@ -19,6 +20,7 @@ function formatBytes(bytes: number | null): string {
 }
 
 export function ImageResizeNode({ id, data, selected }: NodeProps<ImageResizeNodeType>) {
+  const t = useT();
   const nodeData = data;
   const adaptiveOutput = useAdaptiveImageSrc(nodeData.outputImage, id);
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
@@ -91,7 +93,7 @@ export function ImageResizeNode({ id, data, selected }: NodeProps<ImageResizeNod
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[10px] text-neutral-500">Connect an image</span>
+              <span className="text-[10px] text-neutral-500">{t("node.connectImage")}</span>
             </div>
           )}
           {nodeData.status === "loading" && (
@@ -118,7 +120,7 @@ export function ImageResizeNode({ id, data, selected }: NodeProps<ImageResizeNod
                     : "bg-neutral-800 text-neutral-400 hover:text-neutral-200"
                 }`}
               >
-                {m === "exact" ? "Exact" : m === "maxEdge" ? "Max Edge" : "Scale %"}
+                {m === "exact" ? t("node.resizeExact") : m === "maxEdge" ? t("node.maxEdge") : t("node.resizeScalePct")}
               </button>
             ))}
           </div>
@@ -146,7 +148,7 @@ export function ImageResizeNode({ id, data, selected }: NodeProps<ImageResizeNod
           )}
           {nodeData.mode === "maxEdge" && (
             <div className="flex items-center gap-1">
-              <label className="text-neutral-400">Max edge</label>
+              <label className="text-neutral-400">{t("node.maxEdge")}</label>
               <input
                 type="number"
                 min={1}
@@ -159,7 +161,7 @@ export function ImageResizeNode({ id, data, selected }: NodeProps<ImageResizeNod
           )}
           {nodeData.mode === "scale" && (
             <div className="flex items-center gap-1">
-              <label className="text-neutral-400">Scale</label>
+              <label className="text-neutral-400">{t("node.scale")}</label>
               <input
                 type="number"
                 min={1}
@@ -236,7 +238,7 @@ export function ImageResizeNode({ id, data, selected }: NodeProps<ImageResizeNod
             disabled={!nodeData.sourceImage || nodeData.status === "loading" || isRunning}
             className="px-3 py-1 bg-blue-600 hover:bg-blue-500 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed rounded text-white text-xs font-medium transition-colors"
           >
-            {nodeData.status === "loading" ? "Resizing..." : "Resize"}
+            {nodeData.status === "loading" ? t("node.resizing") : t("node.resize")}
           </button>
         </div>
 

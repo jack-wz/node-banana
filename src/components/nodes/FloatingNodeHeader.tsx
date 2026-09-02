@@ -31,6 +31,8 @@ const EXPANDABLE_TYPES = new Set(['prompt', 'promptConstructor', 'splitGrid', 'a
 interface FloatingNodeHeaderProps {
   id: string;
   type: NodeType;
+  /** Current execution status of the node, for the status indicator dot. */
+  status?: string;
   isInLockedGroup?: boolean;
   isExecuting?: boolean;
   focusedCommentNodeId?: string | null;
@@ -71,6 +73,7 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
   selected,
   onExpandNode,
   onRunNode,
+  status,
   headerAction,
   headerButtons,
   alwaysVisibleButtons,
@@ -373,6 +376,20 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
       >
         {/* Title Section */}
         <div className="flex-1 min-w-0 max-w-[60%] flex items-center gap-1.5 pl-2">
+          {status && status !== "idle" && (
+            <span
+              className={`shrink-0 w-2 h-2 rounded-full ${
+                status === "loading"
+                  ? "bg-blue-400 animate-pulse"
+                  : status === "error"
+                    ? "bg-red-500"
+                    : status === "complete"
+                      ? "bg-green-500"
+                      : "bg-neutral-500"
+              }`}
+              title={status}
+            />
+          )}
           {provider && <ProviderBadge provider={provider} />}
           {isEditingTitle ? (
             <>
@@ -568,6 +585,25 @@ export const FloatingNodeHeader = memo(function FloatingNodeHeader({
                 </svg>
                 <span className="max-w-0 opacity-0 whitespace-nowrap text-[10px] transition-all duration-200 ease-in-out overflow-hidden group-hover:max-w-[60px] group-hover:opacity-100 group-hover:ml-1">
                   Expand
+                </span>
+              </button>
+            </div>
+          )}
+
+          {/* Retry button — shown when the node errored */}
+          {canRun && onRunNode && status === "error" && (
+            <div className="relative shrink-0 group">
+              <button
+                onClick={() => onRunNode(id)}
+                disabled={isExecuting}
+                className="nodrag nopan p-0.5 rounded transition-all duration-200 ease-in-out text-red-400 group-hover:text-red-300 border border-red-700 flex items-center overflow-hidden group-hover:pr-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={t("node.retryThis")}
+              >
+                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+                <span className="max-w-0 opacity-0 whitespace-nowrap text-[10px] transition-all duration-200 ease-in-out overflow-hidden group-hover:max-w-[60px] group-hover:opacity-100 group-hover:ml-1">
+                  Retry
                 </span>
               </button>
             </div>

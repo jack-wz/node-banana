@@ -93,7 +93,7 @@ export function GenerateImageNode({ id, data, selected }: NodeProps<NanoBananaNo
   }, [id, nodeData.model, nodeData.selectedModel, updateNodeData]);
 
   // Inline parameters: compute collapse state and toggle handler
-  const isParamsExpanded = nodeData.parametersExpanded ?? true; // default expanded
+const isParamsExpanded = nodeData.parametersExpanded ?? false; // default compact — params on demand
 
   const handleToggleParams = useCallback(() => {
     updateNodeData(id, { parametersExpanded: !isParamsExpanded });

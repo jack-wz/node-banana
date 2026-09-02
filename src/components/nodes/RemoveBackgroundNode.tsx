@@ -102,7 +102,7 @@ export function RemoveBackgroundNode({ id, data, selected }: NodeProps<RemoveBac
             <div className="absolute inset-0 flex items-center justify-center border border-dashed border-neutral-600 rounded">
               <span className="text-[10px] text-neutral-500 text-center px-4">
                 {hasSourceImage
-                  ? "Run to remove background"
+                  ? t("node.runToRemoveBg")
                   : "Connect an image input"}
               </span>
             </div>

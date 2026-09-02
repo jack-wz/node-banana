@@ -11,6 +11,7 @@ import {
   type ComfySettings,
 } from "@/lib/comfy/settings";
 import type { ComfyBackendMode } from "@/lib/comfy/types";
+import { useT } from "@/i18n";
 
 interface ComfySettingsTabProps {
   settings: ComfySettings;
@@ -38,6 +39,7 @@ const MODES: Array<{ value: ComfyBackendMode; label: string; hint: string }> = [
  * models a workflow needs.
  */
 export function ComfySettingsTab({ settings, onChange }: ComfySettingsTabProps) {
+  const t = useT();
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState<ConnectionResult | null>(null);
   const [showKey, setShowKey] = useState(false);
@@ -130,7 +132,7 @@ export function ComfySettingsTab({ settings, onChange }: ComfySettingsTabProps) 
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm text-neutral-400 mb-2">Run workflows on</label>
+        <label className="block text-sm text-neutral-400 mb-2">{t("comfy.runWorkflowsOn")}</label>
         <div className="grid grid-cols-3 gap-1.5 p-1 bg-neutral-900/50 rounded-lg">
           {MODES.map((mode) => (
             <button
@@ -232,7 +234,7 @@ export function ComfySettingsTab({ settings, onChange }: ComfySettingsTabProps) 
               type="password"
               value={settings.remoteApiKey ?? ""}
               onChange={(e) => update({ remoteApiKey: e.target.value || null })}
-              placeholder="Only if it sits behind auth"
+              placeholder={t("comfy.authPlaceholder")}
               className="w-full px-2 py-1 bg-neutral-800 border border-neutral-600 rounded-lg text-neutral-100 text-xs focus:outline-none focus:border-neutral-500"
             />
           </Field>
@@ -331,7 +333,7 @@ export function ComfySettingsTab({ settings, onChange }: ComfySettingsTabProps) 
               onChange={(e) => update({ randomizeSeeds: e.target.checked })}
               className="w-3.5 h-3.5 rounded bg-neutral-800"
             />
-            <span className="text-xs text-neutral-300">Randomise seeds on every run</span>
+            <span className="text-xs text-neutral-300">{t("comfy.randomiseSeeds")}</span>
           </label>
           <p className="text-[10px] text-neutral-500 -mt-1.5">
             Off means repeat runs return the workflow&apos;s saved seed — and identical results.
@@ -350,6 +352,7 @@ function ApiV2Toggle({
   checked: boolean;
   onChange: (checked: boolean) => void;
 }) {
+  const t = useT();
   return (
     <div>
       <label className="flex items-center gap-2 cursor-pointer">
@@ -359,11 +362,11 @@ function ApiV2Toggle({
           onChange={(e) => onChange(e.target.checked)}
           className="w-3.5 h-3.5 rounded bg-neutral-800"
         />
-        <span className="text-xs text-neutral-300">Behind comfy-api-proxy</span>
+        <span className="text-xs text-neutral-300">{t("comfy.behindProxy")}</span>
       </label>
       <p className="text-[10px] text-neutral-500 mt-1">
-        Turn on only if this endpoint serves the Comfy API v2. A stock ComfyUI does not —
-        leave it off and Node Banana drives it directly.
+        {t("comfy.apiV2Note")}
+        {t("comfy.apiV2NoteOff")}
       </p>
     </div>
   );

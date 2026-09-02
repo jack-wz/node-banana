@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useT } from "@/i18n";
 import { createPortal } from "react-dom";
 import {
   ReactFlow,
@@ -344,6 +345,7 @@ interface SplitGridTemplateModalProps {
 }
 
 function SplitGridTemplateModalInner({ nodeId, nodeData, onClose }: SplitGridTemplateModalProps) {
+  const t = useT();
   const materializeSplitGridCells = useWorkflowStore((state) => state.materializeSplitGridCells);
   const isRunning = useWorkflowStore((state) => state.isRunning);
   const incrementModalCount = useWorkflowStore((state) => state.incrementModalCount);
@@ -802,14 +804,14 @@ function SplitGridTemplateModalInner({ nodeId, nodeData, onClose }: SplitGridTem
         {/* Header */}
         <div className="flex items-center justify-between gap-4 px-5 py-3.5 border-b border-neutral-700/60 shrink-0">
           <div className="min-w-0">
-            <h2 className="text-base font-semibold text-neutral-100">Cell Node Set</h2>
+            <h2 className="text-base font-semibold text-neutral-100">{t("tpl.cellNodeSet")}</h2>
             <p className="text-xs text-neutral-500 mt-0.5 truncate">
-              These nodes are created for every split image and grouped per cell
+              {t("tpl.cellNodeSetDesc")}
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">
-              Presets
+              {t("common.presets")}
             </span>
             <button
               onClick={() => applyPreset(createDefaultSplitGridTemplate())}
@@ -831,7 +833,7 @@ function SplitGridTemplateModalInner({ nodeId, nodeData, onClose }: SplitGridTem
             <button
               onClick={requestClose}
               className="p-1.5 text-neutral-400 hover:text-neutral-100 hover:bg-neutral-700 rounded transition-colors"
-              aria-label="Close"
+              aria-label={t("common.close")}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -906,8 +908,8 @@ function SplitGridTemplateModalInner({ nodeId, nodeData, onClose }: SplitGridTem
               <button
                 onClick={handleToolbarDelete}
                 className="p-1.5 rounded hover:bg-neutral-700 text-neutral-400 hover:text-red-400 transition-colors"
-                title="Delete"
-                aria-label="Delete connection"
+                title={t("common.delete")}
+                aria-label={t("tpl.deleteConnection")}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path
@@ -955,9 +957,9 @@ function SplitGridTemplateModalInner({ nodeId, nodeData, onClose }: SplitGridTem
         {showDiscardConfirm && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60">
             <div className="bg-neutral-800 border border-neutral-600 rounded-lg p-5 mx-4 max-w-sm shadow-xl">
-              <h3 className="text-sm font-semibold text-neutral-100">Discard changes?</h3>
+              <h3 className="text-sm font-semibold text-neutral-100">{t("tpl.discardChanges")}</h3>
               <p className="text-xs text-neutral-400 mt-1">
-                Your edits to the cell node set haven&apos;t been applied.
+                {t("tpl.discardChangesBody")}
               </p>
               <div className="flex justify-end gap-2 mt-4">
                 <button

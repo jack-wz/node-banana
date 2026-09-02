@@ -10,10 +10,12 @@ import { useAdaptiveImageSrc } from "@/hooks/useAdaptiveImageSrc";
 import { downloadMedia } from "@/utils/downloadMedia";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { HandleLabel } from "./HandleLabel";
+import { useT } from "@/i18n";
 
 type AnnotationNodeType = Node<AnnotationNodeData, "annotation">;
 
 export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeType>) {
+  const t = useT();
   const nodeData = data;
   const openModal = useAnnotationStore((state) => state.openModal);
   const updateNodeData = useWorkflowStore((state) => state.updateNodeData);
@@ -26,7 +28,7 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
       if (!file) return;
 
       if (!file.type.match(/^image\/(png|jpeg|webp)$/)) {
-        alert("Unsupported format. Use PNG, JPG, or WebP.");
+        alert(t("node.unsupportedFormat"));
         return;
       }
 
@@ -48,7 +50,7 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
       };
       reader.readAsDataURL(file);
     },
-    [id, updateNodeData]
+    [id, updateNodeData, t]
   );
 
   const handleDrop = useCallback(
@@ -77,11 +79,11 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
   const handleEdit = useCallback(() => {
     const imageToEdit = nodeData.sourceImage || nodeData.outputImage;
     if (!imageToEdit) {
-      alert("No image available. Connect an image or load one manually.");
+      alert(t("node.noImageAvailable"));
       return;
     }
     openModal(id, imageToEdit, nodeData.annotations);
-  }, [id, nodeData, openModal]);
+  }, [id, nodeData, openModal, t]);
 
   const handleRemove = useCallback(() => {
     updateNodeData(id, {
@@ -142,7 +144,7 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
               e.stopPropagation();
               downloadMedia(displayImage!, "image");
             }}
-            aria-label="Download image"
+aria-label={t("node.downloadImage")}
             className="absolute top-2 right-10 w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded text-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-1 focus-visible:ring-white transition-opacity flex items-center justify-center"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -162,7 +164,7 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
           </button>
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center pointer-events-none">
             <span className="text-xs font-medium text-white opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 px-3 py-1.5 rounded">
-              {nodeData.annotations.length > 0 ? `Edit (${nodeData.annotations.length})` : "Add annotations"}
+              {nodeData.annotations.length > 0 ? t("node.editAnnotations", { count: nodeData.annotations.length }) : t("node.addAnnotations")}
             </span>
           </div>
         </div>
@@ -177,7 +179,7 @@ export function AnnotationNode({ id, data, selected }: NodeProps<AnnotationNodeT
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
           <span className="text-xs text-neutral-500 mt-2">
-            Drop, click, or connect
+            {t("node.dropClickConnect")}
           </span>
         </div>
       )}

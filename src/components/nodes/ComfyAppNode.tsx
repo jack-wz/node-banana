@@ -16,6 +16,7 @@ import { ComfyWordmark } from "@/components/icons/ComfyWordmark";
 import { useComfyPreview } from "@/hooks/useComfyPreview";
 import { useShowHandleLabels } from "@/hooks/useShowHandleLabels";
 import { useWorkflowStore } from "@/store/workflowStore";
+import { useT } from "@/i18n";
 import { outputsToNodeData } from "@/store/execution/comfyAppExecutor";
 import { appInputHandles, appToInputSchema } from "@/lib/comfy/nodeSchema";
 import { mergeParamValues } from "@/lib/comfy/reconfigure";
@@ -53,38 +54,34 @@ export function ComfyAppNode({ id, data, selected }: NodeProps<ComfyAppNodeType>
   const [dropped, setDropped] = useState<ComfyUpload | null>(null);
 
   // Created from the connection menu, which had nowhere to attach its wire —
-  // go straight to choosing a workflow so the node becomes usable. Adjusted
-  // during render (tracking the previous flag) rather than in an effect.
+  // go straight to choosing a workflow so the node becomes usable.
   // _autoOpenImport is typically already true on the node's very first
-  // render (set at creation time), so this must also fire on mount, not
-  // just on later transitions.
-  const [hasCheckedAutoOpen, setHasCheckedAutoOpen] = useState(false);
-  const [prevAutoOpenImport, setPrevAutoOpenImport] = useState(nodeData._autoOpenImport);
-  if (!hasCheckedAutoOpen || nodeData._autoOpenImport !== prevAutoOpenImport) {
-    setHasCheckedAutoOpen(true);
-    setPrevAutoOpenImport(nodeData._autoOpenImport);
+  // render (set at creation time), so this must fire on mount.
+  useEffect(() => {
     if (nodeData._autoOpenImport) {
+      // One-shot consumption of a creation-time flag; opening the modal from
+      // an effect is intentional here (mount-time initialization).
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setModal("replace");
       updateNodeData(id, { _autoOpenImport: false });
     }
-  }
+  }, [id, nodeData._autoOpenImport, updateNodeData]);
 
   // Created by dropping a ComfyUI workflow onto the canvas: skip the file step
   // and read the dropped file straight away. It moves into local state because
   // it belongs to this import, not to the node — a saved workflow should not
-  // carry a copy of the upload it was built from. Same mount-time concern as
-  // above: _pendingWorkflow is set at creation time.
-  const [hasCheckedPendingWorkflow, setHasCheckedPendingWorkflow] = useState(false);
-  const [prevPendingWorkflow, setPrevPendingWorkflow] = useState(nodeData._pendingWorkflow);
-  if (!hasCheckedPendingWorkflow || nodeData._pendingWorkflow !== prevPendingWorkflow) {
-    setHasCheckedPendingWorkflow(true);
-    setPrevPendingWorkflow(nodeData._pendingWorkflow);
+  // carry a copy of the upload it was built from. _pendingWorkflow is set at
+  // creation time.
+  useEffect(() => {
     if (nodeData._pendingWorkflow) {
+      // One-shot consumption of a creation-time flag; capturing the dropped
+      // upload into local state from an effect is intentional here.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDropped(nodeData._pendingWorkflow);
       setModal("replace");
       updateNodeData(id, { _pendingWorkflow: null });
     }
-  }
+  }, [id, nodeData._pendingWorkflow, updateNodeData]);
 
   const edges = useWorkflowStore((state) => state.edges);
   const removeEdge = useWorkflowStore((state) => state.removeEdge);
@@ -232,11 +229,8 @@ export function ComfyAppNode({ id, data, selected }: NodeProps<ComfyAppNodeType>
     return nodeData.inspection ? { app, inspection: nodeData.inspection } : { app };
   }, [modal, app, nodeData.inspection]);
 
-  // The component's early "adjust during render" setState calls above (for
-  // _autoOpenImport/_pendingWorkflow) make the compiler unable to verify this
-  // memoization is safe to recompile; the manual deps are correct and this
-  // still runs with its written memoization, just without extra compiler
-  // optimization.
+  // Compiler cannot preserve this memo (deps reach into node data); it is a
+  // cheap loop over a handful of outputs, so a bail-out is acceptable.
   // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const primaryPreview = useMemo(() => {
     if (!app) return null;
@@ -465,6 +459,7 @@ function ComfyAppHeader({
   onReplace: () => void;
   runStatus: string | null;
 }) {
+  const t = useT();
   return (
     <div className="flex items-center gap-2 pt-2 pb-1.5 shrink-0">
       <div className="min-w-0 flex-1">
@@ -479,11 +474,11 @@ function ComfyAppHeader({
             : `${app.nodeCount} node${app.nodeCount === 1 ? "" : "s"}`}
         </p>
       </div>
-      <HeaderButton onClick={onEdit} title="Choose inputs, settings and outputs">
+<HeaderButton onClick={onEdit} title={t("node.chooseInputs")}>
         <circle cx="12" cy="12" r="3" />
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
       </HeaderButton>
-      <HeaderButton onClick={onReplace} title="Replace this workflow">
+<HeaderButton onClick={onReplace} title={t("node.replaceWorkflow")}>
         <path d="M21 2v6h-6" />
         <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
         <path d="M3 22v-6h6" />
@@ -577,6 +572,7 @@ function Preview({
   livePreview: string | null;
   error: string | null;
 }) {
+  const t = useT();
   if (isRunning) return <Rendering livePreview={livePreview} />;
   if (error) {
     return (
@@ -586,7 +582,7 @@ function Preview({
     );
   }
   if (!preview) {
-    return <span className="text-[10px] text-neutral-600">No output yet</span>;
+    return <span className="text-[10px] text-neutral-600">{t("common.noOutputYet")}</span>;
   }
   if (preview.type === "text") {
     return (
