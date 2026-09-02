@@ -24,6 +24,8 @@ const btnClass =
 
 function ZoomMenu() {
   const t = useT();
+  const showMinimap = useWorkflowStore((state) => state.showMinimap);
+  const toggleMinimap = useWorkflowStore((state) => state.toggleMinimap);
   const { zoom } = useViewport();
   const { zoomTo, fitView, zoomIn, zoomOut } = useReactFlow();
   const [open, setOpen] = useState(false);
@@ -56,6 +58,7 @@ function ZoomMenu() {
             { label: t("toolbar.zoomOut"), action: () => zoomOut({ duration: 150 }), hint: "−" },
             { label: t("toolbar.zoom100"), action: () => zoomTo(1, { duration: 200 }), hint: "⌘0" },
             { label: t("toolbar.fitView"), action: () => fitView({ duration: 200, padding: 0.1 }), hint: "⇧1" },
+            { label: t("toolbar.minimap"), action: () => toggleMinimap(), hint: showMinimap ? "✓" : "" },
           ].map((item) => (
             <button
               key={item.label}

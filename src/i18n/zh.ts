@@ -225,6 +225,7 @@ export const zh: Dictionary = {
   "toolbar.zoomOut": "缩小",
   "toolbar.zoom100": "缩放到 100%",
   "toolbar.fitView": "适应视图",
+  "toolbar.minimap": "迷你地图",
   "toolbar.lastRunCostTitle": "最近运行成本 · {time}",
   "toolbar.runCost": "运行 {cost}",
 

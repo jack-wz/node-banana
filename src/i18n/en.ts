@@ -226,6 +226,7 @@ export const en: Dictionary = {
   "toolbar.zoomOut": "Zoom out",
   "toolbar.zoom100": "Zoom to 100%",
   "toolbar.fitView": "Fit view",
+  "toolbar.minimap": "Minimap",
   "toolbar.lastRunCostTitle": "Last run cost · {time}",
   "toolbar.runCost": "Run {cost}",
 
